@@ -1,33 +1,21 @@
-import { Route, Routes } from "react-router-dom"
-import Home from "./components/Home"
-import About from "./components/About"
-import MainHeader from "./components/MainHeader"
-import "./styles/shared.css"
-import MainFooter from "./components/MainFooter"
+import { Routes, Route } from "react-router-dom"
+import Home from "./components/pages/Home"
+import About from "./components/pages/About"
+import MainHeader from "./components/header/MainHeader"
+import "./styles/App.css"
+import MainFooter from "./components/footer/MainFooter"
 
 function App() {
   return (
-    <div
-      className="app-container"
-      style={{
-        width: "100%",
-        // height: "100vh",
-        backgroundColor: "orange",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className="app-container">
+      <MainHeader />
       <div className="routes-container">
-        <MainHeader />
+        <Routes>
+          <Route path="/" element={<Home />} exact />
+          <Route path="/about" element={<About />} />
+        </Routes>
       </div>
-      <Routes>
-        <Route path="/" element={<Home />} exact />
-        <Route path="/about" element={<About />} />
-      </Routes>
-      <div className="footer-container">
-        <MainFooter />
-      </div>
+      <MainFooter />
     </div>
   )
 }
