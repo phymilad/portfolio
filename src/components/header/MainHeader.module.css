@@ -7,4 +7,5 @@
   /* border: 2px dashed orange; */
   background-color: black;
   color: white;
+  z-index: 10;
 }
