@@ -4,6 +4,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  border: 2px dashed orange;
-  background-color: aqua;
+  /* border: 2px dashed orange; */
+  background-color: black;
+  color: white;
 }
