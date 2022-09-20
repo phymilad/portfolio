@@ -17,23 +17,22 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* background-image: url("../../../public/bg1.jpeg"); */
   background-image: linear-gradient(
     to bottom,
-    rgba(50, 255, 50, 1),
-    rgba(0, 255, 0, 0)
+    rgb(255, 145, 43),
+    rgba(0, 0, 0, 0)
   );
   background-position: top left 5%;
   opacity: 0.89;
 }
 
 .introduction h1 {
-  color: orangered;
+  color: black;
   display: block;
 }
 
 .introduction h4 {
-  color: orangered;
+  color: black;
   display: block;
 }
 
