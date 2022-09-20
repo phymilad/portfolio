@@ -74,10 +74,19 @@ const projects = [
 export default function Home() {
   return (
     <div className={styles.container}>
-      <section className={styles.introduction}>
-        <h1>Milad Mohammadi</h1>
-        <h4>Frontend Developer</h4>
-      </section>
+      <div className={styles.introduction}>
+        <div className={styles.info}>
+          <h3>Hello, my name is</h3>
+          <h3>Milad Mohammadi</h3>
+          <h4>A Frontend Developer</h4>
+          <p>
+            I am a frontend developer. I am expert in javascript and its
+            framework containing Reactjs, Nextjs. There are other technologies
+            related to developing frontend which comes in the skill part.
+          </p>
+        </div>
+        <div className={styles.photo}></div>
+      </div>
       <h2>Projects</h2>
       <section className={styles.projects}>
         {projects.map((item) => {
