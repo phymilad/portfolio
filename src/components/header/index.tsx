@@ -1,6 +1,7 @@
 'use client';
 
 import { Locale, t } from '@/i18n/dict';
+import { inter, vazir } from '@/utils/constants';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -12,7 +13,7 @@ export const Header = (params: Props) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || '/';
   const [_, __, ...rest] = pathname.split("/")
-  console.log(rest)
+  const isFa = locale === 'fa';
   
   const base = `/${locale}`;
   const switchHref = `/${locale === 'fa' ? `en/${rest.join("/")}` : `fa/${rest.join("/")}`}`;
@@ -28,7 +29,7 @@ export const Header = (params: Props) => {
   const isActive = (href: string) => pathname.startsWith(href);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-lg shadow-sm">
+    <header className="sticky top-0 z-50 border-b bg-white backdrop-blur-lg shadow-sm">
       <nav className="mx-auto flex max-w-screen-lg items-center justify-between px-4 py-3">
         {/* Brand */}
         <Link
@@ -63,7 +64,7 @@ export const Header = (params: Props) => {
           <li>
             <Link
               href={switchHref}
-              className="rounded-md border border-slate-300 px-3 py-1 text-slate-600 transition hover:bg-slate-100"
+              className={`rounded-md border border-slate-300 px-3 py-1 text-slate-600 transition hover:bg-slate-100 ${isFa ? inter.className : vazir.className}`}
             >
               {t('switch_locale', locale)}
             </Link>

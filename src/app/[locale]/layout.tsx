@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import '../globals.css';
 import { t, dirOf, type Locale } from '@/i18n/dict';
 import { Header } from '@/components/header';
-import { Inter } from 'next/font/google';
-import { Vazirmatn } from 'next/font/google';
+import { inter, vazir } from '@/utils/constants';
 
 export const metadata: Metadata = {
   title: 'Milad Mohammadi — Frontend Developer',
@@ -12,8 +10,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://example.com'),
 };
 
-const inter = Inter({ subsets: ['latin'], display: 'swap' });
-const vazir = Vazirmatn({ subsets: ['arabic'], display: 'swap' });
+
 
 export default function RootLayout({
   children,
