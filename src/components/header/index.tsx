@@ -7,11 +7,15 @@ import { useEffect, useState } from 'react';
 
 type Props = { locale: Locale };
 
-export const Header = ({ locale }: Props) => {
+export const Header = (params: Props) => {
+  const { locale } = params;
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || '/';
+  const [_, __, ...rest] = pathname.split("/")
+  console.log(rest)
+  
   const base = `/${locale}`;
-  const switchHref = `/${locale === 'fa' ? 'en' : 'fa'}`;
+  const switchHref = `/${locale === 'fa' ? `en/${rest.join("/")}` : `fa/${rest.join("/")}`}`;
 
   useEffect(() => setOpen(false), [pathname]);
 

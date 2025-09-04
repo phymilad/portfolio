@@ -6,7 +6,7 @@ export default function Contact({ params }: { params: { locale: Locale } }) {
     <section className="prose">
       <h1>{t('contact_title', locale)}</h1>
       <p>
-        {t('contact_email', locale)}: <a href="mailto:you@example.com">you@example.com</a>
+        {t('contact_email', locale)}: <a href="mailto:you@example.com">phy.milad@gmail.com</a>
       </p>
     </section>
   );
