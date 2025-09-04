@@ -6,7 +6,7 @@ type BiList = { en: string[]; fa: string[] };
 
 // the ONE object you asked for.
 // strings use Bi; lists use BiList (for bullets, etc.)
-export const biDict = {
+export const dictionary = {
   brand: { en: 'Milad Mohammadi', fa: 'میلاد محمدی' } as Bi,
   nav_projects: { en: 'Projects', fa: 'پروژه‌ها' } as Bi,
   nav_blog: { en: 'Blog', fa: 'بلاگ' } as Bi,
@@ -46,14 +46,14 @@ export const biDict = {
 } as const;
 
 // helpers to read values based on locale
-export function t(key: keyof typeof biDict, locale: Locale): string {
-  const v = biDict[key] as any;
+export function t(key: keyof typeof dictionary, locale: Locale): string {
+  const v = dictionary[key] as any;
   if (typeof v?.en === 'function') return v[locale](new Date().getFullYear());
   return v[locale] as string;
 }
 
-export function tList(key: keyof typeof biDict, locale: Locale): string[] {
-  const v = biDict[key] as any;
+export function tList(key: keyof typeof dictionary, locale: Locale): string[] {
+  const v = dictionary[key] as any;
   return (v?.[locale] as string[]) ?? [];
 }
 
