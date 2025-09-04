@@ -3,12 +3,17 @@ import Link from 'next/link';
 import '../globals.css';
 import { t, dirOf, type Locale } from '@/i18n/dict';
 import { Header } from '@/components/header';
+import { Inter } from 'next/font/google';
+import { Vazirmatn } from 'next/font/google';
 
 export const metadata: Metadata = {
   title: 'Milad Mohammadi — Frontend Developer',
   description: 'Portfolio, projects, and blog by Milad Mohammadi.',
   metadataBase: new URL('https://example.com'),
 };
+
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
+const vazir = Vazirmatn({ subsets: ['arabic'], display: 'swap' });
 
 export default function RootLayout({
   children,
@@ -19,11 +24,10 @@ export default function RootLayout({
 }) {
   const { locale } = params;
   const dir = dirOf(locale);
-  const base = `/${locale}`;
-  const switchHref = `/${locale === 'fa' ? 'en' : 'fa'}`;
+  const isFa = locale === 'fa';
 
   return (
-    <html lang={locale} dir={dir}>
+    <html lang={locale} dir={dir} className={isFa ? vazir.className : inter.className}>
       <body className="flex flex-col min-h-dvh bg-white text-slate-800 antialiased">
         <Header locale={locale} />
 
