@@ -7,11 +7,11 @@ type BiList = { en: string[]; fa: string[] };
 // the ONE object you asked for.
 // strings use Bi; lists use BiList (for bullets, etc.)
 export const dictionary = {
-  brand: { en: 'Milad Mohammadi', fa: 'میلاد محمدی' } as Bi,
+  brand: { en: 'Milad Mohammadi - Frontend developer', fa: 'میلاد محمدی - توسعه دهنده وب' } as Bi,
   nav_projects: { en: 'Projects', fa: 'پروژه‌ها' } as Bi,
   nav_blog: { en: 'Blog', fa: 'بلاگ' } as Bi,
   nav_about: { en: 'About', fa: 'درباره من' } as Bi,
-  nav_contact: { en: 'Contact', fa: 'تماس' } as Bi,
+  nav_contact: { en: 'Contact me', fa: ' تماس با من' } as Bi,
   switch_locale: { en: 'فا', fa: 'EN' } as Bi,
 
   home_title: { en: 'Frontend Developer', fa: 'توسعه‌دهنده فرانت‌اند' } as Bi,

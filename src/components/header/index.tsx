@@ -34,7 +34,7 @@ export const Header = ({ locale }: Props) => {
 
   const isActive = (href: string) => pathname.startsWith(href);
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
-  console.log({theme})
+  
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 backdrop-blur-lg shadow-sm ">
         <nav className="mx-auto flex max-w-screen-lg items-center justify-between px-4 py-3">

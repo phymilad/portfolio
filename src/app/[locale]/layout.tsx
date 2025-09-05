@@ -32,7 +32,7 @@ export default function RootLayout({
 
           <main className="w-full flex-1 mx-auto max-w-screen-lg p-4">{children}</main>
 
-          <footer className="w-full mx-auto max-w-screen-lg border-t p-4 text-xs text-center text-slate-500">
+          <footer className="w-full mx-auto max-w-screen-lg border-t p-4 text-xs text-center">
             {t('footer_text', locale)}
           </footer>
         </ThemeProvider>
