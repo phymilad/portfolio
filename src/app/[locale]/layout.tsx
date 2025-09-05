@@ -3,6 +3,7 @@ import '../globals.css';
 import { t, dirOf, type Locale } from '@/i18n/dict';
 import { Header } from '@/components/header';
 import { inter, vazir } from '@/utils/constants';
+import { ThemeProvider } from 'next-themes';
 
 export const metadata: Metadata = {
   title: 'Milad Mohammadi — Frontend Developer',
@@ -24,15 +25,17 @@ export default function RootLayout({
   const isFa = locale === 'fa';
 
   return (
-    <html lang={locale} dir={dir} className={isFa ? vazir.className : inter.className}>
+    <html lang={locale} dir={dir} className={isFa ? vazir.className : inter.className} suppressHydrationWarning>
       <body className="flex flex-col min-h-dvh bg-white text-slate-800 antialiased">
-        <Header locale={locale} />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Header locale={locale} />
 
-        <main className="w-full flex-1 mx-auto max-w-screen-lg p-4">{children}</main>
+          <main className="w-full flex-1 mx-auto max-w-screen-lg p-4">{children}</main>
 
-        <footer className="w-full mx-auto max-w-screen-lg border-t p-4 text-xs text-slate-500">
-          {t('footer_text', locale)}
-        </footer>
+          <footer className="w-full mx-auto max-w-screen-lg border-t p-4 text-xs text-center text-slate-500">
+            {t('footer_text', locale)}
+          </footer>
+        </ThemeProvider>
       </body>
     </html>
   );
