@@ -30,7 +30,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Header locale={locale} />
 
-          <main className="w-full flex-1 mx-auto max-w-screen-lg p-4">{children}</main>
+          <main className="w-full flex-1 mx-auto max-w-screen-lg px-6 py-4 md:p-4">{children}</main>
 
           <footer className="w-full mx-auto max-w-screen-lg border-t p-4 text-xs text-center">
             {t('footer_text', locale)}
