@@ -33,8 +33,9 @@ export const dictionary = {
   projects_title: { en: 'Projects', fa: 'پروژه‌ها' } as Bi,
   projects_empty: { en: 'Case studies coming soon…', fa: 'نمونه کارها به زودی…' } as Bi,
 
-  contact_title: { en: 'Contact', fa: 'تماس' } as Bi,
+  contact_title: { en: 'Contact me', fa: 'تماس با من' } as Bi,
   contact_email: { en: 'Email', fa: 'ایمیل' } as Bi,
+  contact_linkedin: { en: 'Linkedin', fa: 'لینکدین' } as Bi,
 
   blog_title: { en: 'Blog', fa: 'بلاگ' } as Bi,
   blog_empty: { en: 'No posts yet.', fa: 'فعلاً نوشته‌ای نیست.' } as Bi,
