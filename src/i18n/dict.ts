@@ -32,6 +32,91 @@ export const dictionary = {
 
   projects_title: { en: 'Projects', fa: 'پروژه‌ها' } as Bi,
   projects_empty: { en: 'Case studies coming soon…', fa: 'نمونه کارها به زودی…' } as Bi,
+  
+  project_mdotcar_admin_panel_title: {
+    en: 'Mdotcar - Admin Panel',
+    fa: 'امداتکار - ادمین پنل',
+  },
+
+  project_mdotcar_admin_panel_description: {
+    en:[ 
+      'In this video, we take you inside the Admin Panel of mdotcar, the central hub where everything comes together. The admin panel is designed to give full control and visibility into how the platform operates, ensuring a smooth experience for both clients and experts.',
+      '✨ What you’ll see in this video:',
+      'Dashboard overview with key insights',
+      'Managing client and expert accounts',
+      'Service requests monitoring and tracking',
+      'Approvals, reviews, and dispute handling',
+      'Analytics and reporting for better decision-making',
+      'Settings & customization options and ...',
+      'With the admin panel, Mdotcar ensures that the entire ecosystem runs efficiently — keeping clients satisfied, experts supported, and operations streamlined.',
+    ],
+    fa: [
+      `در این ویدئو شما را به داخل پنل مدیریت Mdotcar می‌بریم؛ مرکز اصلی‌ای که همه چیز در آن به هم متصل می‌شود.
+      پنل مدیریت به گونه‌ای طراحی شده است که کنترل و دید کاملی بر نحوه عملکرد پلتفرم ارائه دهد و تجربه‌ای روان و بی‌دغدغه را هم برای مشتریان و هم برای کارشناسان تضمین کند.`,
+      `✨ آنچه در این ویدئو خواهید دید:`,
+      `نمای کلی داشبورد همراه با بینش‌های کلیدی`,
+      `مدیریت حساب‌های مشتریان و کارشناسان`,
+      `پایش و ردیابی درخواست‌های خدمات`,
+      `رسیدگی به تأییدها، بازبینی‌ها و اختلاف‌ها`,
+      `تحلیل‌ها و گزارش‌گیری برای تصمیم‌گیری بهتر`,
+      `تنظیمات و گزینه‌های سفارشی‌سازی و ...`,
+      `با استفاده از پنل مدیریت، Mdotcar اطمینان می‌دهد که کل اکوسیستم به‌صورت کارآمد عمل کند — مشتریان راضی بمانند، کارشناسان پشتیبانی شوند و عملیات به شکلی روان پیش برود.`,
+    ],
+  } as BiList,
+
+  project_mdotcar_client_and_expert_title: {
+    en: 'Mdotcar – Client & Expert Web App Demo | Real-Time Roadside Assistance',
+    fa: 'امداتکار – دموی وب‌اپلیکیشن مشتری و کارشناس | امداد جاده‌ای در لحظه',
+  },
+  project_mdotcar_client_and_expert_description: {
+    en: [
+      '🚗 Emdatkar is a smart roadside assistance web application that connects clients with experts in real time. In this video, we demonstrate the complete flow of a service request — from the client side to the expert side — showing how Emdatkar makes emergency support seamless and efficient.',
+      '✨ What you’ll see in this video:',
+      'How a client creates a roadside assistance request', 
+      'Real-time updates powered by web sockets',
+      'Expert workflow: receiving, managing, and completing the request',
+      'Full demonstration of both client web app and expert web app', 
+      'Smooth interaction between client and expert until the service is delivered',
+      'With Emdatkar, clients get quick, reliable help on the road, while experts can manage requests with an intuitive, real-time platform.',
+    ],
+    fa: [
+      '🚗 امدادکار یک وب‌اپلیکیشن هوشمند امداد جاده‌ای است که مشتریان را در لحظه به کارشناسان متصل می‌کند. در این ویدئو، کل فرآیند یک درخواست خدمات — از سمت مشتری تا سمت کارشناس — نمایش داده می‌شود و نشان می‌دهیم که چگونه امدادکار پشتیبانی اضطراری را روان و کارآمد می‌سازد.',
+      '✨ آنچه در این ویدئو خواهید دید:',
+      'نحوه ایجاد درخواست امداد جاده‌ای توسط مشتری',
+      'به‌روزرسانی‌های لحظه‌ای با استفاده از وب‌سوکت‌ها',
+      'روند کاری کارشناس: دریافت، مدیریت و تکمیل درخواست',
+      'نمایش کامل وب‌اپلیکیشن مشتری و وب‌اپلیکیشن کارشناس',
+      'تعامل روان میان مشتری و کارشناس تا تحویل خدمات',
+      'با امدادکار، مشتریان به‌سرعت و با اطمینان در جاده کمک دریافت می‌کنند، در حالی که کارشناسان می‌توانند درخواست‌ها را از طریق یک پلتفرم شهودی و بلادرنگ مدیریت کنند.',
+    ],
+  } as BiList,
+  
+  project_rsoon_title: {
+    en: 'Arson – Smart Investment Consulting Web Application | Grow Your Wealth with Confidence',
+    fa: 'آرسون – وب‌اپلیکیشن هوشمند مشاوره سرمایه‌گذاری | با اطمینان سرمایه‌تان را رشد دهید',
+  },
+  project_rsoon_description: {
+    en: [
+      '💡 Arson is a modern web application for investment consulting, designed to help individuals and businesses make smarter financial decisions. With powerful tools, expert guidance, and real-time insights, Arson simplifies the investment process and empowers users to grow their wealth with confidence.',
+      '✨ Key Features of Arson: Personalized investment consulting tailored to your goals',
+      'Real-time market insights and portfolio tracking',
+      'Easy-to-use dashboard for managing investments',
+      'Secure, reliable, and built for both beginners & professionals',
+      'Expert support for smarter decision-making',
+      'Whether you’re just starting your investment journey or looking to optimize your portfolio, Arson is your trusted partner for financial growth.'
+    ],
+    fa: [
+      '💡 آرسون یک وب‌اپلیکیشن مدرن برای مشاوره سرمایه‌گذاری است که به افراد و کسب‌وکارها کمک می‌کند تصمیمات مالی هوشمندانه‌تری بگیرند. با ابزارهای قدرتمند، راهنمایی کارشناسان و بینش‌های لحظه‌ای، آرسون فرآیند سرمایه‌گذاری را ساده کرده و به کاربران این امکان را می‌دهد که با اطمینان ثروت خود را رشد دهند.',
+      '✨ ویژگی‌های کلیدی آرسون:',
+      'مشاوره سرمایه‌گذاری شخصی‌سازی‌شده بر اساس اهداف شما',
+      'بینش‌های لحظه‌ای بازار و پایش پرتفوی سرمایه‌گذاری',
+      'داشبورد کاربرپسند برای مدیریت سرمایه‌گذاری‌ها',
+      'امن، قابل‌اعتماد و مناسب برای تازه‌کارها و حرفه‌ای‌ها',
+      'پشتیبانی کارشناسان برای تصمیم‌گیری‌های هوشمندانه‌تر',
+      'چه در ابتدای مسیر سرمایه‌گذاری باشید و چه به دنبال بهینه‌سازی پرتفوی خود، آرسون شریک مطمئن شما برای رشد مالی است.'
+    ],
+  } as BiList,
+
 
   contact_title: { en: 'Contact me', fa: 'تماس با من' } as Bi,
   contact_email: { en: 'Email', fa: 'ایمیل' } as Bi,
