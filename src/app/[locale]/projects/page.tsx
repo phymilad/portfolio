@@ -48,8 +48,8 @@ export default function Projects({ params }: { params: { locale: Locale } }) {
   ];
 
   return (
-    <section className="prose max-w-4xl mx-auto px-4">
-      <h1 className="mb-10 text-center">{t('projects_title', locale)}</h1>
+    <section className="prose mx-auto">
+      {/* <h2 className="mb-10">{t('projects_title', locale)}</h2> */}
 
       {projects.length === 0 ? (
         <p className="text-center">{t('projects_empty', locale)}</p>
@@ -58,18 +58,21 @@ export default function Projects({ params }: { params: { locale: Locale } }) {
           {projects.map((p, i) => (
             <article key={i} className="not-prose">
               {/* Title + Description */}
-              <h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <h2 className="mb-6 text-2xl font-bold">
                 {p.title}
               </h2>
               <div className="mb-4">
                 {p.description.map((line, index) => {
-                  return <p key={index} className="mb-1 text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                  return <p key={index} className="mb-1 text-base leading-relaxed">
                     {line}
                   </p>
                 })}
               </div>
+              <a href={toEmbedUrl(p.youtubeUrl)} target='_blank'>
+                {toEmbedUrl(p.youtubeUrl)}
+              </a>
               {/* Video */}
-              <div className="aspect-video w-full overflow-hidden rounded-lg shadow-lg">
+              <div className="aspect-video w-full overflow-hidden rounded-lg shadow-lg mt-2">
                 <iframe
                   className="h-full w-full"
                   src={toEmbedUrl(p.youtubeUrl)}
@@ -79,7 +82,6 @@ export default function Projects({ params }: { params: { locale: Locale } }) {
                   allowFullScreen
                 />
               </div>
-
             </article>
           ))}
         </div>
