@@ -144,8 +144,8 @@ export const dictionary = {
   blog_empty: { en: 'No posts yet.', fa: 'فعلاً نوشته‌ای نیست.' } as Bi,
 
   footer_text: {
-    en: (y: number) => `© ${y} Milad Mohammadi`,
-    fa: (y: number) => `© ${y} میلاد محمدی`,
+    en: `© Milad Mohammadi`,
+    fa: `© میلاد محمدی`,
   },
   about_me_first_paragraph: {
     en: "Hi there! 👋 I’m Milad, a passionate Front-End Developer who has been exploring the world of coding since 2020. From day one, I’ve embraced this journey with dedication, curiosity, and the belief that growth never stops.",
@@ -171,13 +171,13 @@ export const dictionary = {
 
 // helpers to read values based on locale
 export function t(key: keyof typeof dictionary, locale: Locale): string {
-  const v = dictionary[key] as any;
-  if (typeof v?.en === 'function') return v[locale](new Date().getFullYear());
+  const v = dictionary[key] as Bi;
+  // if (typeof v?.en === 'function') return v[locale](new Date().getFullYear());
   return v[locale] as string;
 }
 
 export function tList(key: keyof typeof dictionary, locale: Locale): string[] {
-  const v = dictionary[key] as any;
+  const v = dictionary[key] as BiList;
   return (v?.[locale] as string[]) ?? [];
 }
 
