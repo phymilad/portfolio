@@ -20,10 +20,28 @@ export const dictionary = {
     fa: 'اپ‌های وب سریع و در دسترس با React و Next.js می‌سازم.',
   } as Bi,
   home_bullets: {
-    en: ['Performance-focused (LCP, CLS, TTI)', 'Design systems & accessible UI', 'Maps, data viz, real-time UX'],
-    fa: ['تمرکز بر عملکرد (LCP, CLS, TTI)', 'طراحی سیستم‌ها و UI قابل دسترس', 'نقشه‌ها، مصورسازی داده، تجربهٔ Real-time'],
+    en: [
+      'Led development of a Document Management System (DMS) at Danesh-Hamara from zero to a usable product.',
+      'Front-end for M.car at Tafarda Startup Studio—now actively used by experts, clients, and admins.',
+      'Contributing to Rsoon, an investing consultant software (in progress).',
+      'Deep experience with React/Next, state management via Redux Toolkit, UI with Material-UI, and team workflows with Git.',
+      'Open to joining innovative projects and collaborative teams.'
+    ],
+    fa: [
+      'رهبری توسعهٔ یک سامانه مدیریت اسناد (DMS) در دانش‌همارا از صفر تا محصول قابل استفاده.',
+      'فرانت‌اند M.car در استودیو تافردا: نرم‌افزار درخواست خدمات خودرو؛ اکنون در حال استفاده توسط کارشناسان، مشتریان و ادمین‌ها.',
+      'همکاری در توسعهٔ Rsoon: نرم‌افزار مشاورهٔ سرمایه‌گذاری (در حال توسعه).',
+      'تسلط به React/Next، مدیریت حالت با Redux Toolkit، UI با Material-UI و گردش‌کار تیمی با Git.',
+      'آمادهٔ همکاری روی پروژه‌های نوآورانه و تیم‌های پویا.'
+    ],
   } as BiList,
-
+  home_cta_title: { en: 'Want to see more?', fa: 'دوست داری بیشتر بدونی؟' } as Bi,
+  home_cta_desc: { 
+    en: 'Check the About page for my background and approach, and the Projects page for real-world work.', 
+    fa: 'توی «دربارهٔ من» مسیر حرفه‌ای و رویکرد کاری‌ام رو توضیح دادم و در «پروژه‌ها» نمونه‌کارهای واقعی را می‌بینی.' 
+  } as Bi,
+  home_cta_projects: { en: 'View Projects', fa: 'مشاهدهٔ پروژه‌ها' } as Bi,
+  home_cta_about: { en: 'About Me', fa: 'آشنایی با من' } as Bi,
   about_title: { en: 'About', fa: 'درباره من' } as Bi,
   about_body: {
     en: 'A short bio about my professional path.',
