@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import LanguageSelector from '../language-selector';
 
 type Props = { locale: Locale };
 
@@ -13,7 +14,7 @@ export const Header = ({ locale }: Props) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || '/';
   const [_, __, ...rest] = pathname.split('/');
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const isFa = locale === 'fa';
 
   const [mounted, setMounted] = useState(false);
@@ -33,7 +34,7 @@ export const Header = ({ locale }: Props) => {
   ];
 
   const isActive = (href: string) => pathname.startsWith(href);
-  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
+  const toggleTheme = () => setTheme(resolvedTheme === 'light' ? 'dark' : 'light');
   
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 backdrop-blur-lg shadow-sm ">
@@ -71,21 +72,14 @@ export const Header = ({ locale }: Props) => {
                     </Link>
                 </li>
                 <li>
-                    <Link
-                        href={switchHref}
-                        className={`rounded-md border border-slate-300 px-3 py-1 hover:text-slate-100 transition hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-600 ${
-                            isFa ? inter.className : vazir.className
-                        }`}
-                    >
-                        {t('switch_locale', locale)}
-                    </Link>
+                    <LanguageSelector locale={locale} />
                 </li>
                 <li>
                     <button
                         onClick={toggleTheme}
                         className="rounded-md border border-slate-300 px-3 py-1 text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
                     >
-                        {mounted ? theme === 'light' ? '🌙' : '☀️' : null}
+                        {mounted ? resolvedTheme === 'light' ? '🌙' : '☀️' : null}
                     </button>
                 </li>
             </ul>
@@ -125,20 +119,20 @@ export const Header = ({ locale }: Props) => {
       {/* Mobile dropdown */}
       <div
         id="mobile-menu"
-        className={`sm:hidden overflow-hidden border-t border-slate-200 bg-white transition-all duration-200 dark:border-slate-700 dark:bg-slate-900 ${
-          open ? 'max-h-96' : 'max-h-0'
-        }`}
+        className={`${open?'block': 'hidden'} sm:hidden border-t border-slate-200  transition-all duration-200 dark:border-slate-700  ${open ? 'max-h-96' : 'max-h-0'}`}
       >
         <ul className="flex flex-col gap-1 p-3 text-sm font-medium">
             {items.map((i) => (
                 <li key={i.href}>
                     <Link
                         href={i.href}
-                        className={`block rounded-md px-3 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 ${
-                        isActive(i.href)
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-slate-600 dark:text-slate-300'
-                        }`}
+                        className={`block rounded-md px-3 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800`
+                            // ${isActive(i.href)
+                            //         ? 'text-blue-600 dark:text-blue-400'
+                            //         : 'text-slate-600 dark:text-slate-300'
+                            // }
+                            // `
+                        }
                     >
                         {i.label}
                     </Link>
@@ -153,19 +147,14 @@ export const Header = ({ locale }: Props) => {
                 </Link>
             </li>
             <li>
-                <Link
-                    href={switchHref}
-                    className="mt-2 block rounded-md border border-slate-300 px-3 py-2 text-center text-slate-600 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
-                >
-                    {t('switch_locale', locale)}
-                </Link>
+                <LanguageSelector locale={locale} />
             </li>
             <li>
                 <button
                     onClick={toggleTheme}
-                    className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-center text-slate-600 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-center transition hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800"
                 >
-                    {mounted ? theme === 'light' ? '🌙 Dark' : '☀️ Light' : null}
+                    {mounted ? resolvedTheme === 'light' ? '🌙 Dark' : '☀️ Light' : null}
                 </button>
             </li>
         </ul>
