@@ -8,10 +8,10 @@ type BiList = { en: string[]; fa: string[]; de: string[]; nl: string[] };
 // strings use Bi; lists use BiList (for bullets, etc.)
 export const dictionary = {
   brand: { 
-    en: 'Milad Mohammadi - Frontend developer', 
-    fa: 'میلاد محمدی - توسعه دهنده وب', 
-    de: 'Milad Mohammadi - Frontend-Entwickler', 
-    nl: 'Milad Mohammadi - Frontend-ontwikkelaar' 
+    en: 'Milad Mohammadi - Software Developer', 
+    fa: 'میلاد محمدی - توسعه دهنده نرم‌افزار', 
+    de: 'Milad Mohammadi - Softwareentwickler', 
+    nl: 'Milad Mohammadi - Softwareontwikkelaar' 
   } as Bi,
 
   nav_projects: { 
@@ -50,17 +50,17 @@ export const dictionary = {
   } as Bi,
 
   home_title: { 
-    en: 'Frontend Developer', 
-    fa: 'توسعه‌دهنده فرانت‌اند', 
-    de: 'Frontend-Entwickler', 
-    nl: 'Frontend-ontwikkelaar' 
+    en: 'Software Developer', 
+    fa: 'توسعه‌دهنده نرم‌افزار', 
+    de: 'Softwareentwickler', 
+    nl: 'Softwareontwikkelaar' 
   } as Bi,
 
   home_lead: { 
-    en: 'I build fast, accessible web apps with React & Next.js.',
-    fa: 'اپ‌های وب سریع و در دسترس با React و Next.js می‌سازم.',
-    de: 'Ich baue schnelle, zugängliche Web-Apps mit React & Next.js.',
-    nl: 'Ik bouw snelle, toegankelijke webapps met React & Next.js.'
+    en: 'I build fast and scalable applications using technologies like TypeScript, Next.js, React.js, and Nest.js.',
+    fa: 'با استفاده از تکنولوژی‌هایی مثل TypeScript، Next.js، React.js و Nest.js اپلیکیشن‌های سریع و توسعه‌پذیر می‌سازم.',
+    de: 'Ich entwickle schnelle und skalierbare Anwendungen mit Technologien wie TypeScript, Next.js, React.js und Nest.js.',
+    nl: 'Ik bouw snelle en schaalbare applicaties met technologieën zoals TypeScript, Next.js, React.js en Nest.js.'
   } as Bi,
 
   home_bullets: { 

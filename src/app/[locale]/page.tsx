@@ -9,7 +9,7 @@ export default function Home({ params }: { params: { locale: Locale } }) {
   return (
     <section className="prose max-w-none">
       {/* Title & Lead */}
-      <h1 className="mb-2">{t('home_title', locale)}</h1>
+      {/* <h1 className="mb-2">{t('home_title', locale)}</h1> */}
       <p>{t('home_lead', locale)}</p>
 
       {/* Bullets */}
