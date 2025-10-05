@@ -75,7 +75,7 @@ export default function Home({ params }: { params: { locale: Locale } }) {
         <li>Deep experience with <strong>React/Next</strong>, Redux Toolkit, Material-UI, Git workflows.</li>
       </ul>
     </section>
-    <section className="grid gap-6 grid-cols-1 mt-4">
+    <section className="grid gap-6 grid-cols-1 md:grid-cols-2 mt-4">
       {projects.map((p) => (
         <ProjectCard key={p.title} project={p} />
       ))}

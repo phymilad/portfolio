@@ -8,10 +8,17 @@ export const ProjectCard = ({ project }: { project: Project }) => {
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-lg group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-xl">
       
-      {/* Image container */}
-      <div className="flex flex-row justify-center gap-4 w-full px-4">
+      {/* Title at the top */}
+      <div className="px-5 pt-5">
+        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          {project.title}
+        </h3>
+      </div>
+
+      {/* Image container with reduced vertical spacing */}
+      <div className="flex flex-row justify-center gap-4 w-full px-5 pt-2">
         {/* Desktop slot */}
-        <div className="relative w-2/3  rounded-xl overflow-hidden ">
+        <div className="relative w-2/3 rounded-xl overflow-hidden">
           {hasDesktop && (
             <Image
               src={project.image?.desktop as string}
@@ -39,8 +46,18 @@ export const ProjectCard = ({ project }: { project: Project }) => {
         </div>
       </div>
 
+      {/* Description below images */}
+      <div className="px-5 py-2">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          {project.description}
+        </p>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-slate-200 dark:border-slate-700"></div>
+
       {/* Skills / tags */}
-      <div className="p-5 border-t border-slate-200 dark:border-slate-700">
+      <div className="p-5">
         <div className="flex flex-wrap gap-2">
           {project.skills.map((skill) => (
             <span
