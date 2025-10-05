@@ -14,6 +14,13 @@ export const dictionary = {
     nl: 'Milad Mohammadi - Softwareontwikkelaar' 
   } as Bi,
 
+  home: { 
+    en: 'Home', 
+    fa: 'خانه', 
+    de: 'Startseite', 
+    nl: 'Startpagina' 
+  } as Bi,
+  
   nav_projects: { 
     en: 'Projects', 
     fa: 'پروژه‌ها', 
