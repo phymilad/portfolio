@@ -30,7 +30,7 @@ export const Header = ({ locale }: Props) => {
   const items = [
     { href: `${base}/projects`, label: t('nav_projects', locale) },
     // { href: `${base}/blog`, label: t('nav_blog', locale) },
-    { href: `${base}/about`, label: t('nav_about', locale) },
+    // { href: `${base}/about`, label: t('nav_about', locale) },
   ];
 
   const isActive = (href: string) => pathname.startsWith(href);
@@ -63,14 +63,14 @@ export const Header = ({ locale }: Props) => {
                         </Link>
                     </li>
                 ))}
-                <li>
+                {/* <li>
                     <Link
                         href={`${base}/contact`}
                         className="rounded-lg bg-blue-600 px-4 py-2 text-white shadow-sm transition hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                     >
                         {t('nav_contact', locale)}
                     </Link>
-                </li>
+                </li> */}
                 <li>
                     <LanguageSelector locale={locale} />
                 </li>

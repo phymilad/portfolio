@@ -6,10 +6,10 @@ import { usePathname } from 'next/navigation';
 export type Locale = 'en' | 'fa' | 'de' | 'nl';
 
 const languageOptions = [
-  { value: 'en', label: 'English',   flag: '/images/england-flag.svg' },
-  { value: 'fa', label: 'فارسی',     flag: '/images/iran-flag.svg' },
-  { value: 'de', label: 'Deutsch',   flag: '/images/germany-flag.svg' },
-  { value: 'nl', label: 'Dutch',flag: '/images/netherland-flag.svg' },
+  { value: 'en', label: 'English',   flag: '/images/flags/england-flag.svg' },
+  { value: 'fa', label: 'فارسی',     flag: '/images/flags/iran-flag.svg' },
+  { value: 'de', label: 'Deutsch',   flag: '/images/flags/germany-flag.svg' },
+  { value: 'nl', label: 'Dutch',flag: '/images/flags/netherland-flag.svg' },
 ] as const;
 
 type LanguageSelectorProps = { locale: Locale };
