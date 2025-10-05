@@ -1,5 +1,5 @@
 // src/app/[locale]/page.tsx (یا هرجا Home تعریف شده)
-import { type Locale } from '@/i18n/dict';
+import { t, tList, type Locale } from '@/i18n/dict';
 import { ProjectCard } from '@/components/project-card';
 import { createProjectsBasedOnLocale } from '@/utils/functions';
 
@@ -9,54 +9,46 @@ export default function Home({ params }: { params: { locale: Locale } }) {
 
   return (<>
     <section className="prose max-w-none">
-      {/* Intro */}
-      <p className="text-lg pb-2">
-        I am a Software Developer with over 5 years of experience
-        building fast, scalable, and maintainable web applications. I love turning
-        complex ideas into clean, efficient, and impactful digital products.
-      </p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-      {/* What I Do */}
-      <h2 className="mt-6 text-xl font-semibold pb-2">What I Do</h2>
-      <p>
-        I specialize in React.js, Next.js,{" "}
-        TypeScript, and NestJS, crafting
-        full-stack solutions that balance great user experience with solid
-        architecture. My focus is always on building systems that scale, perform,
-        and stand the test of time.
-      </p>
+        {/* Intro Card */}
+        <div className="rounded-2xl p-6 bg-gradient-to-b from-white/95 to-white/100 dark:from-gray-800/80 dark:to-gray-800/90 border border-gray-400 dark:border-gray-700 transition-transform duration-300 ease-in-out transform hover:scale-105 motion-safe:animate-fadeInUp">
+          <h2 className="text-xl font-semibold pb-2">{t('nav_about', locale)}</h2>
+          <p className="text-lg">{t('intro', locale)}</p>
+        </div>
 
-      {/* Experience Highlights */}
-      <h2 className="mt-6 text-xl font-semibold pb-2">Experience Highlights</h2>
-      <ul className="space-y-3">
-        <li>
-          Build the front-end for Mdotcar, an automotive platform
-          handling over 30,000+ successful services.
-        </li>
-        <li>
-          Contribute to Rsoon, an investing consultant
-          platform focused on smart financial growth.
-        </li>
-        <li>
-          Develop an enterprise-scale DMS at Danesh-Hamara, built for large organizations.
-        </li>
-        <li>
-          Deep hands-on experience with React.js/Next.js, TailwindCSS, responsive web design and clean Git workflows.
-        </li>
-      </ul>
+        {/* What I Do Card */}
+        <div className="rounded-2xl p-6 bg-gradient-to-b from-white/95 to-white/100 dark:from-gray-800/80 dark:to-gray-800/90 border border-gray-400 dark:border-gray-700 transition-transform duration-300 ease-in-out transform hover:scale-105 motion-safe:animate-fadeInUp">
+          <h2 className="text-xl font-semibold pb-2">{t('whatIDo', locale)}</h2>
+          <p>{t('whatIDoDescription', locale)}</p>
+        </div>
 
-      {/* Philosophy */}
-      <h2 className="mt-6 text-xl font-semibold pb-2">How I Work</h2>
-      <p>
-        I care about clean architecture,
-        collaboration, and continuous improvement.
-        I enjoy building products that not only work beautifully but also deliver
-        measurable business value. Whether I’m working with a startup or a large
-        organization, I aim to create systems that feel effortless yet powerful.
-      </p>
+        {/* Experience Highlights Card */}
+        <div className="rounded-2xl p-6 bg-gradient-to-b from-white/95 to-white/100 dark:from-gray-800/80 dark:to-gray-800/90 border border-gray-400 dark:border-gray-700 transition-transform duration-300 ease-in-out transform hover:scale-105 motion-safe:animate-fadeInUp">
+          <h2 className="text-xl font-semibold pb-2">{t('experiencehighlight', locale)}</h2>
+          <ul className="list-disc px-5 space-y-2">
+            {tList('experienceHighlighPoints', locale).map((point, index) => (
+              <li key={index}>{point}</li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Philosophy / How I Work Card */}
+        <div className="rounded-2xl p-6 bg-gradient-to-b from-white/95 to-white/100 dark:from-gray-800/80 dark:to-gray-800/90 border border-gray-400 dark:border-gray-700 transition-transform duration-300 ease-in-out transform hover:scale-105 motion-safe:animate-fadeInUp">
+          <h2 className="text-xl font-semibold pb-2">{t('howIWork', locale)}</h2>
+          <p>{t('howIWorkDescription', locale)}</p>
+        </div>
+
+      </div>
     </section>
 
+
+
+
+
+
     <section className="grid gap-6 grid-cols-1 mt-4">
+      <h2 className="mt-6 text-xl font-semibold pb-2">{t('nav_projects', locale)}</h2>
       {createProjectsBasedOnLocale(locale).map((p) => (
         <ProjectCard key={p.title} project={p} locale={locale} />
       ))}

@@ -36,7 +36,7 @@ export const dictionary = {
   } as Bi,
 
   nav_about: { 
-    en: 'About', 
+    en: 'About me', 
     fa: 'درباره من', 
     de: 'Über mich', 
     nl: 'Over mij' 
@@ -62,6 +62,78 @@ export const dictionary = {
     de: 'Softwareentwickler', 
     nl: 'Softwareontwikkelaar' 
   } as Bi,
+
+  intro: {
+    en: "I am a Software Developer with over 5 years of experience building fast, scalable, and maintainable web applications. I love turning complex ideas into clean, efficient, and impactful digital products.",
+    fa: "من یک توسعه‌دهنده نرم‌افزار با بیش از ۵ سال تجربه در ساخت برنامه‌های وب سریع، مقیاس‌پذیر و قابل نگهداری هستم. من عاشق تبدیل ایده‌های پیچیده به محصولات دیجیتالی تمیز، کارآمد و تأثیرگذار هستم.",
+    de: "Ich bin ein Softwareentwickler mit über 5 Jahren Erfahrung in der Entwicklung schneller, skalierbarer und wartbarer Webanwendungen. Ich liebe es, komplexe Ideen in saubere, effiziente und wirkungsvolle digitale Produkte zu verwandeln.",
+    nl: "Ik ben een softwareontwikkelaar met meer dan 5 jaar ervaring in het bouwen van snelle, schaalbare en onderhoudbare webapplicaties. Ik vind het geweldig om complexe ideeën om te zetten in schone, efficiënte en impactvolle digitale producten."
+  } as Bi,
+
+  whatIDo: {
+    en: "What I Do",
+    fa: "کاری که انجام می‌دهم",
+    de: "Was ich tue",
+    nl: "Wat ik doe"
+  },
+  
+  whatIDoDescription: {
+    en: "I specialize in React.js, Next.js, TypeScript, and NestJS, crafting full-stack solutions that balance great user experience with solid architecture. My focus is always on building systems that scale, perform, and stand the test of time.",
+    fa: "من در React.js، Next.js، TypeScript و NestJS تخصص دارم و راه‌حل‌های فول‌استک طراحی می‌کنم که بین تجربه کاربری عالی و معماری قوی تعادل برقرار می‌کنند. تمرکز من همیشه بر ساخت سیستم‌هایی است که مقیاس‌پذیر، کارآمد و ماندگار باشند.",
+    de: "Ich bin auf React.js, Next.js, TypeScript und NestJS spezialisiert und entwickle Full-Stack-Lösungen, die ein großartiges Benutzererlebnis mit solider Architektur verbinden. Mein Fokus liegt stets darauf, Systeme zu bauen, die skalierbar, leistungsfähig und dauerhaft sind.",
+    nl: "Ik ben gespecialiseerd in React.js, Next.js, TypeScript en NestJS, en ontwikkel full-stackoplossingen die een uitstekende gebruikerservaring combineren met een solide architectuur. Mijn focus ligt altijd op het bouwen van systemen die schaalbaar zijn, goed presteren en de tand des tijds doorstaan."
+  },
+
+  experiencehighlight: {
+    en: "Experience Highlights",
+    fa: "نکات برجسته تجربه",
+    de: "Erfahrungs-Highlights",
+    nl: "Ervaringshoogtepunten"
+  },
+
+  experienceHighlighPoints: {
+    en: [
+      "Build the front-end for Mdotcar, an automotive platform handling over 30,000+ successful services.",
+      "Contribute to Rsoon, an investing consultant platform focused on smart financial growth.",
+      "Develop an enterprise-scale DMS at Danesh-Hamara, built for large organizations.",
+      "Deep hands-on experience with React.js/Next.js, TailwindCSS, responsive web design and clean Git workflows."
+    ],
+
+    fa: [
+      "ساخت فرانت‌اند Mdotcar، یک پلتفرم خودرو که بیش از ۳۰٬۰۰۰ سرویس موفق را مدیریت می‌کند.",
+      "همکاری در Rsoon، یک پلتفرم مشاوره سرمایه‌گذاری متمرکز بر رشد هوشمند مالی.",
+      "توسعه یک سیستم مدیریت اسناد (DMS) در مقیاس سازمانی در Danesh-Hamara، ساخته شده برای سازمان‌های بزرگ.",
+      "تجربه عملی عمیق با React.js/Next.js، TailwindCSS، طراحی وب واکنش‌گرا و گردش کاری تمیز Git."
+    ],
+
+    de: [
+      "Entwicklung des Front-Ends für Mdotcar, eine Automotive-Plattform, die über 30.000 erfolgreiche Services abwickelt.",
+      "Mitwirkung bei Rsoon, einer Investment-Consulting-Plattform mit Fokus auf intelligentes finanzielles Wachstum.",
+      "Entwicklung eines unternehmensweiten DMS bei Danesh-Hamara, gebaut für große Organisationen.",
+      "Tiefgehende praktische Erfahrung mit React.js/Next.js, TailwindCSS, responsivem Webdesign und sauberen Git-Workflows."
+    ],
+
+    nl: [
+      "Bouw van de front-end voor Mdotcar, een automotive platform dat meer dan 30.000 succesvolle diensten afhandelt.",
+      "Bijdragen aan Rsoon, een investeringsadviesplatform gericht op slimme financiële groei.",
+      "Ontwikkelen van een enterprise-scale DMS bij Danesh-Hamara, gebouwd voor grote organisaties.",
+      "Diepgaande hands-on ervaring met React.js/Next.js, TailwindCSS, responsief webdesign en nette Git-workflows."
+    ]
+  } as BiList,
+
+  howIWork: {
+    en: "How I Work",
+    fa: "روش کاری من",
+    de: "Wie ich arbeite",
+    nl: "Hoe ik werk"
+  },
+
+  howIWorkDescription: {
+    en: "I care about clean architecture, collaboration, and continuous improvement. I enjoy building products that not only work beautifully but also deliver measurable business value. Whether I’m working with a startup or a large organization, I aim to create systems that feel effortless yet powerful.",
+    fa: "من به معماری تمیز، همکاری و بهبود مستمر اهمیت می‌دهم. از ساخت محصولاتی لذت می‌برم که نه تنها به‌خوبی کار می‌کنند بلکه ارزش تجاری قابل اندازه‌گیری نیز ارائه می‌دهند. چه با یک استارتاپ کار کنم و چه با یک سازمان بزرگ، هدفم ایجاد سیستم‌هایی است که هم آسان و هم قدرتمند باشند.",
+    de: "Mir sind saubere Architektur, Zusammenarbeit und kontinuierliche Verbesserung wichtig. Ich baue gerne Produkte, die nicht nur gut funktionieren, sondern auch messbaren geschäftlichen Mehrwert liefern. Ob ich mit einem Startup oder einer großen Organisation arbeite, mein Ziel ist es, Systeme zu schaffen, die mühelos und gleichzeitig leistungsstark sind.",
+    nl: "Ik hecht veel waarde aan een schone architectuur, samenwerking en continue verbetering. Ik geniet ervan om producten te bouwen die niet alleen goed werken, maar ook meetbare zakelijke waarde leveren. Of ik nu met een startup of een grote organisatie werk, mijn doel is om systemen te creëren die moeiteloos en krachtig aanvoelen."
+  },
 
   project_mdotcar_admin_panel_title: {
     en: 'Mdotcar - Admin Panel',
@@ -310,7 +382,7 @@ export const dictionary = {
     de: `© Milad Mohammadi`,
     nl: `© Milad Mohammadi`
   },
-  
+
 } as const;
 
 

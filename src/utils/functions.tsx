@@ -15,10 +15,7 @@ export const createProjectsBasedOnLocale = (locale: Locale) : Project[] => {
               // mobile: "/images/projects/mdotcar-admin-mobile.png",
               // desktop: "/images/projects/mdotcar-admin-desktop.png",
             },
-            skills: [
-              { name: "React", icon: <img src={'/images/flags/england-flag.svg'} alt={"flag"} className="w-6 h-4" /> },
-              { name: "Node.js", icon: <img src={'/images/flags/england-flag.svg'} alt={"flag"} className="w-6 h-4" /> },
-            ],
+            skills: [ "React.js", "TypeScript", "React Hooks", "Redux Toolkit", "Material-UI", "Leaflet", "Storybook", "Vitest", "Responsive Web Design", "Agile", "Git", "Jira", "Confluence", "Figma" ],
           },
           {
             id: 2,
@@ -30,10 +27,7 @@ export const createProjectsBasedOnLocale = (locale: Locale) : Project[] => {
               mobile: "/images/projects/mdotcar-admin-mobile.png",
               desktop: "/images/projects/mdotcar-admin-desktop.png",
             },
-            skills: [
-              { name: "React", icon: <img src={'/images/flags/england-flag.svg'} alt={"flag"} className="w-6 h-4" /> },
-              { name: "Node.js", icon: <img src={'/images/flags/england-flag.svg'} alt={"flag"} className="w-6 h-4" /> },
-            ],
+            skills: [ "React.js", "TypeScript", "React Hooks", "Redux Toolkit", "Material-UI", "Leaflet", "Storybook", "Vitest", "Responsive Web Design", "Agile", "Git", "Jira", "Confluence", "Figma" ],
           },
           {
             id: 3,
@@ -45,10 +39,7 @@ export const createProjectsBasedOnLocale = (locale: Locale) : Project[] => {
               mobile: "/images/projects/rsoon-mobile.png",
               desktop: "/images/projects/rsoon-desktop.png",
             },
-            skills: [
-              { name: "React", icon: <img src={'/images/flags/england-flag.svg'} alt={"flag"} className="w-6 h-4" /> },
-              { name: "Node.js", icon: <img src={'/images/flags/england-flag.svg'} alt={"flag"} className="w-6 h-4" /> },
-            ],
+            skills: [ "Next.js", "TypeScript", "Tailwind CSS", "React-Query", "Zustand", "Responsive Web Design", "Git", "Figma", "Chart.js", "Storybook", "Agile", "Git", "Jira", "Confluence" ],
           },
           {
             id: 4,
@@ -59,10 +50,7 @@ export const createProjectsBasedOnLocale = (locale: Locale) : Project[] => {
             image: {
               desktop: "/images/projects/keydoc-desktop.png",
             },
-            skills: [
-              { name: "React", icon: <img src={'/images/flags/england-flag.svg'} alt={"flag"} className="w-6 h-4" /> },
-              { name: "Node.js", icon: <img src={'/images/flags/england-flag.svg'} alt={"flag"} className="w-6 h-4" /> },
-            ],
+            skills: [ "React.js", "Javascript", "styled-components", "React Hooks", "Redux", "Material-UI", "Git" ],
           },
     ]
 }

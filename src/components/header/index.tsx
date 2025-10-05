@@ -13,27 +13,13 @@ type Props = { locale: Locale };
 export const Header = ({ locale }: Props) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || '/';
-  const [_, __, ...rest] = pathname.split('/');
   const { resolvedTheme, setTheme } = useTheme();
-  const isFa = locale === 'fa';
-
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const base = `/${locale}`;
-  const switchHref = `/${
-    locale === 'fa' ? `en/${rest.join('/')}` : `fa/${rest.join('/')}`
-  }`;
 
   useEffect(() => setOpen(false), [pathname]);
-
-  const items = [
-    { href: `${base}`, label: t('home', locale) },
-    // { href: `${base}/blog`, label: t('nav_blog', locale) },
-    // { href: `${base}/about`, label: t('nav_about', locale) },
-  ];
-
-  const isActive = (href: string) => pathname.startsWith(href);
   const toggleTheme = () => setTheme(resolvedTheme === 'light' ? 'dark' : 'light');
   
   return (
@@ -49,20 +35,6 @@ export const Header = ({ locale }: Props) => {
 
             {/* Desktop nav */}
             <ul className="hidden items-center gap-6 text-sm font-medium sm:flex">
-                {items.map((i) => (
-                    <li key={i.href}>
-                        <Link
-                            href={i.href}
-                            className={`transition-colors ${
-                            isActive(i.href)
-                                ? 'text-blue-600 dark:text-blue-400'
-                                : ''
-                            }`}
-                        >
-                            {i.label}
-                        </Link>
-                    </li>
-                ))}
                 <li>
                     <LanguageSelector locale={locale} />
                 </li>
@@ -114,22 +86,6 @@ export const Header = ({ locale }: Props) => {
         className={`${open?'block': 'hidden'} sm:hidden border-t border-slate-200  transition-all duration-200 dark:border-slate-700  ${open ? 'max-h-96' : 'max-h-0'}`}
       >
         <ul className="flex flex-col gap-1 p-3 text-sm font-medium">
-            {items.map((i) => (
-                <li key={i.href}>
-                    <Link
-                        href={i.href}
-                        className={`block rounded-md px-3 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800`
-                            // ${isActive(i.href)
-                            //         ? 'text-blue-600 dark:text-blue-400'
-                            //         : 'text-slate-600 dark:text-slate-300'
-                            // }
-                            // `
-                        }
-                    >
-                        {i.label}
-                    </Link>
-                </li>
-            ))}
             <li>
                 <LanguageSelector locale={locale} />
             </li>

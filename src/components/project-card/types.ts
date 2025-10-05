@@ -10,5 +10,5 @@ export type Project = {
     desktop?: string,
     mobile?: string,
   };
-  skills: { name: string; icon: JSX.Element }[];
+  skills: string[];
 };
