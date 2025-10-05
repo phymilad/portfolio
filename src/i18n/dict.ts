@@ -255,21 +255,21 @@ export const dictionary = {
   },
 
   project_rsoon_title: {
-    en: 'Arson – Smart Investment Consulting Web Application | Grow Your Wealth with Confidence',
+    en: 'Rsoon – Smart Investment Consulting Web Application | Grow Your Wealth with Confidence',
     fa: 'آرسون – وب‌اپلیکیشن هوشمند مشاوره سرمایه‌گذاری | با اطمینان سرمایه‌تان را رشد دهید',
-    de: 'Arson – Smart Investment Consulting Web Application | Wachstum Ihres Vermögens mit Vertrauen',
-    nl: 'Arson – Slimme Investering Advies Web Applicatie | Groei je Vermogen met Vertrouwen',
+    de: 'Rsoon – Smart Investment Consulting Web Application | Wachstum Ihres Vermögens mit Vertrauen',
+    nl: 'Rsoon – Slimme Investering Advies Web Applicatie | Groei je Vermogen met Vertrouwen',
   },
 
   project_rsoon_description: {
     en: [
-      'Arson is a modern web application for investment consulting, designed to help individuals and businesses make smarter financial decisions. With powerful tools, expert guidance, and real-time insights, Arson simplifies the investment process and empowers users to grow their wealth with confidence.',
-      'Key Features of Arson: Personalized investment consulting tailored to your goals',
+      'Rsoon is a modern web application for investment consulting, designed to help individuals and businesses make smarter financial decisions. With powerful tools, expert guidance, and real-time insights, Rsoon simplifies the investment process and empowers users to grow their wealth with confidence.',
+      'Key Features of Rsoon: Personalized investment consulting tailored to your goals',
       'Real-time market insights and portfolio tracking',
       'Easy-to-use dashboard for managing investments',
       'Secure, reliable, and built for both beginners & professionals',
       'Expert support for smarter decision-making',
-      'Whether you’re just starting your investment journey or looking to optimize your portfolio, Arson is your trusted partner for financial growth.'
+      'Whether you’re just starting your investment journey or looking to optimize your portfolio, Rsoon is your trusted partner for financial growth.'
     ],
     fa: [
       'آرسون یک وب‌اپلیکیشن مدرن برای مشاوره سرمایه‌گذاری است که به افراد و کسب‌وکارها کمک می‌کند تصمیمات مالی هوشمندانه‌تری بگیرند. با ابزارهای قدرتمند، راهنمایی کارشناسان و بینش‌های لحظه‌ای، آرسون فرآیند سرمایه‌گذاری را ساده کرده و به کاربران این امکان را می‌دهد که با اطمینان ثروت خود را رشد دهند.',
@@ -282,30 +282,30 @@ export const dictionary = {
       'چه در ابتدای مسیر سرمایه‌گذاری باشید و چه به دنبال بهینه‌سازی پرتفوی خود، آرسون شریک مطمئن شما برای رشد مالی است.'
     ],
     de: [
-      'Arson ist eine moderne Webanwendung für Investitionsberatung, die darauf ausgelegt ist, Einzelpersonen und Unternehmen zu helfen, klügere finanzielle Entscheidungen zu treffen. Mit leistungsstarken Tools, Expertenberatung und Echtzeit-Insights vereinfacht Arson den Investitionsprozess und befähigt die Nutzer, ihr Vermögen mit Vertrauen zu wachsen.',
-      'Wichtige Funktionen von Arson: Personalisierte Investitionsberatung, die auf Ihre Ziele zugeschnitten ist',
+      'Rsoon ist eine moderne Webanwendung für Investitionsberatung, die darauf ausgelegt ist, Einzelpersonen und Unternehmen zu helfen, klügere finanzielle Entscheidungen zu treffen. Mit leistungsstarken Tools, Expertenberatung und Echtzeit-Insights vereinfacht Rsoon den Investitionsprozess und befähigt die Nutzer, ihr Vermögen mit Vertrauen zu wachsen.',
+      'Wichtige Funktionen von Rsoon: Personalisierte Investitionsberatung, die auf Ihre Ziele zugeschnitten ist',
       'Echtzeit-Markteinblicke und Portfolio-Tracking',
       'Benutzerfreundliches Dashboard zur Verwaltung von Investitionen',
       'Sicher, zuverlässig und für Anfänger sowie Profis geeignet',
       'Expertunterstützung für intelligentere Entscheidungen',
-      'Egal, ob Sie gerade erst in Ihre Investitionsreise starten oder Ihr Portfolio optimieren möchten, Arson ist Ihr vertrauenswürdiger Partner für finanzielles Wachstum.'
+      'Egal, ob Sie gerade erst in Ihre Investitionsreise starten oder Ihr Portfolio optimieren möchten, Rsoon ist Ihr vertrauenswürdiger Partner für finanzielles Wachstum.'
     ],
     nl: [
-      'Arson is een moderne webapplicatie voor investeringsadvies, ontworpen om individuen en bedrijven te helpen slimmer financiële beslissingen te nemen. Met krachtige tools, expertadvies en realtime inzichten vereenvoudigt Arson het investeringsproces en stelt gebruikers in staat om hun vermogen met vertrouwen te laten groeien.',
-      'Belangrijke kenmerken van Arson: Persoonlijk investeringsadvies afgestemd op uw doelen',
+      'Rsoon is een moderne webapplicatie voor investeringsadvies, ontworpen om individuen en bedrijven te helpen slimmer financiële beslissingen te nemen. Met krachtige tools, expertadvies en realtime inzichten vereenvoudigt Rsoon het investeringsproces en stelt gebruikers in staat om hun vermogen met vertrouwen te laten groeien.',
+      'Belangrijke kenmerken van Rsoon: Persoonlijk investeringsadvies afgestemd op uw doelen',
       'Realtime marktinzichten en portefeuillestracering',
       'Eenvoudig te gebruiken dashboard voor het beheren van investeringen',
       'Veilig, betrouwbaar en geschikt voor zowel beginners als professionals',
       'Expertondersteuning voor slimmere besluitvorming',
-      'Of je nu net begint met je investeringsreis of je portfolio wilt optimaliseren, Arson is je vertrouwde partner voor financieel groei.'
+      'Of je nu net begint met je investeringsreis of je portfolio wilt optimaliseren, Rsoon is je vertrouwde partner voor financieel groei.'
     ]
   } as BiList,
 
   project_rsoon_summarized_description: {
-    en: 'Arson is a modern investment consulting platform that simplifies financial decision-making. It offers personalized guidance, real-time market insights, and secure tools to help both beginners and professionals manage and grow their investments confidently',
+    en: 'Rsoon is a modern investment consulting platform that simplifies financial decision-making. It offers personalized guidance, real-time market insights, and secure tools to help both beginners and professionals manage and grow their investments confidently',
     fa: 'آرسون یک پلتفرم مدرن مشاوره سرمایه‌گذاری است که تصمیم‌گیری‌های مالی را ساده می‌کند. این پلتفرم راهنمایی شخصی‌سازی‌شده، بینش‌های لحظه‌ای بازار و ابزارهای امن را ارائه می‌دهد تا هم تازه‌کارها و هم حرفه‌ای‌ها بتوانند با اطمینان سرمایه‌گذاری‌ها و رشد خود را مدیریت کنند.',
-    de: 'Arson ist eine moderne Plattform für Investitionsberatung, die die finanzielle Entscheidungsfindung vereinfacht. Sie bietet personalisierte Beratung, Echtzeit-Markteinblicke und sichere Tools, um sowohl Anfängern als auch Profis zu helfen, ihre Investitionen selbstbewusst zu verwalten und zu wachsen.',
-    nl: 'Arson is een modern platform voor investeringsadvies dat financiële besluitvorming vereenvoudigt. Het biedt persoonlijk advies, realtime marktinzichten en veilige tools om zowel beginners als professionals te helpen hun investeringen met vertrouwen te beheren en te laten groeien.'
+    de: 'Rsoon ist eine moderne Plattform für Investitionsberatung, die die finanzielle Entscheidungsfindung vereinfacht. Sie bietet personalisierte Beratung, Echtzeit-Markteinblicke und sichere Tools, um sowohl Anfängern als auch Profis zu helfen, ihre Investitionen selbstbewusst zu verwalten und zu wachsen.',
+    nl: 'Rsoon is een modern platform voor investeringsadvies dat financiële besluitvorming vereenvoudigt. Het biedt persoonlijk advies, realtime marktinzichten en veilige tools om zowel beginners als professionals te helpen hun investeringen met vertrouwen te beheren en te laten groeien.'
   },
 
   project_keydoc_title: {
