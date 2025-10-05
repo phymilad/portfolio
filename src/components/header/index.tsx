@@ -63,14 +63,6 @@ export const Header = ({ locale }: Props) => {
                         </Link>
                     </li>
                 ))}
-                {/* <li>
-                    <Link
-                        href={`${base}/contact`}
-                        className="rounded-lg bg-blue-600 px-4 py-2 text-white shadow-sm transition hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-                    >
-                        {t('nav_contact', locale)}
-                    </Link>
-                </li> */}
                 <li>
                     <LanguageSelector locale={locale} />
                 </li>
@@ -138,14 +130,6 @@ export const Header = ({ locale }: Props) => {
                     </Link>
                 </li>
             ))}
-            <li>
-                <Link
-                    href={`${base}/contact`}
-                    className="mt-2 block rounded-lg bg-blue-600 px-3 py-2 text-center text-white shadow-sm transition hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-                >
-                    {t('nav_contact', locale)}
-                </Link>
-            </li>
             <li>
                 <LanguageSelector locale={locale} />
             </li>
