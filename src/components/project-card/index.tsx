@@ -57,7 +57,7 @@ export const ProjectCard = ({ project, locale }: { project: Project, locale: Loc
       {/* Description below images */}
       <div className="py-5">
         <p className="text-sm text-slate-600 dark:text-slate-300">
-          {project.description}
+          {project.shortDescription}
         </p>
       </div>
 

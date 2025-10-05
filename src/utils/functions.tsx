@@ -8,6 +8,7 @@ export const createProjectsBasedOnLocale = (locale: Locale) : Project[] => {
             title: t('project_mdotcar_client_and_expert_title', locale),
             description: tList('project_mdotcar_client_and_expert_description', locale),
             youtubeUrl: 'https://www.youtube.com/watch?v=KKhp32PGDS4&list=PL3h4tQDduGxOr2Rjf1sntJ2SJe7zPTE9G',
+            shortDescription: t('project_mdotcar_client_and_expert_summarized_description', locale),
             image: {
               mobile: "/images/projects/mdotcar-client-mobile.png",
               desktop: "/images/projects/mdotcar-client-desktop.png",
@@ -24,6 +25,7 @@ export const createProjectsBasedOnLocale = (locale: Locale) : Project[] => {
             title: t('project_mdotcar_admin_panel_title', locale),
             description: tList('project_mdotcar_admin_panel_description', locale),
             youtubeUrl: 'https://www.youtube.com/watch?v=hmv_jv5WRwQ',
+            shortDescription: t('project_mdotcar_admin_panel_summarized_description', locale),
             image: {
               mobile: "/images/projects/mdotcar-admin-mobile.png",
               desktop: "/images/projects/mdotcar-admin-desktop.png",
@@ -38,6 +40,7 @@ export const createProjectsBasedOnLocale = (locale: Locale) : Project[] => {
             title: t('project_rsoon_title', locale),
             description: tList('project_rsoon_description', locale),
             youtubeUrl: 'https://www.youtube.com/watch?v=MQ_ehMOqMhk',
+            shortDescription: t('project_rsoon_summarized_description', locale),
             image: {
               mobile: "/images/projects/rsoon-mobile.png",
               desktop: "/images/projects/rsoon-desktop.png",
@@ -52,6 +55,7 @@ export const createProjectsBasedOnLocale = (locale: Locale) : Project[] => {
             title: t('project_keydoc_title', locale),
             description: tList('project_keydoc_description', locale),
             youtubeUrl: "https://www.youtube.com/watch?v=A0pn0R2W7Hc&t=3s",
+            shortDescription: t('project_keydoc_summarized_description', locale),
             image: {
               desktop: "/images/projects/keydoc-desktop.png",
             },

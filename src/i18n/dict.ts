@@ -212,6 +212,13 @@ export const dictionary = {
     ]
   } as BiList,
 
+  project_mdotcar_admin_panel_summarized_description: {
+    en: 'The Mdotcar Admin Panel is the central hub for managing the entire roadside assistance platform. It provides comprehensive control over client and expert accounts, service requests, and analytics, ensuring smooth operations and a seamless experience for all users.',
+    fa: 'پنل مدیریت Mdotcar مرکز اصلی مدیریت کل پلتفرم امداد جاده‌ای است. این پنل کنترل جامع بر حساب‌های مشتریان و کارشناسان، درخواست‌های خدمات و تحلیل‌ها را فراهم می‌کند و عملیات روان و تجربه‌ای بی‌دغدغه برای همه کاربران تضمین می‌کند.',
+    de: 'Das Mdotcar Admin Panel ist das zentrale Hub zur Verwaltung der gesamten Pannenhilfe-Plattform. Es bietet umfassende Kontrolle über Kunden- und Expertenkonten, Serviceanfragen und Analysen und gewährleistet einen reibungslosen Betrieb und ein nahtloses Erlebnis für alle Nutzer.',
+    nl: 'Het Mdotcar Admin Panel is het centrale punt voor het beheren van het gehele pechhulpplatform. Het biedt uitgebreide controle over klant- en expertaccounts, serviceaanvragen en analyses, waardoor soepele operaties en een naadloze ervaring voor alle gebruikers worden gegarandeerd.'
+  },
+
   project_mdotcar_client_and_expert_title: {
     en: 'Mdotcar – Client & Expert Web App Demo | Real-Time Roadside Assistance',
     fa: 'امداتکار – دموی وب‌اپلیکیشن مشتری و کارشناس | امداد جاده‌ای در لحظه',
@@ -262,6 +269,13 @@ export const dictionary = {
     ]
   } as BiList,
 
+  project_mdotcar_client_and_expert_summarized_description: {
+    en: 'Mdotcar is an intelligent roadside assistance platform that connects clients and experts in real time. The video demonstrates the full process — from requesting help to completing the service — showcasing seamless, efficient communication and real-time management.',
+    fa: 'امدادکار یک پلتفرم هوشمند امداد جاده‌ای است که مشتریان و کارشناسان را در لحظه به هم متصل می‌کند. این ویدئو کل فرآیند — از درخواست کمک تا تکمیل خدمات — را نشان می‌دهد و ارتباط روان، کارآمد و مدیریت لحظه‌ای را به نمایش می‌گذارد.',
+    de: 'Mdotcar ist eine intelligente Plattform für Pannenhilfe, die Kunden und Experten in Echtzeit verbindet. Das Video zeigt den gesamten Prozess — von der Anforderung von Hilfe bis zur Erledigung des Services — und präsentiert nahtlose, effiziente Kommunikation und Echtzeit-Management.',
+    nl: 'Mdotcar is een intelligent platform voor pechhulp dat klanten en experts in realtime verbindt. De video demonstreert het volledige proces — van het aanvragen van hulp tot het voltooien van de service — en toont naadloze, efficiënte communicatie en realtime beheer.'
+  },
+
   project_rsoon_title: {
     en: 'Arson – Smart Investment Consulting Web Application | Grow Your Wealth with Confidence',
     fa: 'آرسون – وب‌اپلیکیشن هوشمند مشاوره سرمایه‌گذاری | با اطمینان سرمایه‌تان را رشد دهید',
@@ -309,6 +323,13 @@ export const dictionary = {
     ]
   } as BiList,
 
+  project_rsoon_summarized_description: {
+    en: 'Arson is a modern investment consulting platform that simplifies financial decision-making. It offers personalized guidance, real-time market insights, and secure tools to help both beginners and professionals manage and grow their investments confidently',
+    fa: 'آرسون یک پلتفرم مدرن مشاوره سرمایه‌گذاری است که تصمیم‌گیری‌های مالی را ساده می‌کند. این پلتفرم راهنمایی شخصی‌سازی‌شده، بینش‌های لحظه‌ای بازار و ابزارهای امن را ارائه می‌دهد تا هم تازه‌کارها و هم حرفه‌ای‌ها بتوانند با اطمینان سرمایه‌گذاری‌ها و رشد خود را مدیریت کنند.',
+    de: 'Arson ist eine moderne Plattform für Investitionsberatung, die die finanzielle Entscheidungsfindung vereinfacht. Sie bietet personalisierte Beratung, Echtzeit-Markteinblicke und sichere Tools, um sowohl Anfängern als auch Profis zu helfen, ihre Investitionen selbstbewusst zu verwalten und zu wachsen.',
+    nl: 'Arson is een modern platform voor investeringsadvies dat financiële besluitvorming vereenvoudigt. Het biedt persoonlijk advies, realtime marktinzichten en veilige tools om zowel beginners als professionals te helpen hun investeringen met vertrouwen te beheren en te laten groeien.'
+  },
+
   project_keydoc_title: {
     en: 'Keydoc – Document Management System',
     fa: 'کیداک – سیستم مدیریت اسناد',
@@ -355,6 +376,13 @@ export const dictionary = {
       'Of je nu een klein bedrijf bent of een grote onderneming, Keydoc is jouw oplossing voor efficiënt documentbeheer.'
     ]
   } as BiList,
+
+  project_keydoc_summarized_description: {
+    en: 'Keydoc is a robust document management system that centralizes storage, enhances collaboration, and provides secure access controls. It is designed to help businesses of all sizes manage their documents efficiently and effectively.',
+    fa: 'کی‌داک یک سیستم مدیریت اسناد قوی است که ذخیره‌سازی متمرکز، همکاری بهبود یافته و کنترل‌های دسترسی ایمن را فراهم می‌کند. این سیستم برای کمک به کسب‌وکارها در هر اندازه‌ای طراحی شده است تا اسناد خود را به‌طور مؤثر و کارآمد مدیریت کنند.',
+    de: 'Keydoc ist ein robustes Dokumentenmanagementsystem, das die Speicherung zentralisiert, die Zusammenarbeit verbessert und sichere Zugriffssteuerungen bietet. Es wurde entwickelt, um Unternehmen jeder Größe bei der effizienten und effektiven Verwaltung ihrer Dokumente zu unterstützen.',
+    nl: 'Keydoc is een robuust documentbeheersysteem dat opslag centraliseert, samenwerking verbetert en veilige toegangscontroles biedt. Het is ontworpen om bedrijven van elke omvang te helpen hun documenten efficiënt en effectief te beheren.'
+  },
 
   contact_title: { 
     en: 'Contact me', 
