@@ -28,7 +28,7 @@ export const Header = ({ locale }: Props) => {
   useEffect(() => setOpen(false), [pathname]);
 
   const items = [
-    { href: `${base}/projects`, label: t('nav_projects', locale) },
+    { href: `${base}`, label: t('home', locale) },
     // { href: `${base}/blog`, label: t('nav_blog', locale) },
     // { href: `${base}/about`, label: t('nav_about', locale) },
   ];
