@@ -1,12 +1,20 @@
+"use client"
+
 import Image from "next/image";
 import { Project } from "./types";
+import { useRouter } from "next/navigation";
+import { Locale } from "../language-selector";
 
-export const ProjectCard = ({ project }: { project: Project }) => {
+export const ProjectCard = ({ project, locale }: { project: Project, locale: Locale }) => {
+  const { push } = useRouter()
   const hasDesktop = !!project.image?.desktop;
   const hasMobile = !!project.image?.mobile;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl shadow-lg group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-xl">
+    <div 
+      className="relative overflow-hidden rounded-2xl shadow-lg group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-xl"
+      onClick={() => push(`/${locale}/projects/${project.id}`)}
+    >
       
       {/* Title at the top */}
       <div className="px-5 pt-5">
