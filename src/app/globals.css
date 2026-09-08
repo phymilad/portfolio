@@ -1,4 +1,10 @@
 @import "tailwindcss";
+
+/* v4 auto-detects sources from the project root. docs/ quotes class names from
+   the audit findings, which would otherwise generate real CSS for classes the
+   app does not use. */
+@source not "../../docs";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
@@ -71,11 +77,12 @@
   --font-mono: var(--font-mono-face), ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Type scale. The display size is the one the old site had no equivalent of. */
-  --text-display: 3.25rem;
+  /* Fluid: a fixed display size overflowed at 390px. */
+  --text-display: clamp(2.25rem, 9vw, 3.25rem);
   --text-display--line-height: 1.04;
   --text-display--letter-spacing: -0.028em;
 
-  --text-title: 2rem;
+  --text-title: clamp(1.6rem, 5vw, 2rem);
   --text-title--line-height: 1.15;
   --text-title--letter-spacing: -0.02em;
 

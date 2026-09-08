@@ -9,8 +9,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   if (!['hello-world', 'second-post'].includes(slug)) return notFound();
   return (
-    <article className="prose">
-      <h1>{slug.replace('-', ' ')}</h1>
+    <article>
+      <h1 className="font-display text-title">{slug.replace('-', ' ')}</h1>
     </article>
   );
 }

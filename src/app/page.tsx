@@ -1,49 +1,50 @@
+import Link from 'next/link';
 import { ProjectCard } from '@/components/project-card';
+import { Card } from '@/components/ui/card';
 import { projects } from '@/content/projects';
 import { home, nav, site } from '@/content/copy';
-import Link from 'next/link';
-
-const cardClass =
-  'rounded-2xl p-6 bg-gradient-to-b from-white/95 to-white/100 dark:from-gray-800/80 dark:to-gray-800/90 border border-gray-400 dark:border-gray-700 transition-transform duration-300 ease-in-out transform hover:scale-105 motion-safe:animate-fadeInUp';
 
 export default function Home() {
   return (
     <>
-      <section className="prose max-w-none">
-        <h1 className="text-3xl font-bold tracking-tight pb-6">
-          {site.name} <span className="font-normal text-slate-500 dark:text-slate-400">— {site.role}</span>
-        </h1>
+      <section>
+        <h1 className="font-display text-display pb-3">{site.name}</h1>
+        <p className="font-mono text-sm uppercase tracking-widest text-accent pb-10">
+          {site.role}
+        </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className={cardClass}>
-            <h2 className="text-xl font-semibold pb-2">{home.aboutTitle}</h2>
-            <p className="text-lg">{home.intro}</p>
-          </div>
+          <Card interactive>
+            <h2 className="font-display text-heading pb-2">{home.aboutTitle}</h2>
+            <p className="text-fg-muted leading-relaxed">{home.intro}</p>
+          </Card>
 
-          <div className={cardClass}>
-            <h2 className="text-xl font-semibold pb-2">{home.whatIDoTitle}</h2>
-            <p>{home.whatIDo}</p>
-          </div>
+          <Card interactive>
+            <h2 className="font-display text-heading pb-2">{home.whatIDoTitle}</h2>
+            <p className="text-fg-muted leading-relaxed">{home.whatIDo}</p>
+          </Card>
 
-          <div className={cardClass}>
-            <h2 className="text-xl font-semibold pb-2">{home.experienceTitle}</h2>
-            <ul className="list-disc px-5 space-y-2">
+          <Card interactive>
+            <h2 className="font-display text-heading pb-2">{home.experienceTitle}</h2>
+            <ul className="list-disc ps-5 space-y-2 text-fg-muted leading-relaxed">
               {home.experience.map((point) => (
                 <li key={point}>{point}</li>
               ))}
             </ul>
-          </div>
+          </Card>
 
-          <div className={cardClass}>
-            <h2 className="text-xl font-semibold pb-2">{home.howIWorkTitle}</h2>
-            <p>{home.howIWork}</p>
-          </div>
+          <Card interactive>
+            <h2 className="font-display text-heading pb-2">{home.howIWorkTitle}</h2>
+            <p className="text-fg-muted leading-relaxed">{home.howIWork}</p>
+          </Card>
         </div>
       </section>
 
-      <section className="grid gap-6 grid-cols-1 mt-4">
-        <h2 className="mt-6 text-xl font-semibold pb-2">
-          <Link href="/projects" className="hover:underline">{nav.projects}</Link>
+      <section className="grid gap-6 grid-cols-1 mt-14">
+        <h2 className="font-display text-title">
+          <Link href="/projects" className="hover:text-accent transition-colors">
+            {nav.projects}
+          </Link>
         </h2>
         {projects.map((p) => (
           <ProjectCard key={p.id} project={p} />

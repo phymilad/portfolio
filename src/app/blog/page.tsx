@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 
 export default function BlogIndex() {
   return (
-    <article className="prose">
-      <h1>{blog.title}</h1>
-      <p>{blog.empty}</p>
+    <article>
+      <h1 className="font-display text-title pb-2">{blog.title}</h1>
+      <p className="text-fg-muted">{blog.empty}</p>
     </article>
   );
 }

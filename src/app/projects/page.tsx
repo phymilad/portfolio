@@ -27,8 +27,8 @@ export default function Projects() {
       />
 
       <div>
-        <h1 className="text-2xl font-semibold pb-2">{projectsPage.title}</h1>
-        <p className="text-slate-600 dark:text-slate-300">{projectsPage.intro}</p>
+        <h1 className="font-display text-title pb-2">{projectsPage.title}</h1>
+        <p className="text-fg-muted leading-relaxed">{projectsPage.intro}</p>
       </div>
 
       {projects.map((p) => (
