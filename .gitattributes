@@ -1,0 +1,9 @@
+# Normalise line endings. Prettier and .editorconfig both expect LF; without
+# this, Git's autocrlf rewrites the working tree to CRLF on Windows and
+# `npm run format:check` fails locally while passing in CI.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
