@@ -6,9 +6,9 @@ export const ProjectVideo = ({ project }: { project: Project }) => {
     <article className="not-prose rounded-2xl p-6 bg-gradient-to-b from-white/95 to-white/100 dark:from-gray-800/80 dark:to-gray-800/90 border border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out transform  motion-safe:animate-fadeInUp">
 
       {/* Title */}
-      <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-slate-100">
+      <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-slate-100">
         {project.title}
-      </h2>
+      </h1>
 
       {/* Description */}
       <div className="mb-4 space-y-2 text-slate-700 dark:text-slate-300">

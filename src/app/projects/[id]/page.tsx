@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { ProjectVideo } from '@/components/project-video';
 import { projects } from '@/content/projects';
 
@@ -9,6 +10,7 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
   const { id } = await params;
 
   const project = projects.find((item) => item.id === Number(id));
+  if (!project) notFound();
 
-  return project ? <ProjectVideo project={project} /> : null;
+  return <ProjectVideo project={project} />;
 }

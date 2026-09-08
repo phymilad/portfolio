@@ -41,6 +41,25 @@ export const home = {
     'I care about clean architecture, collaboration, and continuous improvement. I enjoy building products that not only work beautifully but also deliver measurable business value. Whether I\u2019m working with a startup or a large organization, I aim to create systems that feel effortless yet powerful.',
 } as const;
 
+export const projectsPage = {
+  title: 'Projects',
+  intro:
+    'A selection of production work — platforms I have built or contributed to, with a short walkthrough of each.',
+} as const;
+
+export const notFoundPage = {
+  title: 'Page not found',
+  body: 'That page does not exist, or it has moved.',
+  cta: 'Back to home',
+} as const;
+
+export const errorPage = {
+  title: 'Something went wrong',
+  body: 'An unexpected error occurred. Try again, or head back to the home page.',
+  retry: 'Try again',
+  cta: 'Back to home',
+} as const;
+
 export const blog = {
   title: 'Blog',
   empty: 'No posts yet.',
