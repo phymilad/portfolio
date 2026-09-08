@@ -253,7 +253,7 @@ and desktop, and specifically article pages at long lengths.
 | 0 Unbreak the build | ✅ done — `696a157` |
 | 1 Delete the locale layer | ✅ done — `4e1c95e` |
 | 2 Metadata & SEO | ✅ done — `2a` + `2b` |
-| 3 Design foundation | not started |
+| 3 Design foundation | ✅ done — `3a` + `3b` |
 | 4 Crawlable cards | not started |
 | 5 Blog infrastructure | not started |
 | 6 Blog SEO | not started |
