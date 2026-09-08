@@ -1,6 +1,6 @@
 'use client';
 
-import { site } from '@/content/copy';
+import { navLinks, site } from '@/content/copy';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -30,6 +30,19 @@ export const Header = () => {
 
             {/* Desktop nav */}
             <ul className="hidden items-center gap-6 text-sm font-medium sm:flex">
+                {navLinks.map((link) => (
+                    <li key={link.href}>
+                        <Link
+                            href={link.href}
+                            aria-current={pathname.startsWith(link.href) ? 'page' : undefined}
+                            className={`transition-colors hover:text-accent ${
+                                pathname.startsWith(link.href) ? 'text-accent' : 'text-fg-muted'
+                            }`}
+                        >
+                            {link.label}
+                        </Link>
+                    </li>
+                ))}
                 <li>
                     <button
                         onClick={toggleTheme}
@@ -78,6 +91,19 @@ export const Header = () => {
         className={`${open ? 'block' : 'hidden'} sm:hidden border-t border-line`}
       >
         <ul className="flex flex-col gap-1 p-3 text-sm font-medium">
+            {navLinks.map((link) => (
+                <li key={link.href}>
+                    <Link
+                        href={link.href}
+                        aria-current={pathname.startsWith(link.href) ? 'page' : undefined}
+                        className={`block rounded-md px-3 py-2 transition-colors hover:bg-surface-sunken ${
+                            pathname.startsWith(link.href) ? 'text-accent' : 'text-fg-muted'
+                        }`}
+                    >
+                        {link.label}
+                    </Link>
+                </li>
+            ))}
             <li>
                 <button
                     onClick={toggleTheme}

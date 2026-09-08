@@ -1,0 +1,107 @@
+---
+title: The Tailwind config that silently did nothing
+description: Upgrading to Tailwind v4 leaves your v3 config file sitting in the repo, still valid TypeScript, still committed, and completely ignored by the build.
+publishedAt: '2026-08-19'
+tags: ['tailwind', 'css', 'tooling']
+---
+
+I found a `tailwind.config.ts` in my own portfolio that had been doing nothing
+for months. It type-checked. It was committed. I had edited it more than once.
+The build never read a single line of it.
+
+## How the file goes dead
+
+Tailwind v3 discovers `tailwind.config.{js,ts}` automatically. Tailwind v4 does
+not. In v4 the configuration surface is CSS, and a JavaScript config is only
+loaded if you explicitly point at it:
+
+```css
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+```
+
+Without that `@config` line, the file is inert. Nothing warns you. There is no
+deprecation notice, because from v4's point of view the file simply is not part
+of the project.
+
+The upgrade path is what makes this so easy to miss. You install v4, swap the
+old `@tailwind` directives for `@import "tailwindcss"`, see the site still
+render, and move on. Most utilities are built in, so most of the site looks
+right. Only the parts that depended on your customisations quietly revert.
+
+## What I actually lost
+
+Three things, none of which announced themselves:
+
+- A `fontFamily.sans` override. The site fell back to the default sans stack.
+- `darkMode: 'selector'`. Dark mode kept working, but only because a
+  `@custom-variant` in the CSS happened to cover it.
+- A set of colour tokens, commented out. I had been editing commented-out code
+  in a file that was never read.
+
+The last one is the part I find funny in hindsight. I made a change, committed
+it, and the diff was real. The effect was zero.
+
+## Checking your own project
+
+The fastest check is to add something impossible to miss and see whether it
+survives the build:
+
+```ts
+// tailwind.config.ts
+theme: {
+  extend: {
+    colors: { canary: '#ff0000' },
+  },
+}
+```
+
+Then use `bg-canary` somewhere and grep the built CSS:
+
+```bash
+npm run build
+grep -r "canary" .next/static/css/
+```
+
+No match means your config is not being read.
+
+## The fix worth making
+
+You can add `@config` and keep the JavaScript file. It works, and if you have a
+large config it is the cheap migration.
+
+I would rather move the tokens into CSS, because v4's `@theme` can do something
+the JS config cannot: participate in the cascade.
+
+```css
+:root {
+  --surface: #fdfcfa;
+  --fg: #1c1917;
+}
+
+.dark {
+  --surface: #0f0e0d;
+  --fg: #f5f3f0;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+}
+```
+
+`@theme inline` is the important part. A plain `@theme` block resolves its
+values once, at build time, so `bg-surface` compiles to a literal colour and
+cannot change with the theme. With `inline`, the utility compiles to
+`background-color: var(--surface)` and follows whatever the cascade says. One
+token definition, both themes, no `dark:` variant on every element.
+
+## The wider lesson
+
+Dead configuration is worse than missing configuration. A missing file is an
+error you fix in a minute. A file that looks authoritative, type-checks, and is
+ignored will absorb edits for months and give you nothing back.
+
+Whenever a tool changes how it discovers configuration, the old file does not
+break. It just stops mattering. Those are the changes worth being paranoid
+about.

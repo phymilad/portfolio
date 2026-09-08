@@ -28,6 +28,11 @@ export const nav = {
   blog: 'Blog',
 } as const;
 
+export const navLinks = [
+  { href: '/projects', label: nav.projects },
+  { href: '/blog', label: nav.blog },
+] as const;
+
 export const home = {
   aboutTitle: 'About me',
   intro:
@@ -76,6 +81,8 @@ export const blog = {
   empty: 'No posts yet.',
   metaDescription:
     'Notes on frontend engineering, React and Next.js, architecture, and the things I learn building for the web.',
+  toc: 'On this page',
+  related: 'Related posts',
 } as const;
 
 export const footer = {
