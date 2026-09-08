@@ -9,7 +9,7 @@ export default function NotFound() {
       <p className="text-fg-muted pb-6">{notFoundPage.body}</p>
       <Link
         href="/"
-        className="inline-block rounded-md border border-line px-4 py-2 transition hover:bg-surface-sunken hover:border-line-strong"
+        className="border-line hover:bg-surface-sunken hover:border-line-strong inline-block rounded-md border px-4 py-2 transition"
       >
         {notFoundPage.cta}
       </Link>

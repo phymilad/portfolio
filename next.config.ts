@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 // The site was previously served under locale prefixes (/en, /fa, /de, /nl).
 // It is English-only at the root now, so those paths are permanently redirected

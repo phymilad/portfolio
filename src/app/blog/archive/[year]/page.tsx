@@ -45,27 +45,30 @@ export default async function ArchivePage({ params }: { params: Promise<{ year: 
   if (posts.length === 0) notFound();
 
   return (
-<Container width="default">
+    <Container width="default">
       <section>
-      <JsonLd
-        schema={breadcrumbSchema([
-          { name: 'Home', path: '/' },
-          { name: blog.title, path: '/blog' },
-          { name: year, path: `/blog/archive/${year}` },
-        ])}
-      />
+        <JsonLd
+          schema={breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: blog.title, path: '/blog' },
+            { name: year, path: `/blog/archive/${year}` },
+          ])}
+        />
 
-      <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle pb-2">Archive</p>
-      <h1 className="font-display text-title pb-2">{year}</h1>
-      <p className="text-fg-muted pb-10">
-        {posts.length} {posts.length === 1 ? 'post' : 'posts'} ·{' '}
-        <Link href="/blog" className="text-accent hover:text-accent-hover underline underline-offset-2">
-          all posts
-        </Link>
-      </p>
+        <p className="text-fg-subtle pb-2 font-mono text-xs tracking-widest uppercase">Archive</p>
+        <h1 className="font-display text-title pb-2">{year}</h1>
+        <p className="text-fg-muted pb-10">
+          {posts.length} {posts.length === 1 ? 'post' : 'posts'} ·{' '}
+          <Link
+            href="/blog"
+            className="text-accent hover:text-accent-hover underline underline-offset-2"
+          >
+            all posts
+          </Link>
+        </p>
 
-      <PostList posts={posts} />
-    </section>
+        <PostList posts={posts} />
+      </section>
     </Container>
   );
 }

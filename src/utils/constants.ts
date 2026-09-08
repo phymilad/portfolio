@@ -1,4 +1,4 @@
-import { Inter, Fraunces, IBM_Plex_Mono } from "next/font/google";
+import { Inter, Fraunces, IBM_Plex_Mono } from 'next/font/google';
 
 /**
  * Three roles, three faces:

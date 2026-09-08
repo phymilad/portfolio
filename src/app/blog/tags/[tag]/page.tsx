@@ -41,27 +41,30 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
   if (posts.length === 0) notFound();
 
   return (
-<Container width="default">
+    <Container width="default">
       <section>
-      <JsonLd
-        schema={breadcrumbSchema([
-          { name: 'Home', path: '/' },
-          { name: blog.title, path: '/blog' },
-          { name: tag, path: `/blog/tags/${tag}` },
-        ])}
-      />
+        <JsonLd
+          schema={breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: blog.title, path: '/blog' },
+            { name: tag, path: `/blog/tags/${tag}` },
+          ])}
+        />
 
-      <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle pb-2">Tag</p>
-      <h1 className="font-display text-title pb-2">{tag}</h1>
-      <p className="text-fg-muted pb-10">
-        {posts.length} {posts.length === 1 ? 'post' : 'posts'} ·{' '}
-        <Link href="/blog" className="text-accent hover:text-accent-hover underline underline-offset-2">
-          all posts
-        </Link>
-      </p>
+        <p className="text-fg-subtle pb-2 font-mono text-xs tracking-widest uppercase">Tag</p>
+        <h1 className="font-display text-title pb-2">{tag}</h1>
+        <p className="text-fg-muted pb-10">
+          {posts.length} {posts.length === 1 ? 'post' : 'posts'} ·{' '}
+          <Link
+            href="/blog"
+            className="text-accent hover:text-accent-hover underline underline-offset-2"
+          >
+            all posts
+          </Link>
+        </p>
 
-      <PostList posts={posts} />
-    </section>
+        <PostList posts={posts} />
+      </section>
     </Container>
   );
 }

@@ -19,7 +19,7 @@ export const site = {
    * a wrong sameAs actively harms entity resolution. Add GitHub etc. once
    * confirmed.
    */
-  social: ['https://www.linkedin.com/in/phymilad/'],
+  social: ['https://www.linkedin.com/in/phymilad/', 'https://github.com/phymilad'],
 } as const;
 
 export const nav = {

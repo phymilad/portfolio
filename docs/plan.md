@@ -15,6 +15,7 @@ exceed it are already split.
 ---
 
 ## Phase 0 — Unbreak the build
+
 **Fixes:** audit 1.1, 1.4, 5.1 · ~6 files · effort S
 
 - `await params` in the four pages that read it synchronously.
@@ -27,6 +28,7 @@ exceed it are already split.
 patch bump could shift build output; that's what the acceptance check is for.
 
 **Acceptance**
+
 - [ ] `npx next build` (webpack, no `--turbopack`) exits 0
 - [ ] `npm run typecheck` exits 0
 - [ ] `npm audit` reports 0 critical
@@ -35,6 +37,7 @@ patch bump could shift build output; that's what the acceptance check is for.
 ---
 
 ## Phase 1 — Delete the locale layer
+
 **Fixes:** audit 1.6, 1.7, 1.9 (partial), 2.9, 3.5 (catch-all half), 3.10, 5.5 (dropdown) · ~10 files · effort M
 
 The highest-value phase in the plan, and it's almost entirely deletion. This is where
@@ -54,6 +57,7 @@ at once. It is, however, almost entirely mechanical, and `typecheck` catches the
 The redirects are the part to test deliberately.
 
 **Acceptance**
+
 - [ ] `phymilad.com/` serves the home page directly — no redirect hop
 - [ ] `/projects/1` works; `/en/projects/1` → **308** → `/projects/1`
 - [ ] `/robots.txt` → 404 (not the home page with `lang="robots.txt"`)
@@ -65,6 +69,7 @@ The redirects are the part to test deliberately.
 ---
 
 ## Phase 2 — Make it shareable and findable
+
 **Fixes:** audit 3.1, 3.2, 3.3, 3.5, 3.6, 3.8, 3.11, 3.13, 3.14, 3.15, 3.18 · ~10 files · effort M
 
 - `generateMetadata` per route: title template, real descriptions, canonicals.
@@ -80,17 +85,19 @@ The redirects are the part to test deliberately.
 **What could break:** heading changes shift visual sizing. The rest is view-source only.
 
 **Acceptance**
+
 - [ ] every page has exactly one `<h1>` and a distinct `<title>` + description
 - [ ] `/sitemap.xml` is XML listing every route; `/robots.txt` is text and references it
 - [ ] `/projects/999` → 404 styled page, not a 200 blank
 - [ ] `/projects` is a real page
 - [ ] no "Step 2" text anywhere in production HTML
 - [ ] Rich Results Test accepts the `Person` markup
-- [ ] *(once deployed)* pasting `https://phymilad.com` into Slack renders a card
+- [ ] _(once deployed)_ pasting `https://phymilad.com` into Slack renders a card
 
 ---
 
 ## Phase 3 — Design foundation
+
 **Fixes:** audit 2.1, 2.2, 2.3, 2.4, 2.8, 5.5 (focus/motion) · ~8 files · effort M
 
 Tokens and primitives only — no page redesign yet, so it stays reviewable. Direction is
@@ -110,6 +117,7 @@ Tokens and primitives only — no page redesign yet, so it stays reviewable. Dir
 mobile and desktop.
 
 **Acceptance**
+
 - [ ] `grep -rn "gray-" src/` returns nothing (one grey scale)
 - [ ] Tab through the whole site: every interactive element shows a visible ring
 - [ ] OS "reduce motion" on → no card scaling, no entrance animation
@@ -119,6 +127,7 @@ mobile and desktop.
 ---
 
 ## Phase 4 — Crawlable, keyboard-reachable cards
+
 **Fixes:** audit 3.9, 1.9, 3.12, 2.6 (card responsive) · ~5 files · effort S
 
 Small, high-value, and deliberately its own commit because it fixes an SEO defect and an
@@ -131,6 +140,7 @@ accessibility defect with the same change.
 - Stack the desktop/mobile screenshot pair below `sm`.
 
 **Acceptance**
+
 - [ ] right-click a project card → "Open link in new tab" works
 - [ ] Tab reaches every card; Enter activates it
 - [ ] view-source shows `<a href="/projects/1">`
@@ -140,6 +150,7 @@ accessibility defect with the same change.
 ---
 
 ## Phase 5 — Blog infrastructure
+
 **Fixes:** audit 4, 1.3 · ~10 files · effort L
 
 Approach per `docs/decisions.md` §2: MDX in-repo, Shiki at build time, hand-rolled schema
@@ -156,6 +167,7 @@ check.
 real test against long-form prose.
 
 **Acceptance**
+
 - [ ] adding a `.mdx` to `content/blog/` makes it appear at `/blog/<slug>` after rebuild
 - [ ] `draft: true` hides a post in production, shows it in dev
 - [ ] a post missing `description` **fails the build**
@@ -166,6 +178,7 @@ real test against long-form prose.
 ---
 
 ## Phase 6 — Blog SEO and discovery
+
 **Fixes:** audit 3.4, 3.7, 3.8 (BlogPosting/Breadcrumb) · ~8 files · effort M
 
 - Per-post metadata + canonical.
@@ -176,6 +189,7 @@ real test against long-form prose.
 - Tag pages, archive pages, pagination, related posts.
 
 **Acceptance**
+
 - [ ] `/blog/<slug>` OG image renders the post title
 - [ ] `/rss.xml` validates
 - [ ] a new post appears in `/sitemap.xml` with no manual step
@@ -185,6 +199,7 @@ real test against long-form prose.
 ---
 
 ## Phase 7 — Visual identity
+
 **Fixes:** audit 2.5, 2.7, 3.17 · split 7a/7b · effort L
 
 Deliberately late: redesigning before the content layer exists means redesigning twice.
@@ -200,6 +215,7 @@ og-image, rewrite the README, delete the five create-next-app SVGs.
 and desktop, and specifically article pages at long lengths.
 
 **Acceptance (7a)**
+
 - [ ] home has one `<h1>` at display size, above the fold
 - [ ] article body measure is ~65ch, not 1024px
 - [ ] nothing scrolls horizontally at 320px
@@ -208,6 +224,7 @@ and desktop, and specifically article pages at long lengths.
 ---
 
 ## Phase 8 — CI and guardrails
+
 **Fixes:** audit 5.2, 5.3, 5.6 · ~6 files · effort M
 
 - GitHub Actions: typecheck, lint, `next build` on every PR.
@@ -216,12 +233,14 @@ and desktop, and specifically article pages at long lengths.
 - Lighthouse CI budget.
 
 **Acceptance**
+
 - [ ] a PR that breaks types or the build is blocked by a red check
 - [ ] Lighthouse SEO and Accessibility ≥ 95 on home and on an article
 
 ---
 
 ## Phase 9 — Launch
+
 **Fixes:** audit 5.6 · effort S
 
 - Deploy to a host (Vercel recommended — `docs/decisions.md` §5).
@@ -230,6 +249,7 @@ and desktop, and specifically article pages at long lengths.
 - Analytics if wanted (Plausible/Umami suggested).
 
 **Acceptance**
+
 - [ ] `https://phymilad.com` serves the site; `www` and `http` both 308 to the canonical
 - [ ] Search Console verified and sitemap submitted without errors
 - [ ] a shared link renders a proper card on LinkedIn and Slack
@@ -248,15 +268,15 @@ and desktop, and specifically article pages at long lengths.
 
 ## Progress
 
-| Phase | Status |
-|---|---|
-| 0 Unbreak the build | ✅ done — `696a157` |
-| 1 Delete the locale layer | ✅ done — `4e1c95e` |
-| 2 Metadata & SEO | ✅ done — `2a` + `2b` |
-| 3 Design foundation | ✅ done — `3a` + `3b` |
-| 4 Crawlable cards | ✅ done — `c0782c0` |
-| 5 Blog infrastructure | ✅ done — `832e65b` |
-| 6 Blog SEO | ✅ done — `58aefa5` |
-| 7 Visual identity | ✅ done — `7a` + `7b` |
-| 8 CI | not started |
-| 9 Launch | not started |
+| Phase                     | Status                |
+| ------------------------- | --------------------- |
+| 0 Unbreak the build       | ✅ done — `696a157`   |
+| 1 Delete the locale layer | ✅ done — `4e1c95e`   |
+| 2 Metadata & SEO          | ✅ done — `2a` + `2b` |
+| 3 Design foundation       | ✅ done — `3a` + `3b` |
+| 4 Crawlable cards         | ✅ done — `c0782c0`   |
+| 5 Blog infrastructure     | ✅ done — `832e65b`   |
+| 6 Blog SEO                | ✅ done — `58aefa5`   |
+| 7 Visual identity         | ✅ done — `7a` + `7b` |
+| 8 CI                      | not started           |
+| 9 Launch                  | not started           |

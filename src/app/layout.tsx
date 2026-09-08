@@ -36,14 +36,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
-      <body className="flex flex-col min-h-dvh font-sans antialiased">
+      <body className="flex min-h-dvh flex-col font-sans antialiased">
         <JsonLd schema={personSchema()} />
         <JsonLd schema={webSiteSchema()} />
 
@@ -53,8 +49,8 @@ export default function RootLayout({
           {/* Width is chosen per page via <Container>, not fixed here. */}
           <main className="w-full flex-1 px-6 py-10 sm:px-8">{children}</main>
 
-          <footer className="border-t border-line mt-24">
-            <Container className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-8 sm:px-8 font-mono text-xs text-fg-subtle">
+          <footer className="border-line mt-24 border-t">
+            <Container className="text-fg-subtle flex flex-col items-center justify-between gap-3 px-6 py-8 font-mono text-xs sm:flex-row sm:px-8">
               <span>{footer.text}</span>
               <span className="flex items-center gap-4">
                 <a href="/rss.xml" className="hover:text-accent transition-colors">

@@ -1,9 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* v4 auto-detects sources from the project root. docs/ quotes class names from
    the audit findings, which would otherwise generate real CSS for classes the
    app does not use. */
-@source not "../../docs";
+@source not '../../docs';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -73,7 +73,7 @@
   --color-accent-subtle: var(--accent-subtle);
 
   --font-sans: var(--font-sans-face), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-display-face), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-display-face), Georgia, 'Times New Roman', serif;
   --font-mono: var(--font-mono-face), ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Type scale. The display size is the one the old site had no equivalent of. */

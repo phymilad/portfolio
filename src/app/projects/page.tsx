@@ -19,24 +19,24 @@ export const metadata: Metadata = {
 
 export default function Projects() {
   return (
-<Container width="default">
-      <section className="grid gap-6 grid-cols-1">
-      <JsonLd
-        schema={breadcrumbSchema([
-          { name: 'Home', path: '/' },
-          { name: projectsPage.title, path: '/projects' },
-        ])}
-      />
+    <Container width="default">
+      <section className="grid grid-cols-1 gap-6">
+        <JsonLd
+          schema={breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: projectsPage.title, path: '/projects' },
+          ])}
+        />
 
-      <div>
-        <h1 className="font-display text-title pb-2">{projectsPage.title}</h1>
-        <p className="text-fg-muted leading-relaxed">{projectsPage.intro}</p>
-      </div>
+        <div>
+          <h1 className="font-display text-title pb-2">{projectsPage.title}</h1>
+          <p className="text-fg-muted leading-relaxed">{projectsPage.intro}</p>
+        </div>
 
-      {projects.map((p, index) => (
-        <ProjectCard key={p.id} project={p} priority={index === 0} />
-      ))}
-    </section>
+        {projects.map((p, index) => (
+          <ProjectCard key={p.id} project={p} priority={index === 0} />
+        ))}
+      </section>
     </Container>
   );
 }

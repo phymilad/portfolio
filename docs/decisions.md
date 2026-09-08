@@ -42,6 +42,7 @@ reverse this.
 You left this to me. Reasoning, since you should be able to disagree with it:
 
 ### The options
+
 - **A — MDX files in the repo.** `content/blog/*.mdx`, frontmatter, static generation.
 - **B — Headless CMS** (Sanity, Contentful, Strapi).
 - **C — Git-backed CMS** (Keystatic, TinaCMS) — an editing UI that commits MDX.
@@ -49,7 +50,7 @@ You left this to me. Reasoning, since you should be able to disagree with it:
 
 ### Recommendation: **A, with a small hand-rolled schema check** (D's idea, without D's dependency)
 
-The decisive factor is friction *per post* versus setup cost, and which of those actually
+The decisive factor is friction _per post_ versus setup cost, and which of those actually
 determines whether posts get written.
 
 A CMS wins when there are multiple non-technical authors, or when publishing volume makes
@@ -73,6 +74,7 @@ rule. If the schema grows past that, I'll revisit.
 **Reconsider if:** you want to publish from your phone, or expect more than ~2 posts/week.
 
 ### Dependencies this implies
+
 `gray-matter` and `remark-gfm` are already in `package.json` and get used for real.
 `@next/mdx` stays. `next-mdx-remote` gets **removed** — it exists for MDX fetched at
 runtime from a CMS, which is exactly the architecture we're not building.
@@ -92,20 +94,21 @@ content/blog/<slug>.mdx
 Frontmatter:
 
 ```yaml
-title:        string        # required — feeds <h1>, <title>, OG
-description:  string        # required — feeds meta description, OG, RSS
-publishedAt:  YYYY-MM-DD    # required
-updatedAt:    YYYY-MM-DD    # optional — surfaces "Updated" + schema.org dateModified
-tags:         [string]      # optional
-series:       { id, order } # optional
-draft:        boolean       # default false — visible in dev, excluded from prod + sitemap
-cover:        { src, alt }  # optional
+title: string # required — feeds <h1>, <title>, OG
+description: string # required — feeds meta description, OG, RSS
+publishedAt: YYYY-MM-DD # required
+updatedAt: YYYY-MM-DD # optional — surfaces "Updated" + schema.org dateModified
+tags: [string] # optional
+series: { id, order } # optional
+draft: boolean # default false — visible in dev, excluded from prod + sitemap
+cover: { src, alt } # optional
 ```
 
 Derived at build time, not stored: reading time (word count), heading tree for the TOC,
 related posts (tag overlap then recency), prev/next within a series.
 
 ### Reading experience (Phases 5–6)
+
 TOC (sticky on desktop, collapsible on mobile), reading time, tag pages at
 `/blog/tags/[tag]`, archive at `/blog/archive/[year]`, related posts, series prev/next,
 Shiki highlighting with copy-to-clipboard, pagination at 10/page.
@@ -115,13 +118,14 @@ Shiki highlighting with copy-to-clipboard, pagination at 10/page.
 ## 3. Styling approach — my call: **Tailwind v4 with a real `@theme` token layer**
 
 ### Recommendation: keep Tailwind, fix the tokens
+
 Tailwind isn't the reason the site looks plain — the absence of a brand color, a type
 scale, and any layout idea is (audit 2.2). Deleting the dead v3 `tailwind.config.ts` and
 moving everything into `@theme` in `globals.css` — v4's actual configuration surface —
 fixes the real problem without a rewrite, and gives you one file where the visual
 identity lives.
 
-**Rejected: shadcn/ui.** Well-built and accessible, but it has a *recognizable look*, and
+**Rejected: shadcn/ui.** Well-built and accessible, but it has a _recognizable look_, and
 your explicit goal is not reading as a template. Adopting the most widely-deployed
 component aesthetic on the web works directly against that. It would also pull in Radix
 and CVA for a site with about five components.
@@ -141,6 +145,7 @@ byte-identical".
 You left this to me, so here is the concrete proposal rather than a menu.
 
 ### The reasoning
+
 You are about to become **a blog that happens to have a portfolio attached**. That's what
 "publish regularly" plus "I want to rank" means in practice — the articles will be the
 majority of the pages, the majority of the words, and essentially all of the search
@@ -159,6 +164,7 @@ prose and cool technical data is itself an identity, and it's not one any starte
 ships with — which is the actual brief.
 
 ### What this means concretely
+
 - **Type:** a real display face for headings at 3–4× body size (the current maximum is
   `text-xl`, audit 2.2), a comfortable reading face at ~18px/1.7 for body, and a mono for
   code, tags, dates, and metadata. Inter can stay as the body face — it's a sound choice

@@ -57,7 +57,7 @@ Type '{ params: { slug: string; }; }' does not satisfy the constraint 'PageProps
 
 I never saw it, for two compounding reasons:
 
-- `tsc --noEmit` passes. Those generated route types only exist *after* a
+- `tsc --noEmit` passes. Those generated route types only exist _after_ a
   build, so a standalone type-check has nothing to compare against.
 - My build script was `next build --turbopack`, and the Turbopack builder skips
   that validation entirely.

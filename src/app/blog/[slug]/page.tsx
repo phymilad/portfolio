@@ -74,7 +74,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
   return (
     <Container width="wide" className="lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-12">
-      <article className="min-w-0 max-w-[68ch]">
+      <article className="max-w-[68ch] min-w-0">
         <JsonLd schema={blogPostingSchema(post)} />
         <JsonLd
           schema={breadcrumbSchema([
@@ -84,12 +84,12 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           ])}
         />
 
-        <p className="font-mono text-xs text-fg-subtle pb-3">
+        <p className="text-fg-subtle pb-3 font-mono text-xs">
           <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
           <span aria-hidden="true"> · </span>
           {formatReadingTime(post.readingMinutes)}
           {post.draft && (
-            <span className="ms-2 rounded-full border border-accent px-2 py-0.5 text-accent">
+            <span className="border-accent text-accent ms-2 rounded-full border px-2 py-0.5">
               draft
             </span>
           )}
@@ -98,7 +98,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         <h1 className="font-display text-title">{post.title}</h1>
 
         {post.updatedAt && (
-          <p className="font-mono text-xs text-fg-subtle pt-3">
+          <p className="text-fg-subtle pt-3 font-mono text-xs">
             Updated <time dateTime={post.updatedAt}>{formatDate(post.updatedAt)}</time>
           </p>
         )}
@@ -106,12 +106,12 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         <div className="prose-body pt-4">{content}</div>
 
         {post.tags && post.tags.length > 0 && (
-          <p className="flex flex-wrap gap-2 mt-12">
+          <p className="mt-12 flex flex-wrap gap-2">
             {post.tags.map((tag) => (
               <Link
                 key={tag}
                 href={`/blog/tags/${tag}`}
-                className="font-mono text-xs px-2.5 py-1 rounded-full bg-surface-sunken text-fg-muted border border-line hover:text-accent hover:border-accent transition-colors"
+                className="bg-surface-sunken text-fg-muted border-line hover:text-accent hover:border-accent rounded-full border px-2.5 py-1 font-mono text-xs transition-colors"
               >
                 {tag}
               </Link>
@@ -120,14 +120,14 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         )}
 
         {related.length > 0 && (
-          <section className="mt-16 border-t border-line pt-8">
+          <section className="border-line mt-16 border-t pt-8">
             <h2 className="font-display text-heading pb-4">{blog.related}</h2>
             <ul className="space-y-3">
               {related.map((item) => (
                 <li key={item.slug}>
                   <Link
                     href={`/blog/${item.slug}`}
-                    className="text-accent underline underline-offset-2 hover:text-accent-hover"
+                    className="text-accent hover:text-accent-hover underline underline-offset-2"
                   >
                     {item.title}
                   </Link>
@@ -141,13 +141,16 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       {toc.length > 1 && (
         <aside className="hidden lg:block">
           <nav aria-label={blog.toc} className="sticky top-24">
-            <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle pb-3">
+            <p className="text-fg-subtle pb-3 font-mono text-xs tracking-widest uppercase">
               {blog.toc}
             </p>
-            <ul className="space-y-2 text-sm border-s border-line">
+            <ul className="border-line space-y-2 border-s text-sm">
               {toc.map((entry) => (
                 <li key={entry.id} className={entry.depth === 3 ? 'ps-7' : 'ps-4'}>
-                  <a href={`#${entry.id}`} className="text-fg-muted hover:text-accent transition-colors">
+                  <a
+                    href={`#${entry.id}`}
+                    className="text-fg-muted hover:text-accent transition-colors"
+                  >
                     {entry.text}
                   </a>
                 </li>

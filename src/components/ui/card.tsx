@@ -19,10 +19,10 @@ export const Card = ({
 }) => (
   <Tag
     className={[
-      'rounded-card border border-line bg-surface-raised p-6',
+      'rounded-card border-line bg-surface-raised border p-6',
       'motion-safe:animate-fade-in-up',
       interactive &&
-        'transition-[transform,border-color] duration-300 ease-out motion-safe:hover:-translate-y-1 hover:border-line-strong',
+        'hover:border-line-strong transition-[transform,border-color] duration-300 ease-out motion-safe:hover:-translate-y-1',
       className,
     ]
       .filter(Boolean)

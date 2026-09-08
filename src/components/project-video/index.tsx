@@ -6,7 +6,7 @@ import { projectsPage } from '@/content/copy';
 export const ProjectVideo = ({ project }: { project: Project }) => {
   return (
     <article>
-      <nav aria-label="Breadcrumb" className="font-mono text-xs text-fg-subtle pb-6">
+      <nav aria-label="Breadcrumb" className="text-fg-subtle pb-6 font-mono text-xs">
         <Link href="/projects" className="hover:text-accent transition-colors">
           {projectsPage.title}
         </Link>
@@ -16,7 +16,7 @@ export const ProjectVideo = ({ project }: { project: Project }) => {
 
       <h1 className="font-display text-title max-w-[24ch]">{project.title}</h1>
 
-      <p className="text-lg leading-relaxed text-fg-muted pt-5 max-w-[68ch]">
+      <p className="text-fg-muted max-w-[68ch] pt-5 text-lg leading-relaxed">
         {project.shortDescription}
       </p>
 
@@ -24,14 +24,14 @@ export const ProjectVideo = ({ project }: { project: Project }) => {
         {project.skills.map((skill) => (
           <li
             key={skill}
-            className="font-mono text-xs px-2.5 py-1 rounded-full bg-surface-sunken text-fg-muted border border-line"
+            className="bg-surface-sunken text-fg-muted border-line rounded-full border px-2.5 py-1 font-mono text-xs"
           >
             {skill}
           </li>
         ))}
       </ul>
 
-      <div className="aspect-video w-full overflow-hidden rounded-card border border-line mt-10">
+      <div className="rounded-card border-line mt-10 aspect-video w-full overflow-hidden border">
         <iframe
           className="h-full w-full"
           src={toEmbedUrl(project.youtubeUrl)}
@@ -45,14 +45,14 @@ export const ProjectVideo = ({ project }: { project: Project }) => {
         href={project.youtubeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-block font-mono text-xs text-accent hover:text-accent-hover mt-3"
+        className="text-accent hover:text-accent-hover mt-3 inline-block font-mono text-xs"
       >
         Watch on YouTube →
       </a>
 
-      <div className="mt-14 max-w-[68ch] space-y-5 border-t border-line pt-10">
+      <div className="border-line mt-14 max-w-[68ch] space-y-5 border-t pt-10">
         {project.description.map((line, index) => (
-          <p key={index} className="leading-[1.75] text-fg-muted">
+          <p key={index} className="text-fg-muted leading-[1.75]">
             {line}
           </p>
         ))}

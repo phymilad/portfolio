@@ -12,13 +12,13 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-| Script | What it does |
-| --- | --- |
-| `npm run dev` | Dev server (Turbopack) |
-| `npm run build` | Production build. **Not** `--turbopack`: the Turbopack builder skips Next's generated route-type validation, which is how a broken build once went unnoticed |
-| `npm start` | Serve the production build |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | `tsc --noEmit` |
+| Script              | What it does                                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`       | Dev server (Turbopack)                                                                                                                                       |
+| `npm run build`     | Production build. **Not** `--turbopack`: the Turbopack builder skips Next's generated route-type validation, which is how a broken build once went unnoticed |
+| `npm start`         | Serve the production build                                                                                                                                   |
+| `npm run lint`      | ESLint                                                                                                                                                       |
+| `npm run typecheck` | `tsc --noEmit`                                                                                                                                               |
 
 `typecheck` and `build` catch different things. Run both.
 
@@ -43,9 +43,9 @@ Add `content/blog/<slug>.mdx`:
 title: Post title
 description: One sentence. Feeds the meta description, OG card and RSS.
 publishedAt: '2026-09-08'
-updatedAt: '2026-09-12'   # optional
-tags: ['nextjs', 'css']   # optional
-draft: true               # optional — dev only, never in prod or the sitemap
+updatedAt: '2026-09-12' # optional
+tags: ['nextjs', 'css'] # optional
+draft: true # optional — dev only, never in prod or the sitemap
 ---
 ```
 

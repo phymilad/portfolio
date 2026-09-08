@@ -6,8 +6,7 @@ export const toEmbedUrl = (url: string) => {
       (u.hostname.includes('youtu.be') ? u.pathname.slice(1) : null) ||
       (u.pathname.startsWith('/shorts/') ? u.pathname.split('/')[2] : null);
 
-    const start =
-      u.searchParams.get('t') || u.searchParams.get('start') || undefined;
+    const start = u.searchParams.get('t') || u.searchParams.get('start') || undefined;
 
     const base = `https://www.youtube.com/embed/${id ?? ''}`;
     const params = new URLSearchParams();

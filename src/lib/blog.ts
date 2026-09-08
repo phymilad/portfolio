@@ -118,7 +118,10 @@ export function getRelatedPosts(post: Post, limit = 3): Post[] {
       shared: (candidate.tags ?? []).filter((tag) => tags.has(tag)).length,
     }))
     .filter((entry) => entry.shared > 0)
-    .sort((a, b) => b.shared - a.shared || b.candidate.publishedAt.localeCompare(a.candidate.publishedAt))
+    .sort(
+      (a, b) =>
+        b.shared - a.shared || b.candidate.publishedAt.localeCompare(a.candidate.publishedAt),
+    )
     .slice(0, limit)
     .map((entry) => entry.candidate);
 }

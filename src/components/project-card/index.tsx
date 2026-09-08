@@ -1,7 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
-import { Project } from "@/content/projects";
-import { Card } from "@/components/ui/card";
+import Image from 'next/image';
+import Link from 'next/link';
+import { Project } from '@/content/projects';
+import { Card } from '@/components/ui/card';
 
 /**
  * Server component. This was previously a div with an onClick that called
@@ -21,16 +21,16 @@ export const ProjectCard = ({
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="block rounded-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="rounded-card focus-visible:outline-accent block focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       <Card interactive className="overflow-hidden">
         <div className="pb-4">
           <h3 className="font-display text-heading">{project.title}</h3>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+        <div className="flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
           {desktop && (
-            <div className="relative w-full sm:w-3/4 rounded-xl overflow-hidden aspect-[4/3]">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl sm:w-3/4">
               <Image
                 src={desktop}
                 alt={`${project.title} — desktop interface`}
@@ -43,7 +43,7 @@ export const ProjectCard = ({
           )}
 
           {mobile && (
-            <div className="relative w-1/2 sm:w-1/4 rounded-xl overflow-hidden aspect-[9/16]">
+            <div className="relative aspect-[9/16] w-1/2 overflow-hidden rounded-xl sm:w-1/4">
               <Image
                 src={mobile}
                 alt={`${project.title} — mobile interface`}
@@ -56,17 +56,17 @@ export const ProjectCard = ({
         </div>
 
         <div className="py-4">
-          <p className="text-sm text-fg-muted leading-relaxed">{project.shortDescription}</p>
+          <p className="text-fg-muted text-sm leading-relaxed">{project.shortDescription}</p>
         </div>
 
-        <div className="border-t border-line"></div>
+        <div className="border-line border-t"></div>
 
         <div className="pt-4">
           <div className="flex flex-wrap gap-2">
             {project.skills.map((skill) => (
               <span
                 key={skill}
-                className="font-mono text-xs px-2.5 py-1 rounded-full bg-surface-sunken text-fg-muted border border-line"
+                className="bg-surface-sunken text-fg-muted border-line rounded-full border px-2.5 py-1 font-mono text-xs"
               >
                 {skill}
               </span>
