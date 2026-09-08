@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Header } from '@/components/header';
-import { inter } from '@/utils/constants';
+import { fontVariables } from '@/utils/constants';
 import { footer, site } from '@/content/copy';
 import { JsonLd } from '@/components/json-ld';
 import { personSchema, webSiteSchema } from '@/utils/schema';
@@ -41,8 +41,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
-      <body className="flex flex-col min-h-dvh bg-white text-slate-800 antialiased">
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
+      <body className="flex flex-col min-h-dvh font-sans antialiased">
         <JsonLd schema={personSchema()} />
         <JsonLd schema={webSiteSchema()} />
 
@@ -51,7 +51,7 @@ export default function RootLayout({
 
           <main className="w-full flex-1 mx-auto max-w-screen-lg px-6 py-4 md:p-4">{children}</main>
 
-          <footer className="w-full mx-auto max-w-screen-lg border-t p-4 text-xs text-center">
+          <footer className="w-full mx-auto max-w-screen-lg border-t border-line p-4 text-center font-mono text-sm text-fg-subtle">
             {footer.text}
           </footer>
         </ThemeProvider>
