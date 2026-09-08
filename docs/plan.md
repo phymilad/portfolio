@@ -256,7 +256,7 @@ and desktop, and specifically article pages at long lengths.
 | 3 Design foundation | ✅ done — `3a` + `3b` |
 | 4 Crawlable cards | ✅ done — `c0782c0` |
 | 5 Blog infrastructure | ✅ done — `832e65b` |
-| 6 Blog SEO | not started |
+| 6 Blog SEO | ✅ done — `58aefa5` |
 | 7 Visual identity | not started |
 | 8 CI | not started |
 | 9 Launch | not started |
