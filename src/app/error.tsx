@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Container } from '@/components/ui/container';
 import { useEffect } from 'react';
 import { errorPage } from '@/content/copy';
 
@@ -16,7 +17,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <section className="py-16 text-center">
+    <Container className="py-16 text-center">
       <h1 className="font-display text-title pb-3">{errorPage.title}</h1>
       <p className="text-fg-muted pb-6">{errorPage.body}</p>
       <div className="flex items-center justify-center gap-3">
@@ -33,6 +34,6 @@ export default function Error({
           {errorPage.cta}
         </Link>
       </div>
-    </section>
+    </Container>
   );
 }

@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import { Container } from '@/components/ui/container';
 import { notFoundPage } from '@/content/copy';
 
 export default function NotFound() {
   return (
-    <section className="py-16 text-center">
+    <Container className="py-16 text-center">
       <h1 className="font-display text-title pb-3">{notFoundPage.title}</h1>
       <p className="text-fg-muted pb-6">{notFoundPage.body}</p>
       <Link
@@ -12,6 +13,6 @@ export default function NotFound() {
       >
         {notFoundPage.cta}
       </Link>
-    </section>
+    </Container>
   );
 }

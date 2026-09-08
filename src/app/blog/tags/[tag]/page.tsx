@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Container } from '@/components/ui/container';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAllPosts, getAllTags } from '@/lib/blog';
@@ -40,7 +41,8 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
   if (posts.length === 0) notFound();
 
   return (
-    <section>
+<Container width="default">
+      <section>
       <JsonLd
         schema={breadcrumbSchema([
           { name: 'Home', path: '/' },
@@ -60,5 +62,6 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
 
       <PostList posts={posts} />
     </section>
+    </Container>
   );
 }

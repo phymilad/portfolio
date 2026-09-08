@@ -24,6 +24,7 @@ export const site = {
 
 export const nav = {
   home: 'Home',
+  about: 'About',
   projects: 'Projects',
   blog: 'Blog',
 } as const;
@@ -34,6 +35,13 @@ export const navLinks = [
 ] as const;
 
 export const home = {
+  tagline:
+    'I build fast, scalable web applications with React, Next.js, TypeScript and NestJS — and write about what I learn doing it.',
+  selectedWork: 'Selected work',
+  allProjects: 'All projects',
+  recentWriting: 'Recent writing',
+  allPosts: 'All posts',
+
   aboutTitle: 'About me',
   intro:
     'I am a Software Developer with over 5 years of experience building fast, scalable, and maintainable web applications. I love turning complex ideas into clean, efficient, and impactful digital products.',

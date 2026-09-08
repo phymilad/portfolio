@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Container } from '@/components/ui/container';
 import { ProjectCard } from '@/components/project-card';
 import { projects } from '@/content/projects';
 import { projectsPage } from '@/content/copy';
@@ -18,7 +19,8 @@ export const metadata: Metadata = {
 
 export default function Projects() {
   return (
-    <section className="grid gap-6 grid-cols-1">
+<Container width="default">
+      <section className="grid gap-6 grid-cols-1">
       <JsonLd
         schema={breadcrumbSchema([
           { name: 'Home', path: '/' },
@@ -35,5 +37,6 @@ export default function Projects() {
         <ProjectCard key={p.id} project={p} priority={index === 0} />
       ))}
     </section>
+    </Container>
   );
 }

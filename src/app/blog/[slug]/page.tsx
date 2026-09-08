@@ -12,6 +12,7 @@ import { formatDate, formatReadingTime } from '@/utils/format';
 import { JsonLd } from '@/components/json-ld';
 import { blogPostingSchema, breadcrumbSchema } from '@/utils/schema';
 import { blog } from '@/content/copy';
+import { Container } from '@/components/ui/container';
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -72,7 +73,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   });
 
   return (
-    <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-12">
+    <Container width="wide" className="lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-12">
       <article className="min-w-0 max-w-[68ch]">
         <JsonLd schema={blogPostingSchema(post)} />
         <JsonLd
@@ -155,6 +156,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           </nav>
         </aside>
       )}
-    </div>
+    </Container>
   );
 }

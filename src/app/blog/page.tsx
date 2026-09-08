@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Container } from '@/components/ui/container';
 import Link from 'next/link';
 import { blog } from '@/content/copy';
 import { getAllPosts, getAllTags } from '@/lib/blog';
@@ -23,7 +24,8 @@ export default function BlogIndex() {
   const years = [...new Set(posts.map((post) => post.publishedAt.slice(0, 4)))].sort().reverse();
 
   return (
-    <section>
+<Container width="default">
+      <section>
       <JsonLd
         schema={breadcrumbSchema([
           { name: 'Home', path: '/' },
@@ -63,5 +65,6 @@ export default function BlogIndex() {
 
       {posts.length === 0 ? <p className="text-fg-muted">{blog.empty}</p> : <PostList posts={posts} />}
     </section>
+    </Container>
   );
 }

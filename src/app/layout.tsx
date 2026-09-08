@@ -5,6 +5,7 @@ import { fontVariables } from '@/utils/constants';
 import { footer, site } from '@/content/copy';
 import { JsonLd } from '@/components/json-ld';
 import { personSchema, webSiteSchema } from '@/utils/schema';
+import { Container } from '@/components/ui/container';
 import { ThemeProvider } from 'next-themes';
 
 export const metadata: Metadata = {
@@ -49,10 +50,26 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Header />
 
-          <main className="w-full flex-1 mx-auto max-w-screen-lg px-6 py-4 md:p-4">{children}</main>
+          {/* Width is chosen per page via <Container>, not fixed here. */}
+          <main className="w-full flex-1 px-6 py-10 sm:px-8">{children}</main>
 
-          <footer className="w-full mx-auto max-w-screen-lg border-t border-line p-4 text-center font-mono text-sm text-fg-subtle">
-            {footer.text}
+          <footer className="border-t border-line mt-24">
+            <Container className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-8 sm:px-8 font-mono text-xs text-fg-subtle">
+              <span>{footer.text}</span>
+              <span className="flex items-center gap-4">
+                <a href="/rss.xml" className="hover:text-accent transition-colors">
+                  RSS
+                </a>
+                <a
+                  href={site.social[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-accent transition-colors"
+                >
+                  LinkedIn
+                </a>
+              </span>
+            </Container>
           </footer>
         </ThemeProvider>
       </body>
