@@ -15,6 +15,11 @@ export const Header = () => {
 
   useEffect(() => setOpen(false), [pathname]);
   const toggleTheme = () => setTheme(resolvedTheme === 'light' ? 'dark' : 'light');
+  // The buttons render only an emoji, so without this they are announced as
+  // unlabelled buttons. Falls back to a neutral label before hydration.
+  const themeLabel = mounted
+    ? `Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} theme`
+    : 'Switch theme';
 
   return (
     <header className="border-line bg-surface/80 sticky top-0 z-50 border-b backdrop-blur-lg">
@@ -49,6 +54,8 @@ export const Header = () => {
           <li>
             <button
               onClick={toggleTheme}
+              aria-label={themeLabel}
+              title={themeLabel}
               className="border-line text-fg-muted hover:bg-surface-sunken hover:border-line-strong cursor-pointer rounded-md border px-3 py-1 transition"
             >
               {mounted ? (resolvedTheme === 'light' ? '🌙' : '☀️') : null}
@@ -102,6 +109,8 @@ export const Header = () => {
           <li>
             <button
               onClick={toggleTheme}
+              aria-label={themeLabel}
+              title={themeLabel}
               className="border-line hover:bg-surface-sunken mt-2 block w-full cursor-pointer rounded-md border px-3 py-2 text-center transition"
             >
               {mounted ? (resolvedTheme === 'light' ? '🌙 Dark' : '☀️ Light') : null}
