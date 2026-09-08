@@ -3,12 +3,36 @@ import './globals.css';
 import { Header } from '@/components/header';
 import { inter } from '@/utils/constants';
 import { footer, site } from '@/content/copy';
+import { JsonLd } from '@/components/json-ld';
+import { personSchema, webSiteSchema } from '@/utils/schema';
 import { ThemeProvider } from 'next-themes';
 
 export const metadata: Metadata = {
-  title: `${site.name} — ${site.role}`,
-  description: 'Portfolio, projects, and blog by Milad Mohammadi.',
   metadataBase: new URL(site.url),
+  title: {
+    default: `${site.name} — ${site.role}`,
+    template: `%s — ${site.name}`,
+  },
+  description: site.description,
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: site.name,
+    locale: site.locale,
+    url: '/',
+    title: `${site.name} — ${site.role}`,
+    description: site.description,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${site.name} — ${site.role}`,
+    description: site.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+  },
 };
 
 export default function RootLayout({
@@ -19,6 +43,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
       <body className="flex flex-col min-h-dvh bg-white text-slate-800 antialiased">
+        <JsonLd schema={personSchema()} />
+        <JsonLd schema={webSiteSchema()} />
+
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Header />
 

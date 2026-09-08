@@ -1,10 +1,31 @@
+import type { Metadata } from 'next';
 import { ProjectCard } from '@/components/project-card';
 import { projects } from '@/content/projects';
 import { projectsPage } from '@/content/copy';
+import { JsonLd } from '@/components/json-ld';
+import { breadcrumbSchema } from '@/utils/schema';
+
+export const metadata: Metadata = {
+  title: projectsPage.title,
+  description: projectsPage.metaDescription,
+  alternates: { canonical: '/projects' },
+  openGraph: {
+    title: projectsPage.title,
+    description: projectsPage.metaDescription,
+    url: '/projects',
+  },
+};
 
 export default function Projects() {
   return (
     <section className="grid gap-6 grid-cols-1">
+      <JsonLd
+        schema={breadcrumbSchema([
+          { name: 'Home', path: '/' },
+          { name: projectsPage.title, path: '/projects' },
+        ])}
+      />
+
       <div>
         <h1 className="text-2xl font-semibold pb-2">{projectsPage.title}</h1>
         <p className="text-slate-600 dark:text-slate-300">{projectsPage.intro}</p>

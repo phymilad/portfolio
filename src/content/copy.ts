@@ -11,6 +11,15 @@ export const site = {
   role: 'Software Developer',
   brand: 'Milad Mohammadi - Software Developer',
   url: 'https://phymilad.com',
+  description:
+    'Software developer with 5+ years building fast, scalable web applications with React, Next.js, TypeScript and NestJS. Projects, writing, and how I work.',
+  locale: 'en_US',
+  /**
+   * Profiles used for schema.org sameAs. Only verified URLs belong here —
+   * a wrong sameAs actively harms entity resolution. Add GitHub etc. once
+   * confirmed.
+   */
+  social: ['https://www.linkedin.com/in/phymilad/'],
 } as const;
 
 export const nav = {
@@ -43,6 +52,8 @@ export const home = {
 
 export const projectsPage = {
   title: 'Projects',
+  metaDescription:
+    'Production web applications I have built or contributed to — Mdotcar, Rsoon and Keydoc — with a walkthrough of each.',
   intro:
     'A selection of production work — platforms I have built or contributed to, with a short walkthrough of each.',
 } as const;
@@ -63,6 +74,8 @@ export const errorPage = {
 export const blog = {
   title: 'Blog',
   empty: 'No posts yet.',
+  metaDescription:
+    'Notes on frontend engineering, React and Next.js, architecture, and the things I learn building for the web.',
 } as const;
 
 export const footer = {
