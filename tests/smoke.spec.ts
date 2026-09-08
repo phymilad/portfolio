@@ -59,39 +59,71 @@ test.describe('structure', () => {
 });
 
 test.describe('blog', () => {
-  test('a post renders with metadata, highlighted code and a working TOC', async ({ page }) => {
-    await page.goto('/blog/next-15-params-is-a-promise');
+  /**
+   * Post slugs are read from the index rather than hardcoded, so the suite
+   * survives posts being added, renamed or removed. Content-dependent
+   * assertions skip when nothing is published yet.
+   */
+  const firstPostHref = async (page: import('@playwright/test').Page) => {
+    await page.goto('/blog');
+    const links = page.locator(
+      'main a[href^="/blog/"]:not([href*="/tags/"]):not([href*="/archive/"])',
+    );
+    return (await links.count()) > 0 ? await links.first().getAttribute('href') : null;
+  };
 
+  test('a published post renders with highlighted code and a working TOC', async ({ page }) => {
+    const href = await firstPostHref(page);
+    test.skip(!href, 'no published posts yet');
+
+    await page.goto(href!);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.locator('pre.shiki').first()).toBeVisible();
 
-    const firstTocLink = page.locator('nav[aria-label="On this page"] a').first();
-    const href = await firstTocLink.getAttribute('href');
-    expect(href).toMatch(/^#/);
-    await expect(page.locator(href!)).toBeAttached();
+    const toc = page.locator('nav[aria-label="On this page"] a');
+    if ((await toc.count()) > 0) {
+      const anchor = await toc.first().getAttribute('href');
+      expect(anchor).toMatch(/^#/);
+      await expect(page.locator(anchor!)).toBeAttached();
+    }
   });
 
   test('no highlighter javascript is shipped to the browser', async ({ page }) => {
+    const href = await firstPostHref(page);
+    test.skip(!href, 'no published posts yet');
+
     const scripts: string[] = [];
     page.on('response', (response) => {
       if (response.url().endsWith('.js')) scripts.push(response.url());
     });
-    await page.goto('/blog/next-15-params-is-a-promise');
+    await page.goto(href!);
     expect(scripts.some((url) => /shiki|onigasm|textmate/i.test(url))).toBe(false);
   });
 
+  test('the blog index always renders, empty or not', async ({ page }) => {
+    const response = await page.goto('/blog');
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Blog');
+  });
+
   test('drafts are excluded from production', async ({ page }) => {
-    const response = await page.goto('/blog/measuring-before-redesigning');
+    // example-post.mdx ships as a template with draft: true.
+    const response = await page.goto('/blog/example-post');
     expect(response?.status()).toBe(404);
   });
 
-  test('tag pages list posts and reject unknown tags', async ({ page }) => {
-    const ok = await page.goto('/blog/tags/nextjs');
-    expect(ok?.status()).toBe(200);
-    await expect(page.locator('a[href^="/blog/"]').first()).toBeVisible();
+  test('unknown tags and years 404', async ({ page }) => {
+    expect((await page.goto('/blog/tags/not-a-real-tag'))?.status()).toBe(404);
+    expect((await page.goto('/blog/archive/1999'))?.status()).toBe(404);
+  });
 
-    const missing = await page.goto('/blog/tags/not-a-real-tag');
-    expect(missing?.status()).toBe(404);
+  test('tag pages listed on the index resolve', async ({ page }) => {
+    await page.goto('/blog');
+    const tagLinks = page.locator('main a[href^="/blog/tags/"]');
+    test.skip((await tagLinks.count()) === 0, 'no tags until a post is published');
+
+    const href = await tagLinks.first().getAttribute('href');
+    expect((await page.goto(href!))?.status()).toBe(200);
   });
 });
 

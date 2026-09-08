@@ -1,0 +1,59 @@
+---
+title: Example post
+description: A template showing every frontmatter field and the markdown this site renders. Copy it, rename it, delete this one.
+publishedAt: '2026-01-01'
+updatedAt: '2026-01-02'
+tags: ['example']
+draft: true
+---
+
+This file is a template. It has `draft: true`, so it shows in `npm run dev` and
+is excluded from the production build, the sitemap and the RSS feed. Copy it to
+`content/blog/your-slug.mdx`, set `draft: false`, and the filename becomes the
+URL: `/blog/your-slug`.
+
+## Frontmatter
+
+`title`, `description` and `publishedAt` are required — the build fails and
+names the missing field if any are absent. `description` feeds the meta
+description, the social card and the RSS entry, so write it for a stranger.
+
+`updatedAt`, `tags` and `draft` are optional. Tags generate `/blog/tags/<tag>`
+pages automatically.
+
+## Headings build the table of contents
+
+Every `##` and `###` becomes an entry in the sidebar on desktop, with anchors
+you can link to directly.
+
+### Third-level headings nest
+
+Anything deeper is not listed, which keeps the sidebar readable.
+
+## Code
+
+Fenced blocks are highlighted at build time, so no highlighter JavaScript is
+sent to the browser. Both light and dark themes are baked in.
+
+```ts
+export function readingMinutes(body: string): number {
+  const words = body.trim().split(/\s+/).length;
+  return Math.max(1, Math.round(words / 200));
+}
+```
+
+Inline `code` works too.
+
+## Everything else
+
+- Bullet lists
+- **Bold**, _italic_, and [links](https://phymilad.com)
+
+> Blockquotes are set with an accent rule.
+
+| Column | Meaning       |
+| ------ | ------------- |
+| Tables | Are supported |
+
+Images go in `public/images/blog/` and are referenced as `/images/blog/name.png`.
+They are rendered through `next/image` automatically.

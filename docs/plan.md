@@ -268,15 +268,15 @@ and desktop, and specifically article pages at long lengths.
 
 ## Progress
 
-| Phase                     | Status                |
-| ------------------------- | --------------------- |
-| 0 Unbreak the build       | ✅ done — `696a157`   |
-| 1 Delete the locale layer | ✅ done — `4e1c95e`   |
-| 2 Metadata & SEO          | ✅ done — `2a` + `2b` |
-| 3 Design foundation       | ✅ done — `3a` + `3b` |
-| 4 Crawlable cards         | ✅ done — `c0782c0`   |
-| 5 Blog infrastructure     | ✅ done — `832e65b`   |
-| 6 Blog SEO                | ✅ done — `58aefa5`   |
-| 7 Visual identity         | ✅ done — `7a` + `7b` |
-| 8 CI                      | ✅ done — `8a` + `8b` |
-| 9 Launch                  | not started           |
+| Phase                     | Status                     |
+| ------------------------- | -------------------------- |
+| 0 Unbreak the build       | ✅ done — `696a157`        |
+| 1 Delete the locale layer | ✅ done — `4e1c95e`        |
+| 2 Metadata & SEO          | ✅ done — `2a` + `2b`      |
+| 3 Design foundation       | ✅ done — `3a` + `3b`      |
+| 4 Crawlable cards         | ✅ done — `c0782c0`        |
+| 5 Blog infrastructure     | ✅ done — `832e65b`        |
+| 6 Blog SEO                | ✅ done — `58aefa5`        |
+| 7 Visual identity         | ✅ done — `7a` + `7b`      |
+| 8 CI                      | ✅ done — `8a` + `8b`      |
+| 9 Launch                  | prepared — deploy is yours |

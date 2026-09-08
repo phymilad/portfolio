@@ -8,11 +8,11 @@
 
 export const site = {
   name: 'Milad Mohammadi',
-  role: 'Software Developer',
-  brand: 'Milad Mohammadi - Software Developer',
+  role: 'Software Engineer',
+  brand: 'Milad Mohammadi — Software Engineer',
   url: 'https://phymilad.com',
   description:
-    'Software developer with 5+ years building fast, scalable web applications with React, Next.js, TypeScript and NestJS. Projects, writing, and how I work.',
+    'Software engineer with 5+ years building fast, scalable web applications with React, Next.js, TypeScript and NestJS. Projects, writing, and how I work.',
   locale: 'en_US',
   /**
    * Profiles used for schema.org sameAs. Only verified URLs belong here —
@@ -44,7 +44,7 @@ export const home = {
 
   aboutTitle: 'About me',
   intro:
-    'I am a Software Developer with over 5 years of experience building fast, scalable, and maintainable web applications. I love turning complex ideas into clean, efficient, and impactful digital products.',
+    'I am a Software Engineer with over 5 years of experience building fast, scalable, and maintainable web applications. I love turning complex ideas into clean, efficient, and impactful digital products.',
 
   whatIDoTitle: 'What I Do',
   whatIDo:

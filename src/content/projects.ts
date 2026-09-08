@@ -14,7 +14,7 @@ export type Project = {
 export const projects: Project[] = [
   {
     id: 1,
-    title: 'Mdotcar \u2013 Client & Expert Web App Demo | Real-Time Roadside Assistance',
+    title: 'Mdotcar — Real-Time Roadside Assistance',
     shortDescription:
       'Mdotcar is an intelligent roadside assistance platform that connects clients and experts in real time. The video demonstrates the full process \u2014 from requesting help to completing the service \u2014 showcasing seamless, efficient communication and real-time management.',
     description: [
@@ -52,7 +52,7 @@ export const projects: Project[] = [
   },
   {
     id: 2,
-    title: 'Mdotcar - Admin Panel',
+    title: 'Mdotcar — Admin Panel',
     shortDescription:
       'The Mdotcar Admin Panel is the central hub for managing the entire roadside assistance platform. It provides comprehensive control over client and expert accounts, service requests, and analytics, ensuring smooth operations and a seamless experience for all users.',
     description: [
@@ -90,8 +90,7 @@ export const projects: Project[] = [
   },
   {
     id: 3,
-    title:
-      'Rsoon \u2013 Smart Investment Consulting Web Application | Grow Your Wealth with Confidence',
+    title: 'Rsoon — Investment Consulting Platform',
     shortDescription:
       'Rsoon is a modern investment consulting platform that simplifies financial decision-making. It offers personalized guidance, real-time market insights, and secure tools to help both beginners and professionals manage and grow their investments confidently.',
     description: [
@@ -126,7 +125,7 @@ export const projects: Project[] = [
   },
   {
     id: 4,
-    title: 'Keydoc \u2013 Document Management System',
+    title: 'Keydoc — Document Management System',
     shortDescription:
       'Keydoc is a robust document management system that centralizes storage, enhances collaboration, and provides secure access controls. It is designed to help businesses of all sizes manage their documents efficiently and effectively.',
     description: [

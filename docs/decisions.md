@@ -207,18 +207,35 @@ You confirmed nothing is configured. Implications:
 
 ---
 
-## Remaining open questions
+## Answered
 
-None blocking. Two small ones I'll decide by default unless you say otherwise:
+Recorded 2026-09-08.
 
-1. **"Software Developer" or "Frontend Developer"?** The `<title>` says Frontend
-   (`layout.tsx:9`), every body string says Software (`dict.ts:10-14, 59-64`). This is
-   the phrase you'd be ranking for, so it's worth a deliberate choice. **Defaulting to
-   "Software Developer"** — it matches the copy you actually wrote, and it's the broader
-   claim.
+| Question             | Answer                                                                                                                                                         |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Locales              | English only. `fa`/`de`/`nl` deleted, recoverable at `657c228`.                                                                                                |
+| Domain               | phymilad.com                                                                                                                                                   |
+| Hosting              | Vercel                                                                                                                                                         |
+| i18n library         | None — the locale layer was removed instead.                                                                                                                   |
+| Content layer        | MDX in the repo.                                                                                                                                               |
+| Styling              | Tailwind v4 with a CSS token layer.                                                                                                                            |
+| Design direction     | Editorial base, technical accents — accepted as built.                                                                                                         |
+| Role wording         | **Software Engineer**. Milad wrote "Software Engineering"; as a job title the noun is Engineer, which also matches his GitHub bio.                             |
+| `sameAs` profiles    | LinkedIn and GitHub, both verified. No guessed URLs.                                                                                                           |
+| YouTube upload dates | Not provided, by choice. `VideoObject` stays without `uploadDate` — valid markup, but it will not earn a video rich result.                                    |
+| Project titles       | Shortened so each `<title>` lands under ~60 characters with the site template appended.                                                                        |
+| Blog posts           | The drafts written during phase 5 were deleted. `content/blog/example-post.mdx` remains as a template, permanently `draft: true`. Milad writes the real posts. |
+| Analytics            | Deferred.                                                                                                                                                      |
+| Search Console       | Deferred until the site is live.                                                                                                                               |
 
-2. **Should `/projects` become a real index page?** It currently only redirects home
-   (audit 3.15) while `/projects/1` is a real page — a parent that redirects away from
-   its own children. **Defaulting to: make it a real index**, since it gives the blog's
-   tag/archive pages a structural sibling and gives `BreadcrumbList` something to point
-   at.
+## Still open
+
+- **Analytics** — Plausible or Umami recommended over GA4: no cookie banner, far
+  smaller script, and the useful question ("which posts get read") is what they
+  are built for. Deferred by choice, not blocked.
+- **Search Console** — submit `https://phymilad.com/sitemap.xml` once the domain
+  resolves. For the ranking goal this matters more than analytics.
+- **Pagination** — deferred until the post count approaches ten; building it for
+  an empty blog would mean an unverifiable route.
+- **Lighthouse budget in CI** — belongs against the real deployment rather than a
+  cold runner.
