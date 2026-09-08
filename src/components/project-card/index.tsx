@@ -1,11 +1,11 @@
 "use client"
 
 import Image from "next/image";
-import { Project } from "./types";
+import { Project } from "@/content/projects";
 import { useRouter } from "next/navigation";
-import { Locale } from "../language-selector";
 
-export const ProjectCard = ({ project, locale }: { project: Project, locale: Locale }) => {
+
+export const ProjectCard = ({ project }: { project: Project }) => {
   const { push } = useRouter()
   const hasDesktop = !!project.image?.desktop;
   const hasMobile = !!project.image?.mobile;
@@ -15,7 +15,7 @@ export const ProjectCard = ({ project, locale }: { project: Project, locale: Loc
       className="p-5 relative overflow-hidden rounded-2xl border border-slate-400 dark:border-slate-700 cursor-pointer 
                 bg-gradient-to-b from-white/95 to-white/100 dark:from-gray-800/80 dark:to-gray-800/90 
                 transition-transform duration-300 ease-in-out transform hover:scale-105 motion-safe:animate-fadeInUp"
-      onClick={() => push(`/${locale}/projects/${project.id}`)}
+      onClick={() => push(`/projects/${project.id}`)}
     >
       {/* Title */}
       <div className="pb-4">

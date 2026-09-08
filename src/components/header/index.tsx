@@ -1,43 +1,34 @@
 'use client';
 
-import { Locale, t } from '@/i18n/dict';
-import { inter, vazir } from '@/utils/constants';
+import { site } from '@/content/copy';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import LanguageSelector from '../language-selector';
 
-type Props = { locale: Locale };
-
-export const Header = ({ locale }: Props) => {
+export const Header = () => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || '/';
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const base = `/${locale}`;
-
   useEffect(() => setOpen(false), [pathname]);
   const toggleTheme = () => setTheme(resolvedTheme === 'light' ? 'dark' : 'light');
-  
+
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 backdrop-blur-lg shadow-sm ">
         <nav className="mx-auto flex max-w-screen-lg items-center justify-between px-4 py-3">
             {/* Brand */}
             <Link
-                href={base}
+                href="/"
                 className="text-lg font-bold tracking-tight transition-colors"
             >
-                {t('brand', locale)}
+                {site.brand}
             </Link>
 
             {/* Desktop nav */}
             <ul className="hidden items-center gap-6 text-sm font-medium sm:flex">
-                <li>
-                    <LanguageSelector locale={locale} />
-                </li>
                 <li>
                     <button
                         onClick={toggleTheme}
@@ -86,9 +77,6 @@ export const Header = ({ locale }: Props) => {
         className={`${open?'block': 'hidden'} sm:hidden border-t border-slate-200  transition-all duration-200 dark:border-slate-700  ${open ? 'max-h-96' : 'max-h-0'}`}
       >
         <ul className="flex flex-col gap-1 p-3 text-sm font-medium">
-            <li>
-                <LanguageSelector locale={locale} />
-            </li>
             <li>
                 <button
                     onClick={toggleTheme}

@@ -1,5 +1,5 @@
-import { toEmbedUrl } from "@/utils/functions";
-import { Project } from "../project-card/types";
+import { toEmbedUrl } from "@/utils/url";
+import { Project } from "@/content/projects";
 
 export const ProjectVideo = ({ project }: { project: Project }) => {
   return (
