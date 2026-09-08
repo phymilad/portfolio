@@ -6,6 +6,10 @@ import type { NextConfig } from "next";
 const RETIRED_LOCALES = ['en', 'fa', 'de', 'nl'];
 
 const nextConfig: NextConfig = {
+  images: {
+    // AVIF first, WebP fallback. The source PNGs are 1-3MB each.
+    formats: ['image/avif', 'image/webp'],
+  },
   async redirects() {
     return RETIRED_LOCALES.flatMap((locale) => [
       { source: `/${locale}`, destination: '/', permanent: true },

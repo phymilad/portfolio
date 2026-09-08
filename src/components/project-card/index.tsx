@@ -1,64 +1,66 @@
-"use client"
-
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Project } from "@/content/projects";
 import { Card } from "@/components/ui/card";
 
-export const ProjectCard = ({ project }: { project: Project }) => {
-  const { push } = useRouter()
-  const hasDesktop = !!project.image?.desktop;
-  const hasMobile = !!project.image?.mobile;
+/**
+ * Server component. This was previously a div with an onClick that called
+ * router.push, which meant crawlers could not follow it to the project pages
+ * and keyboard users could not reach it at all. A real anchor fixes both.
+ */
+export const ProjectCard = ({
+  project,
+  /** Only the first card above the fold should preload its image. */
+  priority = false,
+}: {
+  project: Project;
+  priority?: boolean;
+}) => {
+  const { desktop, mobile } = project.image;
 
   return (
-    <Card
-      interactive
-      className="cursor-pointer overflow-hidden"
+    <Link
+      href={`/projects/${project.id}`}
+      className="block rounded-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
-      <div onClick={() => push(`/projects/${project.id}`)}>
-        {/* Title */}
+      <Card interactive className="overflow-hidden">
         <div className="pb-4">
           <h3 className="font-display text-heading">{project.title}</h3>
         </div>
 
-        {/* Image container */}
-        <div className="flex flex-row justify-center gap-3 w-full">
-          <div className="relative w-3/4 rounded-xl overflow-hidden aspect-[4/3]">
-            {hasDesktop && (
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+          {desktop && (
+            <div className="relative w-full sm:w-3/4 rounded-xl overflow-hidden aspect-[4/3]">
               <Image
-                src={project.image?.desktop as string}
-                alt={`${project.title} desktop`}
+                src={desktop}
+                alt={`${project.title} — desktop interface`}
                 fill
                 className="object-contain"
-                sizes="(min-width: 1024px) 66vw, 100vw"
-                priority
+                sizes="(min-width: 1024px) 700px, (min-width: 640px) 70vw, 100vw"
+                priority={priority}
               />
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="relative w-1/4 rounded-xl overflow-hidden aspect-[9/16]">
-            {hasMobile && (
+          {mobile && (
+            <div className="relative w-1/2 sm:w-1/4 rounded-xl overflow-hidden aspect-[9/16]">
               <Image
-                src={project.image?.mobile as string}
-                alt={`${project.title} mobile`}
+                src={mobile}
+                alt={`${project.title} — mobile interface`}
                 fill
                 className="object-contain"
-                sizes="(min-width: 1024px) 33vw, 100vw"
-                priority
+                sizes="(min-width: 1024px) 235px, (min-width: 640px) 25vw, 50vw"
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Description */}
         <div className="py-4">
           <p className="text-sm text-fg-muted leading-relaxed">{project.shortDescription}</p>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-line"></div>
 
-        {/* Skills / Tags */}
         <div className="pt-4">
           <div className="flex flex-wrap gap-2">
             {project.skills.map((skill) => (
@@ -71,7 +73,7 @@ export const ProjectCard = ({ project }: { project: Project }) => {
             ))}
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </Link>
   );
 };

@@ -46,8 +46,8 @@ export default function Home() {
             {nav.projects}
           </Link>
         </h2>
-        {projects.map((p) => (
-          <ProjectCard key={p.id} project={p} />
+        {projects.map((p, index) => (
+          <ProjectCard key={p.id} project={p} priority={index === 0} />
         ))}
       </section>
     </>

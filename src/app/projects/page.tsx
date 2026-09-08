@@ -31,8 +31,8 @@ export default function Projects() {
         <p className="text-fg-muted leading-relaxed">{projectsPage.intro}</p>
       </div>
 
-      {projects.map((p) => (
-        <ProjectCard key={p.id} project={p} />
+      {projects.map((p, index) => (
+        <ProjectCard key={p.id} project={p} priority={index === 0} />
       ))}
     </section>
   );
