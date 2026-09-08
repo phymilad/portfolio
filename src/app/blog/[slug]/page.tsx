@@ -10,7 +10,7 @@ import { getToc } from '@/lib/toc';
 import { mdxComponents } from '@/components/mdx';
 import { formatDate, formatReadingTime } from '@/utils/format';
 import { JsonLd } from '@/components/json-ld';
-import { breadcrumbSchema } from '@/utils/schema';
+import { blogPostingSchema, breadcrumbSchema } from '@/utils/schema';
 import { blog } from '@/content/copy';
 
 export function generateStaticParams() {
@@ -74,6 +74,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-12">
       <article className="min-w-0 max-w-[68ch]">
+        <JsonLd schema={blogPostingSchema(post)} />
         <JsonLd
           schema={breadcrumbSchema([
             { name: 'Home', path: '/' },
@@ -102,6 +103,20 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         )}
 
         <div className="prose-body pt-4">{content}</div>
+
+        {post.tags && post.tags.length > 0 && (
+          <p className="flex flex-wrap gap-2 mt-12">
+            {post.tags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/blog/tags/${tag}`}
+                className="font-mono text-xs px-2.5 py-1 rounded-full bg-surface-sunken text-fg-muted border border-line hover:text-accent hover:border-accent transition-colors"
+              >
+                {tag}
+              </Link>
+            ))}
+          </p>
+        )}
 
         {related.length > 0 && (
           <section className="mt-16 border-t border-line pt-8">

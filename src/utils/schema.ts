@@ -1,6 +1,7 @@
 import { site } from '@/content/copy';
 import type { Project } from '@/content/projects';
 import { toEmbedUrl } from '@/utils/url';
+import type { Post } from '@/lib/blog';
 
 const abs = (path: string) => new URL(path, site.url).toString();
 
@@ -47,4 +48,23 @@ export const videoSchema = (project: Project) => ({
   url: project.youtubeUrl,
   thumbnailUrl: project.image.desktop ? abs(project.image.desktop) : undefined,
   creator: { '@id': `${site.url}/#person` },
+});
+
+export const blogPostingSchema = (post: Post) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  '@id': abs(`/blog/${post.slug}#post`),
+  headline: post.title,
+  description: post.description,
+  url: abs(`/blog/${post.slug}`),
+  datePublished: post.publishedAt,
+  dateModified: post.updatedAt ?? post.publishedAt,
+  inLanguage: 'en',
+  keywords: post.tags,
+  wordCount: post.body.trim().split(/\s+/).filter(Boolean).length,
+  image: abs(`/blog/${post.slug}/opengraph-image`),
+  author: { '@id': `${site.url}/#person` },
+  publisher: { '@id': `${site.url}/#person` },
+  isPartOf: { '@id': `${site.url}/#website` },
+  mainEntityOfPage: abs(`/blog/${post.slug}`),
 });
