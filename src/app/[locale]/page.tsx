@@ -3,9 +3,8 @@ import { t, tList, type Locale } from '@/i18n/dict';
 import { ProjectCard } from '@/components/project-card';
 import { createProjectsBasedOnLocale } from '@/utils/functions';
 
-export default function Home({ params }: { params: { locale: Locale } }) {
-  const { locale } = params;
-  const base = `/${locale}`;
+export default async function Home({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
 
   return (<>
     <section className="prose max-w-none">
