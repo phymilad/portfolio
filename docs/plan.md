@@ -250,7 +250,7 @@ and desktop, and specifically article pages at long lengths.
 
 | Phase | Status |
 |---|---|
-| 0 Unbreak the build | not started |
+| 0 Unbreak the build | ✅ done — `696a157` |
 | 1 Delete the locale layer | not started |
 | 2 Metadata & SEO | not started |
 | 3 Design foundation | not started |
