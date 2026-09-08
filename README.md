@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# phymilad.com
 
-## Getting Started
+Personal site of Milad Mohammadi — portfolio, project write-ups, and a blog.
 
-First, run the development server:
+Built with Next.js 15 (App Router), React 19, TypeScript and Tailwind CSS v4.
+Statically generated; there is no database and no CMS.
+
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Dev server (Turbopack) |
+| `npm run build` | Production build. **Not** `--turbopack`: the Turbopack builder skips Next's generated route-type validation, which is how a broken build once went unnoticed |
+| `npm start` | Serve the production build |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`typecheck` and `build` catch different things. Run both.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Layout
 
-## Learn More
+```
+content/blog/*.mdx      posts — the only place content lives
+src/app/                routes, plus robots.ts, sitemap.ts, rss.xml, OG images
+src/components/         ui/ primitives, mdx/ element map, feature components
+src/content/            site copy and project data as typed modules
+src/lib/                blog reading, frontmatter validation, TOC extraction
+src/utils/              schema.org builders, formatters, URL helpers
+docs/                   audit, roadmap, decision record
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Writing a post
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Add `content/blog/<slug>.mdx`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```yaml
+---
+title: Post title
+description: One sentence. Feeds the meta description, OG card and RSS.
+publishedAt: '2026-09-08'
+updatedAt: '2026-09-12'   # optional
+tags: ['nextjs', 'css']   # optional
+draft: true               # optional — dev only, never in prod or the sitemap
+---
+```
 
-## Deploy on Vercel
+`title`, `description` and a `YYYY-MM-DD` `publishedAt` are required and
+validated at build time: a malformed post fails the build with the file and
+field named, rather than shipping an empty meta tag.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Reading time, the table of contents, related posts, tag pages and archive pages
+are all derived. Syntax highlighting runs at build time via Shiki, so no
+highlighter JavaScript is sent to the browser.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+
+- Styling is Tailwind v4. There is no `tailwind.config.ts` — v4 would not read
+  one without an `@config` directive. Tokens live in `@theme` in
+  `src/app/globals.css`.
+- Colour tokens are declared on `:root`/`.dark` and mapped through
+  `@theme inline` so utilities follow the cascade instead of resolving once at
+  build time.
+- The site was previously served under `/en`, `/fa`, `/de` and `/nl`. Those
+  paths are permanently redirected in `next.config.ts`; see `docs/decisions.md`.

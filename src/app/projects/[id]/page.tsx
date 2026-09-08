@@ -5,6 +5,7 @@ import { projects } from '@/content/projects';
 import { JsonLd } from '@/components/json-ld';
 import { breadcrumbSchema, videoSchema } from '@/utils/schema';
 import { projectsPage } from '@/content/copy';
+import { Container } from '@/components/ui/container';
 
 export function generateStaticParams() {
   return projects.map((project) => ({ id: String(project.id) }));
@@ -49,7 +50,7 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
   if (!project) notFound();
 
   return (
-    <>
+    <Container>
       <JsonLd schema={videoSchema(project)} />
       <JsonLd
         schema={breadcrumbSchema([
@@ -59,6 +60,6 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
         ])}
       />
       <ProjectVideo project={project} />
-    </>
+    </Container>
   );
 }
