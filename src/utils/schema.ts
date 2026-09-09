@@ -1,4 +1,4 @@
-import { site } from '@/content/copy';
+import { portrait, site } from '@/content/copy';
 import type { Project } from '@/content/projects';
 import { toEmbedUrl } from '@/utils/url';
 import type { Post } from '@/lib/blog';
@@ -12,6 +12,7 @@ export const personSchema = () => ({
   name: site.name,
   url: site.url,
   jobTitle: site.role,
+  image: abs(portrait.src),
   description: site.description,
   sameAs: [...site.social],
 });

@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: abs('/'), lastModified, changeFrequency: 'monthly', priority: 1 },
     { url: abs('/projects'), lastModified, changeFrequency: 'monthly', priority: 0.8 },
+    { url: abs('/about'), lastModified, changeFrequency: 'yearly', priority: 0.7 },
     { url: abs('/blog'), lastModified, changeFrequency: 'weekly', priority: 0.8 },
     ...projects.map((project) => ({
       url: abs(`/projects/${project.id}`),

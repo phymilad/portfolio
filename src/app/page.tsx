@@ -1,11 +1,11 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import { Card } from '@/components/ui/card';
 import { Container } from '@/components/ui/container';
 import { ProjectRow } from '@/components/project-row';
 import { projects } from '@/content/projects';
 import { getAllPosts } from '@/lib/blog';
 import { formatDate, formatReadingTime } from '@/utils/format';
-import { home, nav, site } from '@/content/copy';
+import { aboutPage, home, nav, portrait, site } from '@/content/copy';
 
 const SectionHeading = ({ title, href, cta }: { title: string; href: string; cta: string }) => (
   <div className="border-line flex items-baseline justify-between gap-4 border-b pb-3">
@@ -75,33 +75,29 @@ export default function Home() {
         </section>
       )}
 
-      {/* About */}
-      <section>
-        <h2 className="font-display text-title border-line border-b pb-3">{nav.about}</h2>
-        <div className="grid grid-cols-1 gap-6 pt-8 lg:grid-cols-2">
-          <Card interactive>
-            <h3 className="font-display text-heading pb-2">{home.aboutTitle}</h3>
-            <p className="text-fg-muted leading-relaxed">{home.intro}</p>
-          </Card>
+      {/* About — the detail lives on /about */}
+      <section className="grid items-start gap-8 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-10">
+        <Image
+          src={portrait.src}
+          alt={portrait.alt}
+          width={portrait.width}
+          height={portrait.height}
+          sizes="(min-width: 640px) 12rem, 100vw"
+          className="border-line rounded-card h-auto w-full border object-cover"
+        />
 
-          <Card interactive>
-            <h3 className="font-display text-heading pb-2">{home.whatIDoTitle}</h3>
-            <p className="text-fg-muted leading-relaxed">{home.whatIDo}</p>
-          </Card>
-
-          <Card interactive>
-            <h3 className="font-display text-heading pb-2">{home.experienceTitle}</h3>
-            <ul className="text-fg-muted list-disc space-y-2 ps-5 leading-relaxed">
-              {home.experience.map((point) => (
-                <li key={point}>{point}</li>
-              ))}
-            </ul>
-          </Card>
-
-          <Card interactive>
-            <h3 className="font-display text-heading pb-2">{home.howIWorkTitle}</h3>
-            <p className="text-fg-muted leading-relaxed">{home.howIWork}</p>
-          </Card>
+        <div>
+          <div className="border-line flex items-baseline justify-between gap-4 border-b pb-3">
+            <h2 className="font-display text-title">{nav.about}</h2>
+            <Link
+              href="/about"
+              className="text-fg-subtle hover:text-accent font-mono text-xs whitespace-nowrap transition-colors"
+            >
+              {home.moreAbout} →
+            </Link>
+          </div>
+          <p className="text-fg-muted max-w-[62ch] pt-6 leading-relaxed">{aboutPage.lead}</p>
+          <p className="text-fg-muted max-w-[62ch] pt-4 leading-relaxed">{home.intro}</p>
         </div>
       </section>
     </Container>

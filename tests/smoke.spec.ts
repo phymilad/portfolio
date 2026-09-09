@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('routing', () => {
   test('every primary route responds', async ({ page }) => {
-    for (const path of ['/', '/projects', '/projects/1', '/blog']) {
+    for (const path of ['/', '/about', '/projects', '/projects/1', '/blog']) {
       const response = await page.goto(path);
       expect(response?.status(), `${path} should be 200`).toBe(200);
     }
@@ -28,7 +28,7 @@ test.describe('routing', () => {
 
 test.describe('structure', () => {
   test('each page has exactly one h1', async ({ page }) => {
-    for (const path of ['/', '/projects', '/projects/1', '/blog']) {
+    for (const path of ['/', '/about', '/projects', '/projects/1', '/blog']) {
       await page.goto(path);
       await expect(page.locator('h1'), `${path} should have one h1`).toHaveCount(1);
     }
@@ -37,6 +37,17 @@ test.describe('structure', () => {
   test('project cards are crawlable links, not click handlers', async ({ page }) => {
     await page.goto('/projects');
     await expect(page.locator('a[href="/projects/1"]').first()).toBeVisible();
+  });
+
+  test('the about page shows the portrait', async ({ page }) => {
+    await page.goto('/about');
+    const portrait = page.getByRole('img', { name: 'Milad Mohammadi' });
+    await expect(portrait).toBeVisible();
+    // next/image rewrites the src, so assert the file actually resolved
+    // rather than silently 404ing behind a correct-looking <img>.
+    await expect
+      .poll(() => portrait.evaluate((el: HTMLImageElement) => el.naturalWidth))
+      .toBeGreaterThan(0);
   });
 
   test('robots and sitemap are served as files, not pages', async ({ request }) => {

@@ -32,6 +32,7 @@ export const nav = {
 export const navLinks = [
   { href: '/projects', label: nav.projects },
   { href: '/blog', label: nav.blog },
+  { href: '/about', label: nav.about },
 ] as const;
 
 export const home = {
@@ -41,6 +42,7 @@ export const home = {
   allProjects: 'All projects',
   recentWriting: 'Recent writing',
   allPosts: 'All posts',
+  moreAbout: 'More about me',
 
   aboutTitle: 'About me',
   intro:
@@ -61,6 +63,22 @@ export const home = {
   howIWorkTitle: 'How I Work',
   howIWork:
     'I care about clean architecture, collaboration, and continuous improvement. I enjoy building products that not only work beautifully but also deliver measurable business value. Whether I\u2019m working with a startup or a large organization, I aim to create systems that feel effortless yet powerful.',
+} as const;
+
+export const portrait = {
+  src: '/images/milad-mohammadi.jpg',
+  alt: 'Milad Mohammadi',
+  width: 1200,
+  height: 1598,
+} as const;
+
+export const aboutPage = {
+  title: 'About',
+  metaDescription:
+    'Milad Mohammadi — software engineer with 5+ years building production web applications with React, Next.js, TypeScript and NestJS.',
+  lead: 'I am a software engineer based in Tehran, working mostly on the web. Five years of building things that other people have to maintain has made me care about architecture, clarity and the boring parts that keep a product alive.',
+  contactTitle: 'Get in touch',
+  contactBody: 'The fastest way to reach me is LinkedIn. My code is on GitHub.',
 } as const;
 
 export const projectsPage = {
