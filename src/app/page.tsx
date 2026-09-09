@@ -52,7 +52,7 @@ export default function Home() {
           height={portrait.height}
           sizes="(min-width: 1024px) 18rem, (min-width: 768px) 15rem, 100vw"
           priority
-          className="border-line rounded-card order-first h-auto w-full max-w-[15rem] border object-cover md:order-none md:max-w-none"
+          className="order-first h-auto w-full max-w-[13rem] md:order-none md:max-w-none"
         />
       </section>
 

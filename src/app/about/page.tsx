@@ -46,7 +46,7 @@ export default function About() {
           height={portrait.height}
           sizes="(min-width: 640px) 16rem, 100vw"
           priority
-          className="border-line rounded-card h-auto w-full border object-cover sm:sticky sm:top-24"
+          className="h-auto w-full max-w-[13rem] sm:sticky sm:top-24 sm:max-w-none"
         />
       </section>
 

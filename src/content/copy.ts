@@ -66,10 +66,12 @@ export const home = {
 } as const;
 
 export const portrait = {
-  src: '/images/milad-mohammadi.jpg',
+  // Background removed, so the cutout sits directly on the page in either
+  // theme. PNG for the alpha channel; next/image serves AVIF/WebP.
+  src: '/images/milad-mohammadi.png',
   alt: 'Milad Mohammadi',
   width: 756,
-  height: 946,
+  height: 793,
 } as const;
 
 export const aboutPage = {
