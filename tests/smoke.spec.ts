@@ -39,8 +39,8 @@ test.describe('structure', () => {
     await expect(page.locator('a[href="/projects/1"]').first()).toBeVisible();
   });
 
-  test('the about page shows the portrait', async ({ page }) => {
-    await page.goto('/about');
+  test('the home page shows the portrait and the about page does not', async ({ page }) => {
+    await page.goto('/');
     const portrait = page.getByRole('img', { name: 'Milad Mohammadi' });
     await expect(portrait).toBeVisible();
     // next/image rewrites the src, so assert the file actually resolved
@@ -48,6 +48,9 @@ test.describe('structure', () => {
     await expect
       .poll(() => portrait.evaluate((el: HTMLImageElement) => el.naturalWidth))
       .toBeGreaterThan(0);
+
+    await page.goto('/about');
+    await expect(page.locator('img')).toHaveCount(0);
   });
 
   test('robots and sitemap are served as files, not pages', async ({ request }) => {

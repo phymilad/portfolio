@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Container } from '@/components/ui/container';
 import { Card } from '@/components/ui/card';
 import { JsonLd } from '@/components/json-ld';
 import { breadcrumbSchema } from '@/utils/schema';
-import { aboutPage, home, portrait, site } from '@/content/copy';
+import { aboutPage, home, site } from '@/content/copy';
 
 export const metadata: Metadata = {
   title: aboutPage.title,
@@ -28,26 +27,12 @@ export default function About() {
         ])}
       />
 
-      <section className="grid gap-10 sm:grid-cols-[minmax(0,1fr)_16rem] sm:items-start sm:gap-12">
-        <div>
-          <p className="text-accent pb-4 font-mono text-xs tracking-[0.2em] uppercase">
-            {aboutPage.title}
-          </p>
-          <h1 className="font-display text-title">{site.name}</h1>
-          <p className="text-fg-muted max-w-[60ch] pt-6 text-lg leading-relaxed">
-            {aboutPage.lead}
-          </p>
-        </div>
-
-        <Image
-          src={portrait.src}
-          alt={portrait.alt}
-          width={portrait.width}
-          height={portrait.height}
-          sizes="(min-width: 640px) 16rem, 100vw"
-          priority
-          className="h-auto w-full max-w-[13rem] sm:sticky sm:top-24 sm:max-w-none"
-        />
+      <section>
+        <p className="text-accent pb-4 font-mono text-xs tracking-[0.2em] uppercase">
+          {aboutPage.title}
+        </p>
+        <h1 className="font-display text-title">{site.name}</h1>
+        <p className="text-fg-muted max-w-[60ch] pt-6 text-lg leading-relaxed">{aboutPage.lead}</p>
       </section>
 
       <div className="grid grid-cols-1 gap-6 pt-16 lg:grid-cols-2">
