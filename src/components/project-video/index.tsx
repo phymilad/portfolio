@@ -45,9 +45,9 @@ export const ProjectVideo = ({ project }: { project: Project }) => {
         href={project.youtubeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-accent hover:text-accent-hover mt-3 inline-block font-mono text-xs"
+        className="text-accent hover:text-accent-hover decoration-accent/40 hover:decoration-accent mt-3 inline-block font-mono text-xs underline underline-offset-4"
       >
-        Watch on YouTube →
+        Watch on YouTube
       </a>
 
       <div className="border-line mt-14 max-w-[68ch] space-y-5 border-t pt-10">

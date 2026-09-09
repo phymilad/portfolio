@@ -12,9 +12,9 @@ const SectionHeading = ({ title, href, cta }: { title: string; href: string; cta
     <h2 className="font-display text-title">{title}</h2>
     <Link
       href={href}
-      className="text-fg-subtle hover:text-accent font-mono text-xs whitespace-nowrap transition-colors"
+      className="text-fg-subtle hover:text-accent decoration-line hover:decoration-accent font-mono text-xs whitespace-nowrap underline underline-offset-4 transition-colors"
     >
-      {cta} →
+      {cta}
     </Link>
   </div>
 );
@@ -39,9 +39,9 @@ export default function Home() {
 
           <Link
             href="/about"
-            className="text-accent hover:text-accent-hover mt-6 inline-block font-mono text-xs transition-colors"
+            className="text-accent hover:text-accent-hover decoration-accent/40 hover:decoration-accent mt-6 inline-block font-mono text-xs underline underline-offset-4 transition-colors"
           >
-            {home.moreAbout} →
+            {home.moreAbout}
           </Link>
         </div>
 

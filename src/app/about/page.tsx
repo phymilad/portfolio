@@ -90,7 +90,7 @@ export default function About() {
             href="/projects"
             className="border-line hover:border-accent hover:text-accent rounded-full border px-4 py-2 font-mono text-xs transition-colors"
           >
-            See my work →
+            See my work
           </Link>
         </p>
       </section>
