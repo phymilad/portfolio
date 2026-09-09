@@ -49,8 +49,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Width is chosen per page via <Container>, not fixed here. */}
           <main className="w-full flex-1 px-6 py-10 sm:px-8">{children}</main>
 
-          <footer className="border-line mt-24 border-t">
-            <Container className="text-fg-subtle flex flex-col items-center justify-between gap-3 px-6 py-8 font-mono text-xs sm:flex-row sm:px-8">
+          <footer className="border-line mt-24 border-t px-6 sm:px-8">
+            <Container className="text-fg-subtle flex flex-col items-center justify-between gap-3 py-8 font-mono text-xs sm:flex-row">
               <span>{footer.text}</span>
               <span className="flex items-center gap-4">
                 <a href="/rss.xml" className="hover:text-accent transition-colors">
