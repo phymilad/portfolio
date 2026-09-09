@@ -25,7 +25,7 @@ export const Header = () => {
     <header className="border-line bg-surface/80 sticky top-0 z-50 border-b backdrop-blur-lg">
       <nav
         aria-label="Main"
-        className="mx-auto flex max-w-screen-lg items-center justify-between px-4 py-3"
+        className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-3 sm:px-8"
       >
         {/* Brand */}
         <Link
