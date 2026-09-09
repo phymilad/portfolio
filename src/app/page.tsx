@@ -50,9 +50,11 @@ export default function Home() {
           alt={portrait.alt}
           width={portrait.width}
           height={portrait.height}
-          sizes="(min-width: 1024px) 18rem, (min-width: 768px) 15rem, 100vw"
-          priority
-          className="order-first h-auto w-full max-w-[13rem] md:order-none md:max-w-none"
+          // Hidden below md, so no mobile branch is needed here and `priority`
+          // is dropped: a preload would make phones fetch an image they never
+          // see, while display:none keeps the lazy default from firing.
+          sizes="(min-width: 1024px) 18rem, 15rem"
+          className="hidden h-auto w-full md:block"
         />
       </section>
 
