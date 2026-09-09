@@ -68,8 +68,8 @@ export const home = {
 export const portrait = {
   src: '/images/milad-mohammadi.jpg',
   alt: 'Milad Mohammadi',
-  width: 1200,
-  height: 1200,
+  width: 756,
+  height: 946,
 } as const;
 
 export const aboutPage = {
