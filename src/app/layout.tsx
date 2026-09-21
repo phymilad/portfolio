@@ -11,8 +11,8 @@ import { ThemeProvider } from 'next-themes';
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — ${site.role}`,
-    template: `%s — ${site.name}`,
+    default: `${site.name} | ${site.role}`,
+    template: `%s | ${site.name}`,
   },
   description: site.description,
   alternates: { canonical: '/' },
@@ -21,12 +21,12 @@ export const metadata: Metadata = {
     siteName: site.name,
     locale: site.locale,
     url: '/',
-    title: `${site.name} — ${site.role}`,
+    title: `${site.name} | ${site.role}`,
     description: site.description,
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${site.name} — ${site.role}`,
+    title: `${site.name} | ${site.role}`,
     description: site.description,
   },
   robots: {
