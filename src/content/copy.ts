@@ -108,7 +108,7 @@ export const blog = {
   title: 'Blog',
   empty: 'No posts yet.',
   metaDescription:
-    'Notes on frontend engineering, React and Next.js, architecture, and the things I learn building for the web.',
+    'Notes on software engineering, React and Next.js, architecture, and the things I learn building for the web.',
   toc: 'On this page',
   related: 'Related posts',
 } as const;

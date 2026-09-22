@@ -322,11 +322,11 @@ the scope change because it's a pure performance finding.)_
 Verified by fetching `/en` — the complete indexable head is:
 
 ```html
-<title>Milad Mohammadi — Frontend Developer</title>
+<title>Milad Mohammadi | Software Engineer</title>
 <meta name="description" content="Portfolio, projects, and blog by Milad Mohammadi." />
 ```
 
-Every route, identical. The title also says "Frontend Developer" while every string in
+Every route, identical. The title also says "Software Engineer" while every string in
 the dictionary says "Software Developer" (`dict.ts:10-14, 59-64`) — worth settling
 which one you want to rank for.
 
