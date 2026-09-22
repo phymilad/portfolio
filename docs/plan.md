@@ -1,6 +1,6 @@
 # Roadmap
 
-Scope: **English only**, root URLs, domain **phymilad.com**.
+Scope: **English only**, root URLs, domain **phymilad.vercel.app**.
 
 Ordered by impact-per-effort. Each phase is independently shippable, is one commit, and
 has acceptance criteria you can check in a browser.
@@ -58,7 +58,7 @@ The redirects are the part to test deliberately.
 
 **Acceptance**
 
-- [ ] `phymilad.com/` serves the home page directly — no redirect hop
+- [ ] `phymilad.vercel.app/` serves the home page directly — no redirect hop
 - [ ] `/projects/1` works; `/en/projects/1` → **308** → `/projects/1`
 - [ ] `/robots.txt` → 404 (not the home page with `lang="robots.txt"`)
 - [ ] `/xx` → 404, not 200
@@ -73,7 +73,7 @@ The redirects are the part to test deliberately.
 **Fixes:** audit 3.1, 3.2, 3.3, 3.5, 3.6, 3.8, 3.11, 3.13, 3.14, 3.15, 3.18 · ~10 files · effort M
 
 - `generateMetadata` per route: title template, real descriptions, canonicals.
-- `metadataBase: 'https://phymilad.com'`.
+- `metadataBase: 'https://phymilad.vercel.app'`.
 - OG + Twitter tags; a static `opengraph-image` (dynamic per-post ones land in Phase 6).
 - `app/robots.ts` + `app/sitemap.ts`.
 - JSON-LD: `Person` + `WebSite` in the layout, `VideoObject` on project pages.
@@ -92,7 +92,7 @@ The redirects are the part to test deliberately.
 - [ ] `/projects` is a real page
 - [ ] no "Step 2" text anywhere in production HTML
 - [ ] Rich Results Test accepts the `Person` markup
-- [ ] _(once deployed)_ pasting `https://phymilad.com` into Slack renders a card
+- [ ] _(once deployed)_ pasting `https://phymilad.vercel.app` into Slack renders a card
 
 ---
 
@@ -244,13 +244,13 @@ and desktop, and specifically article pages at long lengths.
 **Fixes:** audit 5.6 · effort S
 
 - Deploy to a host (Vercel recommended — `docs/decisions.md` §5).
-- Point `phymilad.com` at it; verify HTTPS and apex/www canonicalization.
+- Point `phymilad.vercel.app` at it; verify HTTPS and apex/www canonicalization.
 - Google Search Console: verify the domain, submit the sitemap.
 - Analytics if wanted (Plausible/Umami suggested).
 
 **Acceptance**
 
-- [ ] `https://phymilad.com` serves the site; `www` and `http` both 308 to the canonical
+- [ ] `https://phymilad.vercel.app` serves the site; `www` and `http` both 308 to the canonical
 - [ ] Search Console verified and sitemap submitted without errors
 - [ ] a shared link renders a proper card on LinkedIn and Slack
 

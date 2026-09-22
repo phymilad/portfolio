@@ -1,6 +1,6 @@
 # Decisions
 
-Scope: **English only**, root URLs, domain **phymilad.com**.
+Scope: **English only**, root URLs, domain **phymilad.vercel.app**.
 
 Decisions 1 and 5 are settled by your answers. Decisions 2, 3, and 4 were left to my
 judgement — recommendations below are what I'll build unless you object.
@@ -29,7 +29,7 @@ just because it's less work:
 
 **Consequences:** `[locale]` segment deleted, `src/i18n/` deleted, the language selector
 and four flag SVGs deleted, `createProjectsBasedOnLocale(locale)` collapses to a plain
-array, and the middleware becomes unnecessary. URLs become `phymilad.com/projects/1`,
+array, and the middleware becomes unnecessary. URLs become `phymilad.vercel.app/projects/1`,
 not `/en/projects/1` — with 308 redirects from the old paths so nothing rots.
 
 Translations remain recoverable at `git show 657c228:src/i18n/dict.ts` if you ever
@@ -214,7 +214,7 @@ Recorded 2026-09-08.
 | Question             | Answer                                                                                                                                                         |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Locales              | English only. `fa`/`de`/`nl` deleted, recoverable at `657c228`.                                                                                                |
-| Domain               | phymilad.com                                                                                                                                                   |
+| Domain               | phymilad.vercel.app                                                                                                                                            |
 | Hosting              | Vercel                                                                                                                                                         |
 | i18n library         | None — the locale layer was removed instead.                                                                                                                   |
 | Content layer        | MDX in the repo.                                                                                                                                               |
@@ -233,7 +233,7 @@ Recorded 2026-09-08.
 - **Analytics** — Plausible or Umami recommended over GA4: no cookie banner, far
   smaller script, and the useful question ("which posts get read") is what they
   are built for. Deferred by choice, not blocked.
-- **Search Console** — submit `https://phymilad.com/sitemap.xml` once the domain
+- **Search Console** — submit `https://phymilad.vercel.app/sitemap.xml` once the domain
   resolves. For the ranking goal this matters more than analytics.
 - **Pagination** — deferred until the post count approaches ten; building it for
   an empty blog would mean an unverifiable route.

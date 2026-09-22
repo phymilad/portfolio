@@ -1,4 +1,4 @@
-# phymilad.com
+# phymilad.vercel.app
 
 Personal site of Milad Mohammadi — portfolio, project write-ups, and a blog.
 
@@ -85,7 +85,7 @@ First deploy:
 1. Push to `github.com/phymilad/portfolio`.
 2. Import the repo at [vercel.com/new](https://vercel.com/new). Framework, build
    command and output directory are all detected.
-3. Add `phymilad.com` under Settings → Domains and follow the DNS instructions.
+3. Add `phymilad.vercel.app` under Settings → Domains and follow the DNS instructions.
    Point the apex at Vercel and let `www` redirect to it, so only one hostname
    is canonical.
 
@@ -96,7 +96,7 @@ the smoke tests on every push and PR.
 `src/content/copy.ts` holds the canonical site URL. It drives `metadataBase`,
 canonicals, the sitemap and RSS, so it must match the live domain.
 
-Once live: submit `https://phymilad.com/sitemap.xml` in
+Once live: submit `https://phymilad.vercel.app/sitemap.xml` in
 [Google Search Console](https://search.google.com/search-console).
 
 ## Notes

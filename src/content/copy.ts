@@ -10,7 +10,7 @@ export const site = {
   name: 'Milad Mohammadi',
   role: 'Software Engineer',
   brand: 'Milad Mohammadi — Software Engineer',
-  url: 'https://phymilad.com',
+  url: 'https://phymilad.vercel.app',
   description:
     'Software engineer with 5+ years building fast, scalable web applications with React, Next.js, TypeScript and NestJS. Projects, writing, and how I work.',
   locale: 'en_US',

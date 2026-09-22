@@ -2,7 +2,7 @@
 
 Date: 2026-09-08
 Commit audited: `657c228` (plus one uncommitted change to `tailwind.config.ts`)
-Domain: **phymilad.com**
+Domain: **phymilad.vercel.app**
 Scope: **English only.** See "Scope change" below.
 
 Everything below was verified by reading the file or by running the toolchain / a
@@ -20,7 +20,7 @@ Effort: **S** ≤ 1h · **M** ≤ half a day · **L** > half a day.
 ## Scope change (decided after the first pass)
 
 The original brief asked for English + Dutch + Persian with RTL. You've since decided
-the site is **English only**, with **root URLs** (`phymilad.com/projects/1`, not
+the site is **English only**, with **root URLs** (`phymilad.vercel.app/projects/1`, not
 `/en/projects/1`), and the existing `fa`/`de`/`nl` translations deleted — recoverable
 from git at `657c228` if ever needed.
 
@@ -333,7 +333,7 @@ which one you want to rank for.
 ### 3.2 `metadataBase` is `https://example.com` — critical / S
 
 `layout.tsx:11`. Every absolute URL Next derives — OG images, canonicals — resolves
-against `example.com`. Now unblocked: **`https://phymilad.com`**.
+against `example.com`. Now unblocked: **`https://phymilad.vercel.app`**.
 
 ### 3.3 No Open Graph or Twitter tags — high / S
 
@@ -542,7 +542,7 @@ Same finding as 3.14 from the reliability side: no `error.tsx`, no `global-error
 
 No `vercel.json`, no `netlify.toml`, no `Dockerfile`, no CI config. `.gitignore:41`
 mentions `.vercel`, which hints at Vercel, but nothing confirms it. You've said hosting
-and analytics aren't set up yet — so `phymilad.com` needs a host chosen before Phase 2
+and analytics aren't set up yet — so `phymilad.vercel.app` needs a host chosen before Phase 2
 can be verified on the real domain. Not blocking for local verification.
 
 ---
