@@ -1,0 +1,131 @@
+---
+title: 'Streaming in Next.js: Where to Put Suspense'
+description: 'Streaming is more than a loading skeleton. It shapes your status codes, your Web Vitals, and what your proxy and CDN must support.'
+publishedAt: '2026-10-29'
+tags: ['nextjs', 'nextjs-between-the-lines', 'fundamentals']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 4
+draft: false
+---
+
+Part 4 of 20 in Next.js Between the Lines, the series where I go through the Next.js docs slowly and ask why things work the way they do. Today's topic is streaming, and where your `<Suspense>` boundaries should go.
+
+In [part 3](/blog/what-makes-a-nextjs-route-dynamic), we saw that request data has to sit inside a Suspense boundary so the rest of the page can stay fast. Today we look at what actually happens on the wire when it does.
+
+Most of us met streaming through `loading.tsx`. You add a file and you get a skeleton. The Next.js docs now have a full guide on streaming, and it shows that streaming is also an HTTP contract. Once the first byte leaves the server, some decisions can no longer be changed.
+
+## The problem
+
+Without streaming, the server builds the whole HTML document before it sends anything. The slowest query decides the time to first byte for the entire page.
+
+Streaming fixes that, but it moves the hard part somewhere else: choosing boundaries. Put one boundary at the top, and users see a full-page skeleton. Put too many, and the page jumps around as each piece arrives. Put a check in the wrong place, and a missing page returns `200 OK`.
+
+## How it works
+
+### Two streams, one page
+
+On the first load, two things travel together:
+
+- **The HTML stream.** The static parts of the page, like layouts, navigation, and Suspense fallbacks, are sent first. When a boundary's content is ready, React sends its HTML together with a small inline script that swaps it into place. This works before the page's JavaScript bundle has loaded.
+- **The component payload.** A serialized version of the component tree that React uses to hydrate the page. On client-side navigations, only this payload is fetched, with an `rsc: 1` request header, and no HTML is sent at all.
+
+Everything that renders before any async work resolves is the static shell. Each `<Suspense>` boundary is an independent streaming point. Sibling boundaries do not block each other, and nested boundaries reveal content in layers.
+
+### loading.js or Suspense
+
+`loading.js` is the simple option. Next.js wraps your page in a Suspense boundary and uses the file as the fallback. Explicit `<Suspense>` boundaries give you control over each section of the page.
+
+| Question      | loading.js                             | Suspense                  |
+| ------------- | -------------------------------------- | ------------------------- |
+| Scope         | The whole page                         | Any component             |
+| Setup         | Add a file                             | Wrap components yourself  |
+| On navigation | Prefetched as an instant fallback      | Not prefetched by default |
+| Best for      | Pages with nothing to show before data | Most pages                |
+
+The docs recommend boundaries close to the dynamic access. One detail is worth remembering here. `loading.js` sits inside the layout of its own segment. If that layout reads cookies, headers, or uncached data, it does not fall back to the `loading.js` next to it. It blocks the navigation until the layout finishes.
+
+### Streaming and Web Vitals
+
+Streaming helps some metrics, and it can hurt others if you are not careful:
+
+- **TTFB and FCP** improve, because the shell is sent without waiting for data.
+- **LCP** can get worse if your largest element, like a hero image or the main heading, is inside a boundary. Keep it in the shell.
+- **CLS** gets worse when a fallback and its final content have different sizes. Make skeletons match the real layout.
+- **INP** can improve, because each boundary is its own hydration unit, and React can hydrate the part the user is touching first.
+
+The guide also has a line worth remembering: if there is a Suspense boundary, React might use it. On a slow network or a busy CPU, React can show a fallback even when you did not expect it. So every boundary should earn its place.
+
+## A common mistake
+
+The one that surprises people most is the 404 that returns 200.
+
+Once streaming starts, the status code and the headers are already sent. If `notFound()` runs after that point, Next.js cannot change the status to 404. Instead, it adds a `noindex` meta tag to the HTML, so search engines skip the page. A `redirect()` in the same place becomes a client-side redirect instead of an HTTP redirect.
+
+For SEO, this is handled. But monitoring tools, analytics, and API clients that read status codes will see `200 OK` for a page that does not exist.
+
+The fix is to run fast existence checks before any Suspense boundary:
+
+```tsx
+// app/post/[slug]/page.tsx
+import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
+
+export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const exists = await checkSlugExists(slug); // a fast check
+  if (!exists) notFound(); // a real 404, before streaming starts
+
+  return (
+    <Suspense fallback={<p>Loading post...</p>}>
+      <PostContent slug={slug} />
+    </Suspense>
+  );
+}
+```
+
+There is a catch. If the same segment has a `loading.js`, the whole page is already inside a boundary, so even this check runs after streaming starts. In that case, move the check earlier. `proxy` and the redirects in `next.config` both run before the page renders, so real status codes are still possible there.
+
+### The stream that never streams
+
+A second mistake happens outside your code. Any layer that buffers the response removes the benefit of streaming, even when your server streams correctly:
+
+- Nginx buffers responses by default. The docs suggest sending the `X-Accel-Buffering: no` header.
+- Some CDNs buffer whole responses. Check the settings of your provider.
+- AWS Lambda needs response streaming mode to be enabled. It is not the default.
+- Compression can hold chunks back until it has enough data to compress.
+
+To confirm streaming works in production, open the document request in the Network tab of your browser. A short time to first byte, followed by a long content download, means the response arrives in chunks.
+
+{/* TODO(experience): Have you shipped a page where streaming did not behave as expected? For example a 404 that returned 200, a proxy that buffered the whole response, or a skeleton that caused layout shift. Write 2 to 4 sentences about what happened and what you changed. */}
+
+## When not to add a boundary
+
+- **When the content is your LCP element.** Keep the main heading and the hero image in the shell.
+- **When the data is small and fast.** A boundary around a very fast query adds a fallback, a swap, and more hydration work for very little gain.
+- **When you need a real status code.** Checks that decide between 200, 404, or a redirect belong before any boundary.
+- **When a crawler is the main reader.** Bots that only read HTML already get the full document, because Next.js waits for the render to finish before it responds to them. Streaming does not help them, but it does not hurt them either.
+
+## Summary
+
+- Streaming sends the static shell first, then fills in each Suspense boundary as it resolves.
+- Prefer boundaries close to the dynamic access. Use `loading.js` when a page has nothing to show before its data.
+- Once streaming starts, the status code is fixed. Run 404 and redirect checks before any boundary.
+- Keep the LCP element in the shell, and size skeletons like the real content.
+- Check your proxy, CDN, and compression. Any of them can buffer your stream away.
+
+In part 5, the last part of week one, we look at what happens when something inside those boundaries fails: error handling in Next.js 16.3, and why `retry` is now the default way to recover.
+
+---
+
+Previous part: [What Actually Makes a Next.js Route Dynamic](/blog/what-makes-a-nextjs-route-dynamic)
+
+Next part: [Next.js Error Handling After 16.3: retry vs reset](/blog/nextjs-error-handling-retry-vs-reset)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Streaming](https://nextjs.org/docs/app/guides/streaming), the Next.js guide this article is based on
+- [loading.js](https://nextjs.org/docs/app/api-reference/file-conventions/loading) in the API reference
+- [Suspense](https://react.dev/reference/react/Suspense) in the React reference

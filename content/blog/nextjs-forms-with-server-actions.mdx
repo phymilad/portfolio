@@ -1,0 +1,278 @@
+---
+title: 'Forms With Server Actions and Optimistic UI'
+description: 'useActionState, useFormStatus and useOptimistic each solve a different problem. Picking the wrong one gives you a pending flag that is always false.'
+publishedAt: '2026-11-10'
+tags: ['nextjs', 'nextjs-between-the-lines', 'forms']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 12
+draft: false
+---
+
+Part 12 of 20 in Next.js Between the Lines, where I go through the Next.js docs one topic per weekday and focus on the details that are easy to miss. Today's topic is forms: the three hooks involved, and which one belongs where.
+
+[Part 11](/blog/nextjs-route-handler-or-server-action) established that Server Actions are for mutations. A form is the most common way to trigger one.
+
+## The problem
+
+A form has more states than it looks like. It has an idle state, a submitting state, a validation-error state, a server-error state and a success state. On top of that, a form built with modern React can run before its JavaScript has loaded, which is a feature you get for free and lose the moment you reach for the wrong tool.
+
+React gives you three hooks here, and they are not interchangeable:
+
+- `useActionState` for the action's return value and a pending flag
+- `useFormStatus` for pending state inside a child component
+- `useOptimistic` for showing the result before the server confirms it
+
+## How it works
+
+### The baseline, with no hooks at all
+
+React extends the HTML `form` element so a Server Action can be passed to its `action` attribute. The function receives the `FormData` object automatically:
+
+```tsx
+// app/invoices/page.tsx
+import { auth } from '@/lib/auth';
+
+export default function Page() {
+  async function createInvoice(formData: FormData) {
+    'use server';
+
+    const session = await auth();
+    if (!session?.user) {
+      throw new Error('Unauthorized');
+    }
+
+    const customerId = formData.get('customerId');
+    const amount = formData.get('amount');
+    // mutate, then revalidate
+  }
+
+  return <form action={createInvoice}>...</form>;
+}
+```
+
+Note the auth check inside the action. The forms guide opens with a warning about exactly this, and part 13 is about why.
+
+One small gotcha for multi-field forms. `Object.fromEntries(formData)` is a tidy way to grab everything at once, but the resulting object also contains extra properties prefixed with `$ACTION_`. If you hand that straight to a schema validator with strict mode, or spread it into a database insert, those extras come along.
+
+### Passing extra arguments
+
+For values that are not form fields, the docs recommend `bind`:
+
+```tsx
+// app/client-component.tsx
+'use client';
+
+import { updateUser } from './actions';
+
+export function UserProfile({ userId }: { userId: string }) {
+  const updateUserWithId = updateUser.bind(null, userId);
+
+  return (
+    <form action={updateUserWithId}>
+      <input type="text" name="name" />
+      <button type="submit">Update name</button>
+    </form>
+  );
+}
+```
+
+```ts
+// app/actions.ts
+'use server';
+
+export async function updateUser(userId: string, formData: FormData) {}
+```
+
+The alternative is a hidden input. The docs point out the difference: a hidden input's value becomes part of the rendered HTML and is not encoded. `bind` works in both Server and Client Components and keeps progressive enhancement intact.
+
+Neither makes the value trustworthy, which is part 13's subject.
+
+### Validation errors with useActionState
+
+To show server-side validation errors, the component holding the `form` becomes a Client Component and uses `useActionState`. The action's signature changes: it now takes the previous state as its first argument, with `FormData` second.
+
+```ts
+// app/actions.ts
+'use server';
+
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email.' }),
+});
+
+export async function createUser(prevState: unknown, formData: FormData) {
+  const validatedFields = schema.safeParse({ email: formData.get('email') });
+
+  if (!validatedFields.success) {
+    return { errors: validatedFields.error.flatten().fieldErrors };
+  }
+
+  // mutate data
+  return { message: 'Account created.' };
+}
+```
+
+```tsx
+// app/ui/signup.tsx
+'use client';
+
+import { useActionState } from 'react';
+import { createUser } from '@/app/actions';
+
+const initialState = { message: '' };
+
+export function Signup() {
+  const [state, formAction, pending] = useActionState(createUser, initialState);
+
+  return (
+    <form action={formAction}>
+      <label htmlFor="email">Email</label>
+      <input type="text" id="email" name="email" required />
+      <p aria-live="polite">{state?.message}</p>
+      <button disabled={pending}>Sign up</button>
+    </form>
+  );
+}
+```
+
+This is the shape from [part 5](/blog/nextjs-error-handling-retry-vs-reset): expected errors are return values, not thrown exceptions. The `aria-live="polite"` is in the docs' own example and is worth keeping, because a screen reader user otherwise gets no announcement when the error appears.
+
+### Optimistic updates
+
+`useOptimistic` shows the change before the server answers:
+
+```tsx
+// app/thread.tsx
+'use client';
+
+import { useOptimistic } from 'react';
+import { send } from './actions';
+
+export function Thread({ messages }: { messages: Message[] }) {
+  const [optimisticMessages, addOptimisticMessage] = useOptimistic<Message[], string>(
+    messages,
+    (state, newMessage) => [...state, { message: newMessage }],
+  );
+
+  const formAction = async (formData: FormData) => {
+    const message = formData.get('message') as string;
+    addOptimisticMessage(message);
+    await send(message);
+  };
+
+  return (
+    <div>
+      {optimisticMessages.map((m, i) => (
+        <div key={i}>{m.message}</div>
+      ))}
+      <form action={formAction}>
+        <input type="text" name="message" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  );
+}
+```
+
+The optimistic value is discarded when the real state arrives, so a failed action reverts on its own. What it does not do is tell the user that it failed, which is still your job.
+
+### Two details worth knowing
+
+You can call different actions from elements inside one form using the `formAction` prop on a button, which is how you build Save draft next to Publish without two forms.
+
+And you can submit programmatically with `requestSubmit()`, for example from an `onKeyDown` handler so a textarea submits on Command and Enter.
+
+## A common mistake
+
+`useFormStatus` is the hook people reach for first and place wrong. It reads the status of the nearest parent form, which means it has to live **inside** the form, in a separate component:
+
+```tsx
+// Does not work. pending is always false here.
+'use client';
+
+import { useFormStatus } from 'react-dom';
+
+export function Signup() {
+  const { pending } = useFormStatus();
+
+  return (
+    <form action={createUser}>
+      <input name="email" />
+      <button disabled={pending}>Sign up</button>
+    </form>
+  );
+}
+```
+
+The component that renders the form is not inside it, so there is no parent form to read, and `pending` never becomes true. There is no error and no warning. The button simply never disables, and under a slow network the user clicks it three times.
+
+The fix is to extract the button:
+
+```tsx
+// app/ui/button.tsx
+'use client';
+
+import { useFormStatus } from 'react-dom';
+
+export function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button disabled={pending} type="submit">
+      Sign up
+    </button>
+  );
+}
+```
+
+```tsx
+// app/ui/signup.tsx
+import { SubmitButton } from './button';
+import { createUser } from '@/app/actions';
+
+export function Signup() {
+  return (
+    <form action={createUser}>
+      <input name="email" />
+      <SubmitButton />
+    </form>
+  );
+}
+```
+
+Now the form itself can stay a Server Component, and only the button ships to the client. If you already use `useActionState`, its third return value gives you the same pending flag without the extra component, so reach for `useFormStatus` when the form is not a Client Component or when the indicator is several levels deep.
+
+{/* TODO(experience): Which of these three hooks has caused you the most trouble? For example a pending state that never fired, an optimistic update that looked wrong on failure, or a form that broke when you moved it behind useActionState. Write 2 to 4 sentences. */}
+
+## When not to reach for these
+
+- **Do not skip server validation because the client validates.** HTML attributes like `required` and `type="email"` are a convenience for the user, not a check. The action still receives whatever a direct POST sends.
+- **Do not use a hidden input to carry identity.** It is visible in the HTML and editable. Pass a reference and re-derive identity from the session, which is part 13.
+- **Do not use `useOptimistic` where being wrong is expensive.** Showing a message as sent and removing it a second later is fine. Showing a payment as complete is not.
+- **Do not use a Server Action to fetch.** The client dispatches actions one at a time, as we saw in part 11.
+
+## Summary
+
+- A Server Action passed to `form action` receives `FormData` automatically and works without client JavaScript.
+- `bind` passes extra arguments and keeps progressive enhancement, unlike a hidden input.
+- `useActionState` changes the action's signature to take previous state first.
+- `useFormStatus` only works in a component rendered inside the form.
+- `useOptimistic` reverts on failure but does not report the failure.
+
+In part 13, we take the warning at the top of the forms guide seriously and look at what it really means that every Server Action is a public endpoint.
+
+---
+
+Previous part: [Route Handler or Server Action?](/blog/nextjs-route-handler-or-server-action)
+
+Next part: [Every Server Action Is a Public Endpoint](/blog/nextjs-server-actions-security)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Forms](https://nextjs.org/docs/app/guides/forms), the Next.js guide this article is based on
+- [useActionState](https://react.dev/reference/react/useActionState) in the React reference
+- [useOptimistic](https://react.dev/reference/react/useOptimistic) in the React reference

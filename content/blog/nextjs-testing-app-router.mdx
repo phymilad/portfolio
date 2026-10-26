@@ -1,0 +1,170 @@
+---
+title: 'Testing the App Router Without Guessing'
+description: 'The docs recommend end-to-end tests over unit tests for async Server Components. Here is where that line sits, and how to test that a navigation is actually instant.'
+publishedAt: '2026-11-06'
+tags: ['nextjs', 'nextjs-between-the-lines', 'testing']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 10
+draft: false
+---
+
+Part 10 of 20 in Next.js Between the Lines, the series where I go through the Next.js docs one topic per weekday and look for the trade-offs. Week two ends with testing, which the App Router quietly made harder in one place and easier in another.
+
+[Part 9](/blog/nextjs-instant-navigation) ended on a problem: the framework can tell you a navigation is instant in development, but nothing stops that from regressing next sprint. This part is about closing that gap.
+
+## The problem
+
+Teams coming from the Pages Router usually have a test suite shaped like a pyramid: a lot of component tests with a DOM testing library, a few integration tests, a handful of end-to-end tests. That shape assumes you can render a component in a test environment and assert on its output.
+
+An async Server Component breaks that assumption. It is a function that awaits I/O and returns a tree, and the tooling around React has not fully caught up. You can spend a long time fighting the test environment for very little signal.
+
+## How it works
+
+### The official position
+
+The Next.js testing page is short and direct on this point. Because async Server Components are new to the React ecosystem, some tools do not fully support them, and the recommendation is to use end-to-end testing instead of unit testing for async components.
+
+That is worth reading as permission rather than as a limitation. The pyramid changes shape:
+
+- **Pure functions and data access** stay as unit tests. Your formatting helpers, your validation schemas, your query builders. This is where most of your logic should live anyway.
+- **Client Components** stay as component tests. They are ordinary React, and the usual tools work.
+- **Async Server Components, layouts and whole routes** move to end-to-end tests, where a real browser visits a real server.
+
+The practical upshot is to push logic out of Server Components and into testable functions, then test the composition in a browser. That is good design pressure, not a workaround.
+
+### The runners
+
+The docs cover four tools: Jest and Vitest for unit and component tests, Playwright and Cypress for end-to-end. There is no strong recommendation between them, and the setup guides are per tool.
+
+What matters more than the choice is where you run them. Prefetching does not happen in `next dev`, so anything about navigation performance is meaningless against a dev server unless you are using the testing API below.
+
+### Testing that a navigation is instant
+
+This is the part that is new and genuinely useful. The `@next/playwright` package exports an `instant()` helper that holds dynamic content back while your assertions run against the UI that is immediately available:
+
+```bash
+npm install -D @next/playwright @playwright/test
+```
+
+```typescript
+// e2e/navigation.test.ts
+import { test, expect } from '@playwright/test';
+import { instant } from '@next/playwright';
+
+test.describe('Product page', () => {
+  test('is instant on an initial page load', async ({ page, baseURL }) => {
+    await instant(
+      page,
+      async () => {
+        await page.goto('/store/hats');
+        await expect(page.locator('h1')).toContainText('Baseball Cap');
+        await expect(page.getByText('In stock')).toHaveCount(0);
+      },
+      { baseURL },
+    );
+    await expect(page.getByText('In stock')).toBeVisible();
+  });
+
+  test('is instant on a client navigation', async ({ page }) => {
+    await page.goto('/store/shoes');
+    await instant(page, async () => {
+      await page.click('a[href="/store/hats"]');
+      await page.waitForURL((url) => url.pathname === '/store/hats');
+      await expect(page.locator('h1')).toContainText('Baseball Cap');
+      await expect(page.getByText('In stock')).toHaveCount(0);
+    });
+    await expect(page.getByText('In stock')).toBeVisible();
+  });
+});
+```
+
+Three things to notice in that example:
+
+- There are **two tests for one route**, matching the two paths from part 9. Inside the callback, a page load shows the static UI and a client navigation shows the prefetched UI.
+- The assertions check both directions: the cached heading **is** present, and the live inventory is **not** yet. Then after the callback, the inventory appears. That is what proves the split is where you think it is.
+- `baseURL` is passed when `page.goto()` is the first navigation, because the helper needs the origin before it requests the document.
+
+Conceptually, the start of the `instant()` scope does the same thing as turning on Pause on navigations in the Navigation Inspector, and the end of the scope does what Resume does. If you have used the inspector by hand, this is that workflow written down.
+
+### Running it in CI
+
+The testing API is available automatically in `next dev`. For a production build you have to turn it on, and only for the test build:
+
+```ts
+// next.config.ts
+import type { NextConfig } from 'next';
+
+const exposeTestingApi = process.env.EXPOSE_TESTING_API === '1';
+
+const nextConfig: NextConfig = {
+  cacheComponents: true,
+  experimental: {
+    exposeTestingApiInProductionBuild: exposeTestingApi,
+  },
+};
+
+export default nextConfig;
+```
+
+Set `EXPOSE_TESTING_API=1` when you run `next build`. Setting it only for `next start` does nothing, because the flag has to be present while the build is produced.
+
+## A common mistake
+
+The client-navigation test has a trap that produces a passing test for a broken page.
+
+```typescript
+// Looks right. Can assert against the page you came from.
+await instant(page, async () => {
+  await page.click('a[href="/store/hats"]');
+  await expect(page.locator('h1')).toContainText('Baseball Cap');
+});
+```
+
+If the destination has not committed yet, `page.locator('h1')` still matches the heading on the source page. When your selectors are shared across pages, which they usually are, the assertion can resolve against the old page and pass while telling you nothing.
+
+The docs give the fix, and it is one line:
+
+```typescript
+await page.click('a[href="/store/hats"]');
+await page.waitForURL((url) => url.pathname === '/store/hats');
+await expect(page.locator('h1')).toContainText('Baseball Cap');
+```
+
+Waiting for the URL has a second benefit. If the prefetched destination cannot commit at all, the wait times out and the test fails, which is exactly the regression you wanted to catch.
+
+One more thing to know if you run several projects locally: the DevTools use a `next-instant-navigation-testing` cookie to freeze the page, and cookies are scoped to the domain rather than the port. On `localhost`, that cookie is shared between projects and can cause behavior you did not ask for. Clear it or close the Navigation Inspector when switching projects.
+
+{/* TODO(experience): How is testing set up on your current project? Did you give up on unit testing Server Components, or find something that works? Write 2 to 4 sentences about where you drew the line and whether it has caught real regressions. */}
+
+## When not to write the test
+
+- **Unit tests for async Server Components.** The docs recommend against it, and the time is better spent extracting the logic into a function you can test directly.
+- **Instant-navigation tests for every route.** The docs say to focus these on the user flows that matter most. They are slower than unit tests and they encode a performance promise, so put them on checkout and search, not on the about page.
+- **Anything that depends on prefetching, against a dev server.** Without the testing API, a dev server does not prefetch, so the result does not reflect production.
+- **Structural checks you already get for free.** Validation in development already tells you a shell exists and names what blocks a navigation. End-to-end tests are for the question validation cannot answer: whether the right content is in that shell.
+
+## Summary
+
+- For async Server Components the docs recommend end-to-end tests over unit tests.
+- Push logic out of Server Components into functions you can unit test, and test the composition in a browser.
+- `instant()` from `@next/playwright` scopes assertions to the immediately available UI.
+- Test both paths per route, and assert both what should be there and what should not be there yet.
+- Wait for the destination URL before asserting, or the test can pass against the page you came from.
+- In CI, enable the testing API only for the test build, at build time.
+
+That closes week two. Week three turns to data and the server boundary in a different sense: when a Route Handler is the right tool and when a Server Action is, starting in part 11.
+
+---
+
+Previous part: [Instant Navigation: Two Shells, Not One](/blog/nextjs-instant-navigation)
+
+Next part: [Route Handler or Server Action?](/blog/nextjs-route-handler-or-server-action)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Testing](https://nextjs.org/docs/app/guides/testing), the Next.js page this article is based on
+- [instant](https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config/instant) for the testing helper and its caveats
+- [Ensuring instant navigations](https://nextjs.org/docs/app/guides/instant-navigation) for the end-to-end walkthrough

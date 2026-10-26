@@ -1,0 +1,181 @@
+---
+title: 'Parallel Routes, default.js, and Modals'
+description: 'Slots do not appear in the URL, unmatched slots behave differently on refresh, and a conditional slot still runs on the server for every user.'
+publishedAt: '2026-11-04'
+tags: ['nextjs', 'nextjs-between-the-lines', 'routing']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 8
+draft: false
+---
+
+Part 8 of 20 in Next.js Between the Lines, my series on reading the Next.js docs the way a senior engineer would. Today's topic is Parallel Routes and Intercepting Routes, two features that solve real problems and produce confusing bugs when half understood.
+
+[Part 7](/blog/nextjs-partial-prerendering-architecture) was about rendering. This one is about routing, and about a security detail in the docs that deserves more attention than it gets.
+
+## The problem
+
+Every app eventually needs a modal that behaves like a page. A photo opens over the feed, but the URL is shareable. A refresh keeps the photo open instead of closing it. The back button closes the modal instead of leaving the site. Forward reopens it.
+
+Doing that with component state means reimplementing history, deep links and refresh behavior by hand, and getting it slightly wrong. Parallel and Intercepting Routes hand that job to the router. The price is a set of conventions that do not behave the way the folder structure suggests.
+
+## How it works
+
+### Slots are props, not segments
+
+A folder named `@analytics` is a slot. It is passed to the shared parent layout as a prop with that name:
+
+```tsx
+// app/layout.tsx
+export default function Layout({
+  children,
+  team,
+  analytics,
+}: {
+  children: React.ReactNode;
+  team: React.ReactNode;
+  analytics: React.ReactNode;
+}) {
+  return (
+    <>
+      {children}
+      {team}
+      {analytics}
+    </>
+  );
+}
+```
+
+Two consequences follow, and both surprise people:
+
+- **Slots do not affect the URL.** The route `/@analytics/views` is served at `/views`.
+- **`children` is itself an implicit slot.** `app/page.js` is equivalent to `app/@children/page.js`. That matters because anything the docs say about slots applies to `children` too, including the need for a `default.js`.
+
+There is also a rendering constraint worth knowing early. Because slots combine with the page to form one route segment, you cannot have a prerendered slot and a dynamically rendered slot at the same level. If one slot at that level is dynamic, all of them are.
+
+### Soft and hard navigation behave differently
+
+This is the core of most parallel-route bugs. Next.js tracks an active state per slot, and what a slot renders depends on how the user arrived:
+
+- On a **client-side navigation**, Next.js does a partial render. The slot that matches the new URL changes. Every other slot keeps whatever it was showing, even if that no longer matches the URL at all.
+- On a **full page load or refresh**, Next.js cannot recover the active state for slots that do not match the URL. It renders `default.js` for those slots, or a 404 when there is no `default.js`.
+
+That 404 is deliberate. It stops you from accidentally rendering a parallel route on a page it was never meant for. But it means a layout that looks correct while clicking around can 404 the moment someone refreshes.
+
+Next.js 16 tightened this further: every slot now requires an explicit `default.js` and the build fails without one. That is a better place to find out than production. To keep the old behavior, the `default.js` either calls `notFound()` or returns `null`, depending on which you want.
+
+### Intercepting conventions count segments, not folders
+
+Intercepting routes use a relative convention: `(.)` for the same level, `(..)` for one level up, `(..)(..)` for two, and `(...)` for the root `app` directory.
+
+The important footnote is that this convention is based on route segments, not the file system. Slot folders do not count. So an intercepted `photo` route that sits two folders above in your editor may only be one segment above, because a `@modal` folder in between is a slot and not a segment. Getting this wrong produces a route that silently never intercepts.
+
+### The modal recipe
+
+The full pattern is four pieces:
+
+1. A real page at `/login` for direct visits and shareable links.
+2. A slot, `@auth`, with a `default.js` that returns `null`, so the modal is absent when it is not active.
+3. The intercepted route at `@auth/(.)login/page.tsx`, which wraps the same content in a modal.
+4. The slot rendered in the layout next to `children`.
+
+```tsx
+// app/@auth/default.tsx
+export default function Default() {
+  return null;
+}
+```
+
+```tsx
+// app/@auth/(.)login/page.tsx
+import { Modal } from '@/app/ui/modal';
+import { Login } from '@/app/ui/login';
+
+export default function Page() {
+  return (
+    <Modal>
+      <Login />
+    </Modal>
+  );
+}
+```
+
+Keeping the `Modal` shell separate from the `Login` content is not just tidiness. The modal needs client state, so it is a Client Component, but the content inside it can stay a Server Component because it arrives as `children`. That is exactly the boundary pattern from [part 1](/blog/nextjs-use-client-boundary).
+
+### Closing the modal needs its own route
+
+Because a slot keeps its content across client navigations, navigating away with a `Link` does not close the modal on its own. You have to give the slot something that renders `null` at the destination. For the root page that is a `@auth/page.tsx` returning `null`. For any other destination, a catch-all slot:
+
+```tsx
+// app/@auth/[...catchAll]/page.tsx
+export default function CatchAll() {
+  return null;
+}
+```
+
+Calling `router.back()` avoids this entirely, which is why it is the common choice for a close button.
+
+## A common mistake
+
+The conditional-routes pattern looks like a clean way to show different dashboards per role:
+
+```tsx
+// app/dashboard/layout.tsx
+import { checkUserRole } from '@/lib/auth';
+
+export default function Layout({ user, admin }: { user: React.ReactNode; admin: React.ReactNode }) {
+  const role = checkUserRole();
+  return role === 'admin' ? admin : user;
+}
+```
+
+Read that again as a security question rather than a UI question. The docs are explicit about what happens: both slots render on the server, regardless of which one the layout returns. The conditional decides what the user sees, not what runs.
+
+So `@admin/page.tsx` executes its data fetches for every single visitor, including the ones who are not admins, and its rendered output is included in the response sent to that browser. A ternary in a layout is not an authorization check. It is a display filter applied after the privileged work has already happened.
+
+The fix is to authorize where the data is read, inside each slot's own page or in a data access layer:
+
+```tsx
+// app/dashboard/@admin/page.tsx
+import { getAdminStats } from '@/lib/dal';
+
+export default async function AdminPage() {
+  const stats = await getAdminStats(); // checks the session itself
+  return <Stats stats={stats} />;
+}
+```
+
+We come back to this idea properly in part 15. The short version is that every authorization decision belongs next to the data access, not next to the rendering.
+
+{/* TODO(experience): Have you built a modal with parallel and intercepting routes, or hit the refresh 404? Write 2 to 4 sentences: what you were building, which part of the convention tripped you up, and whether you kept the pattern or replaced it. */}
+
+## When not to use them
+
+- **A modal nobody will link to.** A confirmation dialog does not need a URL, a slot, or a `default.js`. Component state is the right tool and a tenth of the code.
+- **Tabs inside one page.** If the tabs are not separately linkable, you do not need slots. If they are, a search param is usually simpler than a slot with its own layout.
+- **Authorization.** As above. Use slots to arrange UI, never to decide who may load data.
+- **When the team will not remember the rules.** These conventions are easy to break during a refactor, and the failure shows up as a 404 on refresh or a modal that will not close. Make sure the refresh path is covered by a test before you build on them.
+
+## Summary
+
+- Slots are layout props, they do not appear in the URL, and `children` is one of them.
+- Client navigations keep unmatched slots visible, refreshes fall back to `default.js` or 404.
+- Intercepting conventions count route segments, so slot folders do not count.
+- A shareable modal needs the real page, a `default.js`, the intercepted route, and a way to render `null` at the destination.
+- A conditional layout runs both slots on the server, so it is not an access control mechanism.
+
+In part 9, we look at what makes a navigation actually feel instant, and why a page load and a client navigation need two different answers.
+
+---
+
+Previous part: [Partial Prerendering Is an Architecture Decision](/blog/nextjs-partial-prerendering-architecture)
+
+Next part: [Instant Navigation: Two Shells, Not One](/blog/nextjs-instant-navigation)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Parallel Routes](https://nextjs.org/docs/app/api-reference/file-conventions/parallel-routes), the Next.js reference this article is based on
+- [Intercepting Routes](https://nextjs.org/docs/app/api-reference/file-conventions/intercepting-routes) in the API reference
+- [default.js](https://nextjs.org/docs/app/api-reference/file-conventions/default) in the API reference

@@ -1,0 +1,160 @@
+---
+title: 'Instant Navigation: Two Shells, Not One'
+description: 'A direct visit and a client navigation to the same route produce different initial UI. That is why a Suspense boundary can cover one and miss the other.'
+publishedAt: '2026-11-05'
+tags: ['nextjs', 'nextjs-between-the-lines', 'rendering']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 9
+draft: false
+---
+
+Part 9 of 20 in Next.js Between the Lines, where I read the Next.js docs with a senior engineer's eye and write down what is easy to miss. Today's topic is instant navigation, which turns out to be two separate problems wearing one name.
+
+[Part 7](/blog/nextjs-partial-prerendering-architecture) described the static shell. This part is about the thing that shell cannot do on its own.
+
+Next.js 16.0 shipped Cache Components with a check that a direct visit to a route produces a static shell. Then the team found that this was not enough, and 16.3 added validation for client navigations as well. The reason is worth understanding, because it explains a class of bug that is almost invisible in development.
+
+## The problem
+
+You add a Suspense boundary, the dev overlay goes quiet, and the page loads instantly when you refresh it. Then a user clicks a link to that same page from somewhere else in the app and waits.
+
+Both paths render the same route. They do not render the same initial UI.
+
+## How it works
+
+### What instant means
+
+The docs define it carefully. A navigation is instant when the browser can start rendering the new page the moment the user clicks, with static, cached and fallback content appearing right away, while the server streams the rest into those fallbacks.
+
+There is a caveat attached that is easy to skip: this assumes caches are warm. A cold cache still requires the server to compute the cached result once, so the very first navigation to a route can still wait.
+
+### Why the two paths differ
+
+On a **direct visit**, the whole page renders from the document root. Every component runs, and anything that suspends is caught by the nearest boundary anywhere in the full tree. A single boundary in the root layout covers everything.
+
+On a **client navigation**, only the part of the tree below the layout that the current route and the destination share gets re-rendered. A boundary above that shared layout sits outside the re-render scope, so it never triggers.
+
+Navigating from `/store/shoes` to `/store/hats` only re-renders below the `/store` layout. Whatever fallback you defined in the root layout is irrelevant to that transition. Whether the page appears immediately depends entirely on the boundaries and caching that exist below the shared layout.
+
+The same split explains a hook that behaves differently in each case. `useSearchParams()` suspends during server rendering, because search params are not known at build time. On a client navigation the router already has them from the URL, so the hook resolves synchronously. One component, two behaviors, depending on how the user got there.
+
+### The framework checks both
+
+Rather than leaving you to reason about this per route, Cache Components validates both paths. For a route like `/shop/[slug]`, it checks the page load from the root, and separately checks a client navigation such as `/shop/shoes` to `/shop/hats` where the `/shop` layout is already mounted. Each case is validated on its own, because a boundary that covers one may not cover the other.
+
+By default every Page and Default segment is validated in development, at warning level, surfacing in the dev overlay. Each error names the component that would block the navigation and offers the two real fixes: cache the data with `use cache`, or wrap it in a Suspense boundary.
+
+Validation runs on real page loads in your browser, so a dynamic `[slug]` is checked against actual values as you click around.
+
+### The instant export
+
+`instant` is a route segment config, stabilized in 16.3 (it was `unstable_instant` in 16.2). It only works with `cacheComponents` enabled, and it cannot be used in Client Components.
+
+```tsx
+// app/tabs/layout.tsx
+export const instant = false;
+```
+
+```tsx
+// app/tabs/[tab]/page.tsx
+export const instant = true;
+```
+
+That combination says something precise: navigating into the tabs section from elsewhere is allowed to block at the layout, but navigating between tabs must be instant. This is the main reason the export exists.
+
+A detail that is easy to get backwards: you do not need to add `instant = false` to the ancestors of an instant page just because they do something blocking. A deeper `true` does not force its ancestors to validate. Reach for `false` only when you have marked a deeper page as instant and need to exempt the navigations that pass through a blocking ancestor.
+
+Two more notes from the reference. Prefetching does not run in development, so navigations will not feel as instant locally as they will in production, and validation reflects what happens under `next start`. And a `false` higher in the tree also wins for the static shell check, so `instant = false` on the root layout disables static shell validation for the entire app. Place it as low as possible.
+
+### Seeing the shell
+
+The Navigation Inspector in the Next.js DevTools freezes the page at its initial loading state. Turn on Pause on navigations, then refresh to see the shell for a page load, or click a link to see the prefetched UI for a client navigation. The panel labels which one you are looking at and gives you a Resume button.
+
+Paired with the React DevTools Suspense panel, which lists the boundaries and lets you toggle each between fallback and resolved, this is the fastest way to find out which boundary is actually covering which part of your page.
+
+## A common mistake
+
+The most expensive mistake here is satisfying validation without improving anything. The docs put it in one sentence: validation passing means the navigation is instant, it does not mean the loading states are good.
+
+A Suspense boundary wrapping the whole page will make the checker happy. It will also replace the entire page with one skeleton on every navigation:
+
+```tsx
+// app/store/[slug]/page.tsx
+// Passes validation. Shows a full-page skeleton on every navigation.
+export default function ProductPage(props: PageProps<'/store/[slug]'>) {
+  return (
+    <Suspense fallback={<WholePageSkeleton />}>
+      <Everything params={props.params} />
+    </Suspense>
+  );
+}
+```
+
+Compare that with pushing the boundaries down to the parts that are actually in flight:
+
+```tsx
+// app/store/[slug]/page.tsx
+export default function ProductPage(props: PageProps<'/store/[slug]'>) {
+  return (
+    <div>
+      <Suspense fallback={<p>Loading product...</p>}>
+        <ProductInfo params={props.params} />
+      </Suspense>
+      <Suspense fallback={<p>Checking availability...</p>}>
+        <Inventory params={props.params} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function ProductInfo({ params }: { params: Params }) {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+  return (
+    <>
+      <h1>{product.name}</h1>
+      <p>{product.price}</p>
+    </>
+  );
+}
+
+async function getProduct(slug: string) {
+  'use cache';
+  return db.products.findBySlug(slug);
+}
+```
+
+Here the product name and price come from cache and appear immediately, and only the live inventory shows a fallback. A page that keeps its header, image and description visible with one small spinner feels faster than a full-page skeleton at the identical total load time. The docs make this point directly, and it is the difference between passing a check and actually improving the experience.
+
+{/* TODO(experience): Have you had a page that felt fast on refresh and slow when clicked, or replaced a full-page skeleton with smaller boundaries? Write 2 to 4 sentences: how you noticed the difference and what you moved. */}
+
+## When a route should not be instant
+
+- **When the structural fix is not worth it.** The dev overlay offers Block as a fix alongside Cache and Stream for a reason. `instant = false` says this segment is allowed to block, and the segment may still navigate instantly if its structure happens to support it.
+- **When the content is session-specific but has a real lifetime.** Before opting out, check `use cache: private`. It caches a function that reads cookies or headers in the browser, so the App Shell can carry it ahead of the click, as long as its `stale` time is at least five minutes.
+- **When the page is genuinely a client app.** A soft navigation into a page marked `'use client'` behaves like a single-page app transition, with no server render at navigation time, so it is instant by construction. The docs leave this out of the fix cards because it changes more than the alternatives do, but it is the right answer for a fully interactive page. Note that it does not skip static shell validation, and hooks like `useSearchParams()` still need a boundary.
+
+## Summary
+
+- A direct visit renders from the root, a client navigation re-renders only below the shared layout.
+- A Suspense boundary above that shared layout does nothing for the navigation.
+- Cache Components validates both paths separately, in development, naming the blocking component.
+- `instant` became stable in 16.3 and is mainly for exempting a blocking ancestor while requiring instant sibling navigations.
+- Passing validation is not the same as a good loading state. Push boundaries down to what is actually loading.
+
+In part 10, we close week two with the question this naturally raises: how do you stop any of this from regressing, when the App Router makes some kinds of tests harder than they used to be?
+
+---
+
+Previous part: [Parallel Routes, default.js, and Modals](/blog/nextjs-parallel-and-intercepting-routes)
+
+Next part: [Testing the App Router Without Guessing](/blog/nextjs-testing-app-router)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Ensuring instant navigations](https://nextjs.org/docs/app/guides/instant-navigation), the Next.js guide this article is based on
+- [instant](https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config/instant) in the API reference
+- [Optimizing prefetching](https://nextjs.org/docs/app/guides/optimizing-prefetching) for routes that depend on URL data

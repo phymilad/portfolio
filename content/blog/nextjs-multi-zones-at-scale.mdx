@@ -1,0 +1,179 @@
+---
+title: 'Multi-Zones and the Cost of Splitting an App'
+description: 'Splitting one Next.js app into zones gives each team its own build and deploy. It also turns every navigation between zones into a full page load.'
+publishedAt: '2026-11-18'
+tags: ['nextjs', 'nextjs-between-the-lines', 'architecture']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 18
+draft: false
+---
+
+Part 18 of 20 in Next.js Between the Lines, my series on reading the Next.js docs the way a senior engineer would. Today's topic is Multi-Zones, the documented approach to micro-frontends in Next.js, and the one trade-off that should decide if you use it.
+
+[Part 17](/blog/nextjs-self-hosting-and-adapters) was about running one application well. This is about running several that look like one.
+
+## The problem
+
+An application grows. Build times grow with it. Three teams now wait on each other to deploy, and a change to the marketing homepage sits behind a release that is blocked on the dashboard.
+
+The natural response is to split. Multi-Zones is how the docs describe doing that: separate a large application on a domain into smaller Next.js applications, each serving a set of paths.
+
+The example from the docs is a shape most products eventually have:
+
+- `/blog/*` for all blog posts
+- `/dashboard/*` for everything behind a login
+- `/*` for the rest of the site
+
+Three applications, one domain, identical to the user. Each developed and deployed independently, each with a smaller build, and each free to use its own framework if it comes to that.
+
+## How it works
+
+### A zone is a normal app with a prefix
+
+There is no special mode. A zone is an ordinary Next.js application that sets `assetPrefix` so its static files do not collide with another zone's:
+
+```js
+// next.config.js
+const nextConfig = {
+  assetPrefix: '/blog-static',
+};
+```
+
+Assets then serve from `/blog-static/_next/...`. The default application, the one handling everything not routed elsewhere, does not need a prefix. In versions before Next.js 15 you also needed a rewrite to handle those static assets, which is no longer necessary.
+
+### Routing requests to the right zone
+
+Any HTTP proxy can do this, but one of the Next.js applications can route for the whole domain using `rewrites`:
+
+```js
+// next.config.js
+async rewrites() {
+  return [
+    {
+      source: '/blog',
+      destination: `${process.env.BLOG_DOMAIN}/blog`,
+    },
+    {
+      source: '/blog/:path+',
+      destination: `${process.env.BLOG_DOMAIN}/blog/:path+`,
+    },
+    {
+      source: '/blog-static/:path+',
+      destination: `${process.env.BLOG_DOMAIN}/blog-static/:path+`,
+    },
+  ]
+}
+```
+
+Note that you rewrite the pages **and** the static asset prefix. Forgetting the third rule gives you a page that loads its HTML and none of its JavaScript.
+
+The docs recommend rewrites over proxy for this, to minimize latency. Proxy is for cases needing a dynamic decision, such as a feature flag deciding where a path goes during a migration:
+
+```js
+// proxy.js
+export async function proxy(request) {
+  const { pathname, search } = request.nextUrl;
+  if (pathname === '/your-path' && myFeatureFlag.isEnabled()) {
+    return NextResponse.rewrite(`${rewriteDomain}${pathname}${search}`);
+  }
+}
+```
+
+One constraint to design around: URL paths must be unique to a zone. Two zones both trying to serve `/blog` is a routing conflict.
+
+### Server Actions need the origin allowed
+
+Because the user-facing domain now serves several applications, the CSRF origin check from [part 13](/blog/nextjs-server-actions-security) needs to be told about it:
+
+```js
+// next.config.js
+const nextConfig = {
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['your-production-domain.com'],
+    },
+  },
+};
+```
+
+Without this, actions work in development and fail in production, because the `Origin` the browser sends is the shared domain while the `Host` is the zone's own.
+
+### Sharing code
+
+Zones can live in any repository, but a monorepo makes sharing easier. For zones in separate repositories, shared code goes through public or private npm packages.
+
+Since zones release at different times, the docs suggest feature flags for turning something on across zones in unison. That is the real cost of independent deploys: coordinated changes now need a coordination mechanism.
+
+## A common mistake
+
+This is the mistake, and it is one line:
+
+```tsx
+// Wrong across zones
+import Link from 'next/link';
+
+export function Nav() {
+  return <Link href="/dashboard">Dashboard</Link>;
+}
+```
+
+`Link` tries to prefetch and soft navigate to any relative path, and neither works across a zone boundary. The destination is a different application. The router has no route tree for it.
+
+Across zones, use a plain anchor:
+
+```tsx
+export function Nav() {
+  return <a href="/dashboard">Dashboard</a>;
+}
+```
+
+What makes this nasty is that it is not an error. The link still works, because the browser falls back to a normal navigation when the router cannot handle it. You just get a wasted prefetch, a delayed transition, and no signal that anything is wrong. The only way to catch it is to know where your zone boundaries are, and that knowledge lives in a config file far away from the component.
+
+If you adopt zones, a lint rule or a shared `CrossZoneLink` component is worth writing on day one.
+
+{/* TODO(experience): Have you worked on a split frontend, with zones or otherwise? What did the split actually fix, and what did it cost? Write 2 to 4 sentences, with no detail that would identify a specific system. */}
+
+## The trade-off that should decide it
+
+Everything above is mechanics. This is the decision.
+
+Navigating within a zone is a soft navigation, with no page reload. Navigating from one zone to another is a **hard navigation**: the current page's resources are unloaded and the new application's resources are loaded. The docs state the implication directly: pages that are frequently visited together should live in the same zone to avoid hard navigations.
+
+So the boundary between zones is not an org chart boundary. It is a boundary in how users move through the product. If your three teams map onto three parts of the product that users move between constantly, splitting by team gives every user a full page load at each handoff, and you have traded their experience for your build times.
+
+Draw the lines where users rarely cross, and zones cost almost nothing. Draw them where users cross all day, and no amount of configuration will hide it.
+
+## When not to split
+
+- **When pages are visited together.** As above. This is the whole question.
+- **When the real problem is build time.** Turbopack is the default bundler in Next.js 16 and its filesystem caching is on by default for both `next dev` and `next build`. A slow build may now be a solved problem rather than an architecture problem. Measure before you split.
+- **When deploy coordination is the real problem.** Independent deploys do not remove the need to coordinate, they move it into feature flags that someone has to maintain and clean up.
+- **When you have one team.** Zones solve an organizational problem. One team paying the cost of three applications gets the bill without the benefit.
+
+A monorepo, for the record, is not the same decision. Sharing code across packages in one repository is cheap and reversible. Splitting into separately deployed applications that users navigate between is neither.
+
+## Summary
+
+- A zone is an ordinary Next.js app with an `assetPrefix`, routed by rewrites or by proxy.
+- Rewrite both the pages and the asset prefix, or the page loads without its JavaScript.
+- Paths must be unique across zones, and Server Actions need `allowedOrigins` set to the shared domain.
+- Use an anchor tag, not `Link`, across zones. The failure is silent.
+- Within a zone, navigation is soft. Between zones it is a full page load.
+- Put pages that users visit together in the same zone, whatever the team structure says.
+
+In part 19, we look at how to move an application like this from one Next.js version to the next without stopping product work for a month.
+
+---
+
+Previous part: [Self-Hosting Next.js 16 Without Surprises](/blog/nextjs-self-hosting-and-adapters)
+
+Next part: [Upgrading Next.js Without a Big Bang](/blog/nextjs-upgrades-and-lts)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Multi-zones](https://nextjs.org/docs/app/guides/multi-zones), the Next.js guide this article is based on
+- [assetPrefix](https://nextjs.org/docs/app/api-reference/config/next-config-js/assetPrefix) in the API reference
+- [serverActions](https://nextjs.org/docs/app/api-reference/config/next-config-js/serverActions) for the allowed origins option

@@ -1,0 +1,183 @@
+---
+title: 'Knowing What Your Next.js App Is Doing'
+description: 'Next.js 16 removed the size column from build output on purpose. Here is what instrumentation.ts gives you instead, and what onRequestError tells you that error.js cannot.'
+publishedAt: '2026-11-16'
+tags: ['nextjs', 'nextjs-between-the-lines', 'production']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 16
+draft: false
+---
+
+Part 16 of 20 in Next.js Between the Lines, the series where I read the Next.js docs with a senior engineer's eye and look for the trade-offs. Week four is about operating this framework rather than writing it, starting with the question of what your app is actually doing in production.
+
+Week three ended with [part 15](/blog/nextjs-authentication-data-access-layer) and the data access layer. Now we leave correctness behind and look at visibility.
+
+## The problem
+
+Next.js 16 removed the `size` and `First Load JS` columns from `next build` output. The reason given is worth reading twice: the team found them inaccurate in server-driven architectures using React Server Components. Turbopack and Webpack both had issues and disagreed with each other about how to account for the Client Components payload.
+
+So a number many teams used as their performance dashboard is gone, deliberately, because it was lying. The docs point you at Lighthouse and real user monitoring instead.
+
+That is the right answer, and it leaves a gap. Those tools tell you what the browser experienced. They do not tell you which Server Component threw, on which route, during which kind of render.
+
+## How it works
+
+### One file, two exports
+
+`instrumentation.ts` goes in the project root, or in `src` if you use one. It has two optional exports that do very different things.
+
+`register` is called **once** when a new server instance starts, and it must complete before the server is ready to handle requests. It can be async.
+
+```ts
+// instrumentation.ts
+import { registerOTel } from '@vercel/otel';
+
+export function register() {
+  registerOTel('next-app');
+}
+```
+
+That is the documented way to wire up OpenTelemetry. It is also the hook for anything else you need at server startup, which the self-hosting guide mentions as a way to run code when a container boots.
+
+### onRequestError and its context
+
+The second export is the interesting one for debugging. `onRequestError` fires when the Next.js server captures an error, and its third argument tells you things no client-side handler can know:
+
+```ts
+// Types, from the docs
+export function onRequestError(
+  error: unknown,
+  request: {
+    path: string;
+    method: string;
+    headers: { [key: string]: string | string[] };
+  },
+  context: {
+    routerKind: 'Pages Router' | 'App Router';
+    routePath: string;
+    routeType: 'render' | 'route' | 'action' | 'proxy';
+    renderSource:
+      'react-server-components' | 'react-server-components-payload' | 'server-rendering';
+    revalidateReason: 'on-demand' | 'stale' | undefined;
+    renderType: 'dynamic' | 'dynamic-resume';
+  },
+): void | Promise<void>;
+```
+
+Read that `context` shape as a list of questions you have probably asked during an incident:
+
+- `routeType` separates a render failure from a Route Handler, a Server Action, or proxy. An error in `'action'` is a user's mutation failing. An error in `'render'` is a page failing.
+- `renderType` is `'dynamic-resume'` for Partial Prerendering, so you can tell a failure during the resume from a failure during a normal dynamic render.
+- `revalidateReason` is `undefined` for a normal request, or tells you the error happened during an on-demand or stale revalidation. A background revalidation failing is a very different alert from a user request failing.
+- `routePath` is the route file path, such as `/app/blog/[dynamic]`, which groups errors properly instead of scattering them across every slug.
+
+Two caveats the docs are explicit about. The `error` value is typed `unknown`, so narrow it before reading `message`. And the instance may not be the error that was originally thrown, because React can process it during Server Components rendering. When that happens, the `digest` property is how you identify the real one:
+
+```ts
+// instrumentation.ts
+import { type Instrumentation } from 'next';
+
+export const onRequestError: Instrumentation.onRequestError = async (err, request, context) => {
+  const message = err instanceof Error ? err.message : String(err);
+  const digest =
+    typeof err === 'object' && err !== null && 'digest' in err ? String(err.digest) : undefined;
+
+  await reportToProvider({ message, digest, request, context });
+};
+```
+
+Note the `await`. The docs call this out: if you run async tasks in `onRequestError`, make sure they are awaited, or the process can finish before your report is sent.
+
+### The client half
+
+For the browser there is `instrumentation-client.ts`, a separate convention file that runs before hydration. That is where `window.onerror` and `unhandledrejection` listeners belong.
+
+### Targeting a runtime
+
+`instrumentation.js` works in both the Node.js and Edge runtimes. If your provider's SDK differs between them, `process.env.NEXT_RUNTIME` lets you branch and import the right module.
+
+## A common mistake
+
+Many teams report server errors from the error boundary, because that is the file that has the error in hand:
+
+```tsx
+// app/dashboard/error.tsx
+'use client';
+
+import { useEffect } from 'react';
+import { reportError } from '@/lib/monitoring';
+
+export default function Error({ error }: { error: unknown }) {
+  useEffect(() => {
+    reportError(error); // runs in the browser
+  }, [error]);
+
+  return <p>Something went wrong.</p>;
+}
+```
+
+Two problems with this as your only reporting path.
+
+First, it misses everything that does not produce an error boundary render. A failing Server Action, a Route Handler returning 500, a failed background revalidation, an error during proxy: none of those reach this component.
+
+Second, what it does report is deliberately redacted. As we saw in [part 5](/blog/nextjs-error-handling-retry-vs-reset), errors forwarded from Server Components arrive in production with a generic message and an identifier, precisely so sensitive details do not leak. You are reporting the sanitized version while the real stack trace sits in a server log nobody is reading.
+
+The fix is to use both, with `digest` as the join key. `onRequestError` reports the real error with full context. The error boundary, if it reports at all, reports the digest so you can match what the user saw to what actually happened:
+
+```tsx
+// app/dashboard/error.tsx
+'use client';
+
+import { useEffect } from 'react';
+import { reportUserFacingError } from '@/lib/monitoring';
+
+export default function Error({ error }: { error: unknown }) {
+  useEffect(() => {
+    const digest =
+      typeof error === 'object' && error !== null && 'digest' in error
+        ? String(error.digest)
+        : undefined;
+
+    // The server already reported the real error. Record what the user saw.
+    reportUserFacingError({ digest, path: window.location.pathname });
+  }, [error]);
+
+  return <p>Something went wrong.</p>;
+}
+```
+
+Some monitoring packages handle this split for you and skip the client report when a digest is present, to avoid double-counting. Check if yours does before wiring both by hand.
+
+{/* TODO(experience): How do you find out that something broke in production on your current project? Have you been bitten by an error that never reached your monitoring tool? Write 2 to 4 sentences, with no detail that would identify a specific system. */}
+
+## What not to do here
+
+- **Do not do heavy work in `register`.** It must complete before the server accepts requests, so a slow call there is startup latency on every container, every deploy and every scale-up event.
+- **Do not fire and forget in `onRequestError`.** Await the async work or it may not finish.
+- **Do not read `error.message` without narrowing.** It is `unknown` in both `onRequestError` and the error boundary, for the reasons in part 5.
+- **Do not use build output as a performance metric.** The size columns are gone because they were wrong. Lighthouse and field data measure what users get.
+
+## Summary
+
+- `next build` no longer prints bundle size, because those numbers were inaccurate under React Server Components.
+- `register` in `instrumentation.ts` runs once at server start and blocks readiness, so keep it light.
+- `onRequestError` gives you the route path, the route type, the render type and the revalidate reason.
+- The error you receive may not be the one that was thrown. Use `digest` to identify it.
+- Report server errors from `onRequestError` and use the digest to match them to what the user saw.
+
+In part 17, we go one layer lower and look at what it takes to run all of this on your own infrastructure.
+
+---
+
+Previous part: [Auth Belongs Next to the Data, Not the Layout](/blog/nextjs-authentication-data-access-layer)
+
+Next part: [Self-Hosting Next.js 16 Without Surprises](/blog/nextjs-self-hosting-and-adapters)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [instrumentation.js](https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation), the Next.js reference this article is based on
+- [Instrumentation](https://nextjs.org/docs/app/guides/instrumentation) in the Next.js guides
+- [OpenTelemetry](https://nextjs.org/docs/app/guides/open-telemetry) for tracing setup

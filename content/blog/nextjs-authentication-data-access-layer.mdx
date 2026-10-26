@@ -1,0 +1,170 @@
+---
+title: 'Auth Belongs Next to the Data, Not the Layout'
+description: 'Layouts do not re-render on client navigation, so an auth check there is not re-run. The Data Access Layer pattern puts the check where it cannot be skipped.'
+publishedAt: '2026-11-13'
+tags: ['nextjs', 'nextjs-between-the-lines', 'security']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 15
+draft: false
+---
+
+Part 15 of 20 in Next.js Between the Lines, the series where I read the Next.js docs with a senior engineer's eye and look for the decisions behind each feature. Week three closes with the question the last two parts kept deferring: where does the authorization check actually go?
+
+[Part 13](/blog/nextjs-server-actions-security) said every action needs its own check. [Part 14](/blog/nextjs-middleware-to-proxy) said proxy cannot be the only one. This part is the positive version of both.
+
+## The problem
+
+An App Router application has many entry points. A page. A nested layout. A Server Action, which is a POST to whatever route uses it. A Route Handler. A parallel route slot that renders whether or not the layout displays it, as we saw in [part 8](/blog/nextjs-parallel-and-intercepting-routes).
+
+Put a check at one of those entry points and you have protected one of them. The instinct from single-page applications, where a route guard sits at the top of the tree and everything below it is safe, does not transfer. There is no single top.
+
+## How it works
+
+### Two kinds of check
+
+The docs split authorization into two categories and they are not competing options:
+
+- **Optimistic checks** read the session from the cookie. Fast, good for hiding UI, redirecting early, and pre-filtering obviously unauthenticated traffic.
+- **Secure checks** verify against the database. Slower, and required for anything touching sensitive data or performing an action.
+
+Proxy is where optimistic checks belong, for the reasons in part 14: it runs on every matched request, prefetches included, so a database round trip there is a performance problem. Read the cookie, redirect, move on.
+
+Everything else is a secure check, and the docs recommend one place for those.
+
+### The Data Access Layer
+
+Centralize data access in a server-only module, run the authorization check there, and return only what the UI needs.
+
+```ts
+// app/lib/dal.ts
+import 'server-only';
+
+import { cache } from 'react';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { decrypt } from '@/app/lib/session';
+
+export const verifySession = cache(async () => {
+  const cookie = (await cookies()).get('session')?.value;
+  const session = await decrypt(cookie);
+
+  if (!session?.userId) {
+    redirect('/login');
+  }
+
+  return { isAuth: true, userId: session.userId };
+});
+```
+
+Three details in that short function matter:
+
+- **`import 'server-only'`** makes an accidental import from client code a build error, the pattern from [part 1](/blog/nextjs-use-client-boundary).
+- **`cache` from React** memoizes the result for the current render pass, so calling `verifySession()` from five components costs one session decode. This is the memoization from [part 2](/blog/nextjs-data-fetching-waterfalls), used deliberately.
+- **The redirect lives in the check**, so a caller cannot forget to handle the unauthenticated case.
+
+Then every data function goes through it:
+
+```ts
+// app/lib/dal.ts
+export const getUser = cache(async () => {
+  const session = await verifySession();
+  if (!session) return null;
+
+  return db.query.users.findFirst({
+    where: eq(users.id, session.userId),
+    // Name the columns instead of selecting the whole row
+    columns: { id: true, name: true, email: true },
+  });
+});
+```
+
+The payoff is stated well in the docs: wherever `getUser()` is called in the application, the auth check happens, which stops a developer from forgetting it.
+
+### Return the minimum
+
+The second half of the pattern is returning Data Transfer Objects rather than records. Anything you pass to a Client Component is serialized and sent to the browser, so a raw user row means the password hash and the phone number travel with it even if nothing renders them.
+
+Naming the columns in the query, as above, is the simplest version. For field-level rules, a DTO function that decides per field based on the viewer is the documented approach.
+
+React's experimental taint APIs, enabled with `experimental.taint`, can block a sensitive object or value from crossing to the client. The docs are careful to position them as an extra layer, not a replacement for filtering in the data layer.
+
+### A note on session payloads
+
+The session cookie should carry the minimum unique data needed on later requests, such as a user id and a role. Not phone numbers, not email addresses, not anything sensitive. And cookies should be set on the server, with `httpOnly`, `secure`, `sameSite`, an expiry and a path.
+
+## A common mistake
+
+This is the big one, and it is a direct consequence of how the App Router renders.
+
+```tsx
+// app/dashboard/layout.tsx
+// Looks like a route guard. Is not one.
+import { verifySession } from '@/app/lib/dal';
+
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await verifySession();
+  if (!session) return null;
+
+  return <Shell>{children}</Shell>;
+}
+```
+
+Two separate problems here.
+
+First, because of partial rendering, layouts do not re-render on client navigation. The check runs when the layout mounts and is not re-run as the user moves between routes underneath it. A session that expires mid-visit is not noticed by this code.
+
+Second, `return null` for unauthorized users is a pattern the docs call out as **not recommended**, precisely because of the multiple entry points above. It hides the UI. It does not prevent a nested route segment or a Server Action from being reached directly.
+
+The guidance is to do checks close to the data source or to the component being conditionally rendered. So the layout keeps calling `getUser()` for the avatar in the nav, and the check lives inside `getUser()`:
+
+```tsx
+// app/dashboard/layout.tsx
+import { getUser } from '@/app/lib/dal';
+
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const user = await getUser(); // verifySession runs inside
+
+  return <Shell user={user}>{children}</Shell>;
+}
+```
+
+There is a related trap with context providers. An auth provider in the root layout works for Client Components, but any child Server Component renders on the server first and has no access to that provider's session data. If you have a provider and assume it covers everything below it, the server half of your tree is not covered.
+
+{/* TODO(experience): Where do the auth checks live in your current project? Have you moved them, or found a place where a check was missing because it sat in a layout or a provider? Write 2 to 4 sentences, with no detail that would identify a specific system. */}
+
+## When to do less
+
+- **Do not hand-roll sessions if you can avoid it.** The docs say so directly: the step-by-step example is educational, and a library is recommended for real applications. The list in the docs includes Auth0, Better Auth, Clerk, NextAuth.js, Supabase and others.
+- **Do not put secure checks in proxy.** Optimistic only, cookie only.
+- **Do not mix data access approaches.** The data security guide recommends picking one of existing HTTP APIs, a data access layer, or component-level queries, and sticking to it, because mixing them makes auditing much harder.
+- **Do not treat a role check in a Server Component as a boundary.** It is fine for choosing which dashboard to render. It is not what stops the other one from loading its data.
+
+One practical note from the docs: a data access layer protects data fetched at request time. For a static route whose data is shared between users and fetched at build time, there is no request to check, so that content is protected at the proxy layer instead.
+
+When auditing an App Router codebase, the docs name the places worth extra attention: the boundaries of the data layer, the prop types on `'use client'` components, the input validation and re-authorization in `'use server'` functions, dynamic route params, and the `proxy.ts` and `route.ts` files.
+
+## Summary
+
+- Optimistic checks read the cookie and belong in proxy. Secure checks hit the database and belong next to the data.
+- A server-only data access layer with `verifySession` wrapped in React's `cache` makes the check unavoidable and cheap.
+- Return only the fields the UI needs, because props are serialized to the browser.
+- Layouts do not re-render on client navigation, so an auth check there is not re-run.
+- Returning `null` for unauthorized users hides UI without protecting routes or actions.
+- Context providers do not reach the Server Components below them.
+
+That closes week three. Week four moves from correctness to operations: observability, self-hosting, scale, upgrades, and where this framework seems to be heading. Part 16 starts with finding out what your app is actually doing in production.
+
+---
+
+Previous part: [From Middleware to Proxy, and Why](/blog/nextjs-middleware-to-proxy)
+
+Next part: [Knowing What Your Next.js App Is Doing](/blog/nextjs-observability-and-performance)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Authentication](https://nextjs.org/docs/app/guides/authentication), the Next.js guide this article is based on
+- [Data Security](https://nextjs.org/docs/app/guides/data-security) for the auditing checklist
+- [How to think about security in Next.js](https://nextjs.org/blog/security-nextjs-server-components-actions) on the Next.js blog

@@ -1,0 +1,135 @@
+---
+title: 'From Middleware to Proxy, and Why'
+description: 'Next.js 16 renamed middleware.ts to proxy.ts. The rename is a recommendation: use it less, and never as your only authorization check.'
+publishedAt: '2026-11-12'
+tags: ['nextjs', 'nextjs-between-the-lines', 'security']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 14
+draft: false
+---
+
+Part 14 of 20 in Next.js Between the Lines, where I read the Next.js docs with a senior engineer's eye and write down the parts that change how you build. Today's topic is the rename of `middleware.ts` to `proxy.ts` in Next.js 16, which is not really about a filename.
+
+[Part 13](/blog/nextjs-server-actions-security) argued that every Server Action is a public endpoint. This part is about the layer that sits in front of them, and why putting your checks there is not enough.
+
+## The problem
+
+Middleware became the place where things went when they did not fit anywhere else. Auth redirects, A/B test assignment, locale detection, feature flags, header rewriting, analytics, bot filtering. It runs on every request, it can read cookies, and it can return a response, so it will accept any job you give it.
+
+That is the problem. A file that can do anything accumulates everything, and in this case it accumulates logic into a layer that runs before your application and may not even run in the same place.
+
+## How it works
+
+### Why the name changed
+
+The docs give the reasoning directly. The term middleware was often confused with Express middleware, which led people to misread its purpose. The name proxy implies a network boundary in front of the app, which is how the feature actually behaves: it can run outside your application's main runtime and handle requests before they reach your app.
+
+There is a second, blunter reason in the migration section. The Next.js team recommends avoiding this feature unless no other option exists, and says the goal is to provide APIs with better ergonomics so you can reach your goals without it. The rename is part of breaking down what was an overloaded feature.
+
+Read that as guidance rather than as trivia. If your `proxy.ts` is long, the docs think you are holding it wrong.
+
+### What changed in practice
+
+- The file is `proxy.ts` (or `.js`) in the project root, or inside `src`, at the same level as `app`.
+- It exports a single function, named `proxy` or as the default export. Multiple proxies from one file are not supported.
+- **Proxy defaults to the Node.js runtime** in v16. The `runtime` config option is not available and setting it throws an error. This is a real improvement: your auth library and session library no longer have to be Edge-compatible.
+- There is a codemod: `npx @next/codemod@canary middleware-to-proxy .` It renames the file and the function.
+
+One caveat before you run that codemod. The `edge` runtime is not supported in proxy. If your middleware depends on it, the version 16 upgrade guide says to keep using `middleware` for now rather than renaming, with further instructions promised in a later minor release. Its own migration checklist lists this as a separate item: edge middleware is not blindly renamed to proxy.
+
+```ts
+// proxy.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function proxy(request: NextRequest) {
+  return NextResponse.redirect(new URL('/home', request.url));
+}
+
+export const config = {
+  matcher: '/about/:path*',
+};
+```
+
+### The matcher is not optional in practice
+
+Without a `matcher`, proxy runs on **every request**, including `_next/static`, image optimization requests and everything in `public/`. The docs spell out the consequence: auth logic or redirects can unintentionally block your CSS, JS or images from loading.
+
+The usual shape is a negative lookahead:
+
+```js
+// proxy.js
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)'],
+};
+```
+
+One documented exception is worth filing away. Even when `_next/data` is excluded by a negative matcher, proxy still runs for those routes. That is intentional, to stop you protecting a page and forgetting its data route.
+
+### Keep it stateless
+
+Because proxy is meant to be invoked separately from your render code, and in optimized cases deployed to a CDN, the docs warn against relying on shared modules or globals. To pass information into your application, use headers, cookies, rewrites, redirects, or the URL.
+
+When setting request headers, there is one easy-to-miss distinction. `NextResponse.next({ request: { headers } })` makes the headers available upstream to your app. `NextResponse.next({ headers })` makes them available to the client. Those are different things and only one of them is usually what you meant.
+
+### Testing it
+
+Since 15.1 there are experimental utilities in `next/experimental/testing/server`. `unstable_doesProxyMatch` asserts whether proxy runs for a given URL, headers and cookies, and helpers like `isRewrite` and `getRewrittenUrl` let you test the function's output. Given how easy a matcher is to break, a few of these tests buy a lot.
+
+## A common mistake
+
+This is the one that should change how your team works, and it connects directly to part 13.
+
+Server Functions are **not separate routes** in the request chain. They are handled as POST requests to the route where they are used. So a proxy matcher that excludes a path also skips Server Function calls on that path.
+
+Picture the usual setup. The proxy protects `/dashboard`, and the dashboard has a Server Action that deletes a record. Months later someone moves that action into a shared `app/lib/actions.ts` used by a page under a different path, or someone adds a path to the matcher's exclusion list to fix an unrelated static asset problem. Nothing in the diff looks like a security change. The protection is simply gone.
+
+```ts
+// proxy.ts
+// Protects the dashboard pages. Does not protect a Server Function
+// that now lives on a route this matcher excludes.
+export const config = {
+  matcher: ['/dashboard/:path*'],
+};
+```
+
+The docs are explicit: a matcher change or a refactor that moves a Server Function to a different route can silently remove proxy coverage, so always verify authentication and authorization inside each Server Function rather than relying on proxy alone.
+
+The same applies to Route Handlers. Verify credentials in the handler itself.
+
+This does not make proxy useless for auth. It makes it the wrong **only** place for auth. The useful split is in the authentication guide, and part 15 covers it: proxy does optimistic checks, reading the session from the cookie to redirect obviously unauthenticated users early, and the real checks happen next to the data.
+
+{/* TODO(experience): Has a matcher change or a refactor ever removed protection you thought you had? Or have you moved logic out of middleware after it grew too large? Write 2 to 4 sentences about what happened and what you do differently now. */}
+
+## What does not belong in proxy
+
+- **Database queries.** Proxy runs on every matched request, including prefetches. The authentication guide says to read the session from the cookie only and avoid database checks here, for performance reasons.
+- **Your only authorization check.** As above.
+- **Business logic.** Anything that needs your app's modules, globals or shared state is in the wrong layer, because this one may run somewhere else entirely.
+- **Large headers.** The docs warn that oversized headers can produce a 431 response depending on your web server.
+- **Anything in a static export.** Proxy is not supported there. On adapters, support is platform-specific.
+
+## Summary
+
+- The rename from middleware to proxy signals a network boundary in front of your app, and a recommendation to use it less.
+- In v16 proxy runs on the Node.js runtime by default and the `runtime` option throws.
+- Without a matcher it runs on every request, including static assets.
+- Server Functions are POSTs to the route that uses them, so a matcher can silently stop covering them.
+- Use proxy for optimistic checks and early redirects, and put the real checks next to the data.
+
+In part 15, we close week three with that split in full: where authentication checks actually belong, and why a layout is the wrong place for them.
+
+---
+
+Previous part: [Every Server Action Is a Public Endpoint](/blog/nextjs-server-actions-security)
+
+Next part: [Auth Belongs Next to the Data, Not the Layout](/blog/nextjs-authentication-data-access-layer)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Proxy](https://nextjs.org/docs/app/api-reference/file-conventions/proxy), the Next.js reference this article is based on
+- [Data Security](https://nextjs.org/docs/app/guides/data-security) for the authorization guidance
+- [Authentication](https://nextjs.org/docs/app/guides/authentication) for the optimistic check pattern

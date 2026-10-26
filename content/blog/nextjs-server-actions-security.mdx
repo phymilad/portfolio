@@ -1,0 +1,147 @@
+---
+title: 'Every Server Action Is a Public Endpoint'
+description: 'The use server directive leaves a POST route behind. What Next.js protects for you, what it does not, and why schema validation is not an authorization check.'
+publishedAt: '2026-11-11'
+tags: ['nextjs', 'nextjs-between-the-lines', 'security']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 13
+draft: false
+---
+
+Part 13 of 20 in Next.js Between the Lines, my series on reading the Next.js docs the way a senior engineer would. Today's topic is the sentence the forms guide opens with: verify authentication and authorization inside every Server Action, even when the form is only rendered on an authenticated page.
+
+[Part 12](/blog/nextjs-forms-with-server-actions) was about making forms feel good. This one is about what happens when someone skips the form entirely.
+
+## The problem
+
+A Server Action looks like a function call. You import it, you pass it to `form action`, and the types check. It feels like calling a method on the server, with the server's trust boundary somewhere else.
+
+It is not a function call. The docs put it in one sentence: a Server Action runs as a POST request against the page that invokes it. At build time, the `'use server'` directive tells the compiler to swap the implementation in client bundles for a reference, an action ID plus a dispatcher that POSTs back. The implementation stays on the server, but **the route is reachable to anyone who can send the same POST**.
+
+So the guidance is to treat every action as an untrusted entry point. Render-time gating is not a security boundary, because requests do not have to come through your UI.
+
+## How it works
+
+### What the framework protects
+
+Next.js gives you four protections at the framework level, and it is worth knowing which problems they solve:
+
+- **A CSRF check.** The request's `Origin` is compared with the `Host`, or with `X-Forwarded-Host`. Mismatches are rejected. If you sit behind a proxy or CDN on a different domain, configure `serverActions.allowedOrigins`.
+- **A body size limit.** Action requests are capped at 1MB by default, configurable with `serverActions.bodySizeLimit`.
+- **Encrypted action IDs and dead code elimination.** Action references are encrypted at build time, and unused Server Functions are stripped from client bundles so they have no public endpoint at all.
+- **Closure variable encryption.** Variables captured by an inline action are encrypted before being sent to the client.
+
+That last one needs a deployment note. For multi-instance and self-hosted setups, set `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` to a stable key shared across instances, or references encrypted by one instance cannot be decrypted by another.
+
+The data security guide adds a caution worth repeating: do not rely on closure encryption alone to hide sensitive values. It is a safety net, not a vault.
+
+### What you have to do yourself
+
+Three things, inside every action:
+
+- **Authenticate and authorize.** Not just logged in, but allowed to do this specific thing to this specific record.
+- **Validate inputs.** `FormData`, query parameters and headers are all untrusted.
+- **Constrain return values.** Action returns are serialized and sent to the client, so shape them to what the UI renders rather than returning raw database records.
+
+For destructive operations the docs suggest going further: a stronger session check or re-authentication, and a loud failure when a check misses rather than a quiet one.
+
+```ts
+// app/posts/actions.ts
+'use server';
+
+import { auth } from '@/lib/auth';
+
+export async function deletePost(postId: string) {
+  const session = await auth();
+  if (!session?.user) throw new Error('Unauthorized');
+  if (!(await canDelete(session.user, postId))) throw new Error('Forbidden');
+
+  await db.post.delete({ where: { id: postId } });
+}
+```
+
+With the experimental `authInterrupts` flag you can throw `unauthorized()` and `forbidden()` from `next/navigation` instead, and Next.js renders the matching `unauthorized.tsx` or `forbidden.tsx` segment.
+
+### Deployments break action IDs
+
+This one surprises teams in production rather than in review. Each action is identified by an action ID that is part of its build artifacts. New deployments generally produce new IDs, and Next.js rotates them at most every 14 days even when the source has not changed.
+
+A browser still running the previous build can therefore POST an action ID that no longer exists, and the user sees "Failed to find Server Action". The docs suggest three things: prefer rolling deployments when users are likely to be mid-mutation, keep the encryption key stable across instances, and surface the error in the UI as a retry rather than a hard failure, so a refresh recovers the user.
+
+## A common mistake
+
+Here is the pattern, almost verbatim from the docs, because it is that common:
+
+```ts
+// app/items/actions.ts
+'use server';
+
+// Unsafe: no auth, no ownership check. The whole item, including its id,
+// comes from the client.
+export async function completeItemUnsafe(item: Item) {
+  await db.item.update({ where: { id: item.id }, data: { completed: true } });
+}
+```
+
+Anyone who can POST to this endpoint can mark any item complete, including items belonging to other users. There is no obvious bug. The types are correct, the action works, and the UI only ever passes items the user can see.
+
+Adding Zod does not fix it. The docs make this distinction sharply: schema validation only checks the **shape** of the input. A perfectly well-formed `Item` object can still refer to a row the caller does not own.
+
+The fix is a different contract with the client. Send a reference plus the user's change, and re-read everything else from a trusted source using the session:
+
+```ts
+// app/items/actions.ts
+'use server';
+
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+
+export async function completeItem(itemId: string) {
+  const session = await auth();
+  if (!session?.user) return;
+
+  const item = await db.item.findFirst({
+    where: { id: itemId, ownerId: session.user.id },
+  });
+  if (!item) return;
+
+  await db.item.update({ where: { id: item.id }, data: { completed: true } });
+}
+```
+
+The ownership condition is in the lookup, not in an `if` after it. A client legitimately tells the server which item to act on. It should never supply the row's contents or its ownership.
+
+{/* TODO(experience): Have you audited Server Actions on a real project? What did you find, and did anything reach production before it was caught? Write 2 to 4 sentences, with no detail that would identify a specific system. */}
+
+## When the framework protections are not enough
+
+- **When a page-level check is your only check.** It protects the page, not the POST. Every action needs its own.
+- **When the action is expensive.** Sending email, writing to the database, or calling a paid API from an endpoint anyone can POST to is a cost problem as well as a security one. The data security guide recommends rate limiting these.
+- **When you return a database record.** Return a shaped object with only the fields the UI uses, so a schema change cannot quietly start leaking a column.
+- **When you mutate during rendering.** The docs advise keeping cookie changes, logouts and cache revalidation in actions, which are POSTs, rather than doing them during render.
+
+## Summary
+
+- `'use server'` leaves behind a POST endpoint reachable by anyone, not a private function call.
+- The framework gives you a CSRF origin check, a 1MB body limit, encrypted action IDs, dead code elimination and closure encryption.
+- You still have to authenticate, authorize, validate input and constrain return values in every action.
+- Schema validation checks shape, not ownership.
+- Accept a reference and the change, then re-read the record using the session.
+- Action IDs change across deploys, so handle the stale-action error as a retry.
+
+In part 14, we look at the layer that sits in front of all of this and at why Next.js 16 renamed it: from middleware to proxy.
+
+---
+
+Previous part: [Forms With Server Actions and Optimistic UI](/blog/nextjs-forms-with-server-actions)
+
+Next part: [From Middleware to Proxy, and Why](/blog/nextjs-middleware-to-proxy)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Server Actions and Mutations](https://nextjs.org/docs/app/guides/server-actions), the Next.js guide this article is based on
+- [Data Security](https://nextjs.org/docs/app/guides/data-security) in the Next.js docs
+- [How to think about security in Next.js](https://nextjs.org/blog/security-nextjs-server-components-actions) on the Next.js blog

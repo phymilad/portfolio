@@ -1,0 +1,171 @@
+---
+title: 'Self-Hosting Next.js 16 Without Surprises'
+description: 'One container with a disk needs almost no configuration. The moment you run two, you need a shared cache, a stable build id, an encryption key and a deployment id.'
+publishedAt: '2026-11-17'
+tags: ['nextjs', 'nextjs-between-the-lines', 'production']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 17
+draft: false
+---
+
+Part 17 of 20 in Next.js Between the Lines, where I go through the Next.js docs one topic per weekday and focus on the decisions behind each feature. Today's topic is self-hosting, which is where the bill for [part 7](/blog/nextjs-partial-prerendering-architecture) arrives.
+
+[Part 16](/blog/nextjs-observability-and-performance) was about seeing what your app does. This is about where it runs.
+
+Part 7 ended on the observation that a component-level rendering boundary transfers complexity from application code into the hosting platform. If you are the hosting platform, this is that complexity, itemized.
+
+## The problem
+
+A single `next start` instance with a persistent local disk needs almost no configuration. Image optimization works with zero config. Proxy works with zero config. Caching and Incremental Static Regeneration work, because they share one server cache stored on that local disk.
+
+Then you run two instances, and every one of those sentences stops being true in a different way.
+
+## How it works
+
+### Start with a reverse proxy
+
+The docs lead with this and it is easy to skip. Put a reverse proxy such as nginx in front of the Next.js server rather than exposing it directly. The proxy handles malformed requests, slow connection attacks, payload size limits and rate limiting, so the server can spend its resources rendering instead of validating.
+
+### The cache is per instance by default
+
+Generated cache assets are stored in memory, defaulting to 50MB, and on disk. On a container platform like Kubernetes, **each pod gets its own copy**. On ephemeral compute, the local disk is often not persistent at all, so the cache is effectively short-lived and per instance.
+
+The fix is a custom cache handler, with the in-memory layer turned off:
+
+```js
+// next.config.js
+module.exports = {
+  cacheHandler: require.resolve('./cache-handler.js'),
+  cacheMaxMemorySize: 0, // disable default in-memory caching
+};
+```
+
+The handler exports a class implementing `get`, `set`, `revalidateTag` and `resetRequestCache`. The docs then list what a production handler must do, and this list is the most useful paragraph in the whole guide:
+
+- **Store entries where every instance can reach them**, such as Redis or S3. A `Map` inside the process just gives each pod its own cache again.
+- **Bound the store's size**, with a TTL or size-based eviction.
+- **Serialize entries properly.** An entry can contain `Buffer` values such as `rscData` and `Map` values such as `segmentData`.
+- **Index entries by tag**, keeping the index in the shared store so a `revalidateTag` on one instance invalidates on all of them.
+- **Handle storage errors**, including timeouts and dropped connections.
+
+For `'use cache'` backends there is a separate option, `cacheHandlers`, rather than the single `cacheHandler` above.
+
+### Tag invalidation needs its own coordination
+
+Even with a shared store, `revalidateTag()` on one instance only invalidates that instance by default. The others keep serving stale content until they discover the invalidation independently.
+
+The documented fix is implementing `refreshTags()` in your cache handler. It is called before each request and should sync tag state from shared storage, so every instance learns about invalidations promptly.
+
+### Three environment-level settings
+
+These are the ones teams discover through incidents rather than through reading:
+
+**A consistent build id.** Next.js generates an id during `next build` to identify the version being served, and the same build should boot every container. If your pipeline rebuilds per environment, pin it:
+
+```js
+// next.config.js
+module.exports = {
+  generateBuildId: async () => process.env.GIT_HASH,
+};
+```
+
+**A shared Server Functions encryption key.** By default a unique key is generated per build. Across multiple instances, an action encrypted by one cannot be decrypted by another, which produces the "Failed to find Server Action" error from [part 13](/blog/nextjs-server-actions-security). Set `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` to a base64 value with a valid AES key length of 16, 24 or 32 bytes.
+
+**A deployment id**, for version skew. During a rolling deploy a client can request assets that no longer exist, invoke an action id the server does not recognise, or hold prefetched data from the old build. With `deploymentId` set, static assets carry a `?dpl=` parameter and navigation requests carry an `x-deployment-id` header, and a mismatch triggers a full page reload instead of a broken client navigation.
+
+```js
+// next.config.js
+module.exports = {
+  deploymentId: process.env.DEPLOYMENT_VERSION,
+};
+```
+
+Worth knowing about that reload: component state in `useState` is lost. URL state and local storage survive.
+
+### Streaming has to work end to end
+
+The nginx header from [part 4](/blog/nextjs-streaming-and-suspense) is only the first hop:
+
+```js
+// next.config.js
+module.exports = {
+  async headers() {
+    return [
+      {
+        source: '/:path*{/}?',
+        headers: [{ key: 'X-Accel-Buffering', value: 'no' }],
+      },
+    ];
+  },
+};
+```
+
+Load balancers must support chunked transfer encoding or HTTP/2 streaming, and some buffer by default. Any reverse proxy between the load balancer and Next.js has to pass chunked responses through as well. Without streaming, Partial Prerendering still works, but the shell and the dynamic content arrive together after the full render, which removes the entire time-to-first-byte benefit.
+
+### Shutting down
+
+`after()` is fully supported with `next start`. For a clean stop, send `SIGINT` or `SIGTERM` and wait: the server finishes in-flight requests and runs pending `after()` callbacks before exiting. The docs recommend platforms allow a drain period of 10 to 30 seconds. A container platform that kills pods faster than that silently drops your background work.
+
+### Adapters
+
+The Build Adapters API, from the RFC of the same name, lets a deployment platform hook into the build and modify configuration or process build output. It arrived as alpha `experimental.adapterPath` in 16.0 and was promoted to a stable top-level `adapterPath` in 16.2. This is the mechanism behind the adapter test suite mentioned in part 7: if a platform's adapter passes those tests, it has full functional fidelity.
+
+## A common mistake
+
+The cache handler serialization requirement produces one of the most confusing errors in this whole space, so it is worth knowing before you meet it.
+
+```js
+// cache-handler.js
+// Looks fine. Breaks on client navigation.
+module.exports = class CacheHandler {
+  async get(key) {
+    const raw = await redis.get(key);
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  async set(key, data, ctx) {
+    await redis.set(key, JSON.stringify({ data, ctx }));
+  }
+};
+```
+
+`JSON.stringify` cannot represent a `Buffer` or a `Map`, and cache entries contain both: `rscData` is a `Buffer`, `segmentData` is a `Map`. They go into Redis as plain objects and come back as plain objects. Pages still render, because the HTML path does not touch those fields.
+
+Then someone clicks a link, and you get `segmentData.get is not a function` or `failed to pipe response`. The error names a field nobody on the team has heard of, appears only on client navigations and prefetches, and never reproduces locally because local development uses the default handler.
+
+The fix is a serializer that round-trips those types, which the Redis example in the Next.js repository implements. The broader lesson is that a cache handler is not a key-value wrapper. It is a part of the framework you are now maintaining, and the docs list five requirements for it. Before writing one, look at the community handlers listed in that example's README, which already deal with GET timeouts, request coalescing and multi-instance tag coordination.
+
+{/* TODO(experience): Have you self-hosted Next.js at more than one instance? What broke first: the cache, the build id, actions after a deploy, or streaming? Write 2 to 4 sentences, with no detail that would identify a specific system. */}
+
+## When not to take this on
+
+- **One instance with a persistent disk.** Then you need almost none of the above. Do not add Redis to a deployment that does not need it.
+- **When nobody owns it.** Part 7 said this and the detail here is the proof: a shared cache, tag coordination, a stable build id, a shared encryption key, a deployment id, end-to-end streaming, and a drain period are all production concerns with their own failure modes.
+- **For a static site.** A static export needs none of it, but it also cannot stream and does not support proxy.
+- **Before checking your platform's adapter.** If an adapter exists and passes the test suite, you get functional fidelity without reimplementing this yourself.
+
+## Summary
+
+- A single instance with a disk works with almost no configuration. Two instances change everything.
+- A production cache handler must share storage, bound its size, serialize `Buffer` and `Map`, index by tag and handle storage errors.
+- `refreshTags()` is what makes `revalidateTag` work across instances.
+- Pin `generateBuildId`, share `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`, and set `deploymentId` for rolling deploys.
+- Streaming must pass through every proxy and load balancer in the path.
+- Allow 10 to 30 seconds of drain so `after()` callbacks finish.
+
+In part 18, we zoom out from one application to several, and look at Multi-Zones.
+
+---
+
+Previous part: [Knowing What Your Next.js App Is Doing](/blog/nextjs-observability-and-performance)
+
+Next part: [Multi-Zones and the Cost of Splitting an App](/blog/nextjs-multi-zones-at-scale)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Self-Hosting](https://nextjs.org/docs/app/guides/self-hosting), the Next.js guide this article is based on
+- [How Revalidation Works](https://nextjs.org/docs/app/guides/how-revalidation-works) for the tag architecture
+- [adapterPath](https://nextjs.org/docs/app/api-reference/config/next-config-js/adapterPath) in the API reference

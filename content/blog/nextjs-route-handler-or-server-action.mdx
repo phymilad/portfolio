@@ -1,0 +1,138 @@
+---
+title: 'Route Handler or Server Action?'
+description: 'Server Actions are dispatched one at a time per client, which makes them a poor fit for fetching. Route Handlers are public endpoints you should not call from your own Server Components.'
+publishedAt: '2026-11-09'
+tags: ['nextjs', 'nextjs-between-the-lines', 'api']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 11
+draft: false
+---
+
+Part 11 of 20 in Next.js Between the Lines, the series where I read the Next.js docs with a senior engineer's eye and look for the trade-offs. Week three begins with a question every App Router team argues about at least once: when do you write a Route Handler and when do you write a Server Action?
+
+Week two was about rendering. [Part 10](/blog/nextjs-testing-app-router) closed it with testing. This week is about data, APIs and the security that goes with them.
+
+## The problem
+
+Two habits pull in opposite directions.
+
+Teams coming from the Pages Router keep building `/api` routes for everything, because that is where the backend used to live. Teams new to the App Router go the other way and use Server Actions for everything, including reading data, because an action is quick to write and the types line up.
+
+Both habits produce code that works and then behaves strangely under load. The docs explain why, in two places that are easy to read separately and miss the connection between.
+
+## How it works
+
+### The framing: a backend for the frontend
+
+The docs are specific about what Next.js is doing here. It is a backend for your frontend: an API layer that is publicly reachable, can handle any HTTP request, and can return any content type. It is not a replacement for a full backend.
+
+That framing answers most of the question. A Route Handler exists for things that need to be **reachable over HTTP by something other than your own React tree**.
+
+### What Route Handlers are actually for
+
+The documented use cases line up with that:
+
+- **Content types other than a page.** JSON, XML such as RSS, images, files, plain text.
+- **Webhooks and callbacks.** A CMS calling you to trigger revalidation, an OAuth provider redirecting back.
+- **Proxying.** Forwarding a request to another backend after you validate it.
+- **Data manipulation for a client that is not your page.** Transforming or aggregating several sources, with the logic kept off the client.
+
+They support `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` and `OPTIONS`. If you do not define `OPTIONS`, Next.js implements it for you and sets the `Allow` header based on the methods you did define.
+
+### What Server Actions are for
+
+A Server Action is a React Server Function invoked through React's action mechanisms: a `form` action, a `formAction` on a button, or a client transition. The docs describe them as the tool for mutations.
+
+Then comes the detail that settles the argument. Next.js dispatches Server Actions **one at a time per client**. Trigger three in quick succession and the second waits for the first, the third waits for the second. This keeps the re-rendered server tree consistent with the action result that produced it.
+
+The consequence is stated plainly: do not rely on `Promise.all` to parallelize Server Actions from the client. If you need parallel work, do it inside a single action, fetch in parallel from a Server Component, or use a Route Handler for requests that are not mutations.
+
+This is a property of the client dispatcher, not of Server Functions in general. The server does not queue them. Each arrives in its own request. But from the browser's point of view, your actions are a single-file queue, and that is why using them as a data-fetching layer feels fine in development and gets slow with real users.
+
+### The decision
+
+| You need                                        | Use                                      |
+| ----------------------------------------------- | ---------------------------------------- |
+| A mutation from your own UI                     | Server Action                            |
+| An endpoint for a mobile app or another service | Route Handler                            |
+| A webhook receiver                              | Route Handler                            |
+| RSS, a sitemap, an image, a file                | Route Handler                            |
+| Data for your own page                          | Neither, read it in the Server Component |
+| Several reads in parallel from the client       | Route Handler                            |
+
+The interesting row is the one that says neither.
+
+## A common mistake
+
+This is the one worth internalizing, because it looks like good architecture:
+
+```tsx
+// app/dashboard/page.tsx
+// Do not do this
+export default async function Dashboard() {
+  const res = await fetch('https://my-app.com/api/stats');
+  const stats = await res.json();
+  return <Stats stats={stats} />;
+}
+```
+
+```ts
+// app/api/stats/route.ts
+import { db } from '@/lib/db';
+
+export async function GET() {
+  return Response.json(await db.stats.summary());
+}
+```
+
+A Server Component calling your own Route Handler is a page talking to itself over HTTP. The docs say Server Components should fetch data directly from its source, and give two reasons: the extra round trip, and the fact that this can break builds for prerendered pages. During a build there may be no server listening on that URL yet, so a page that works in development fails at build time with an error that has nothing obvious to do with the real cause.
+
+The version without the detour is shorter and faster:
+
+```tsx
+// app/dashboard/page.tsx
+import { db } from '@/lib/db';
+
+export default async function Dashboard() {
+  const stats = await db.stats.summary();
+  return <Stats stats={stats} />;
+}
+```
+
+If something outside your React tree also needs those stats, keep the Route Handler and have both the handler and the page call the same function. What you avoid is the page calling the handler.
+
+{/* TODO(experience): Has your team drawn this line somewhere? For example an API layer kept for a mobile client, or a Server Action used for fetching before you hit the sequential dispatch behaviour. Write 2 to 4 sentences about the decision and whether you would make it again. */}
+
+## When not to reach for a Route Handler
+
+- **For your own page's data.** Read it in the Server Component. The handler adds a hop and can break the build.
+- **For mutations from your own UI.** That is what Server Actions are for, and they come with CSRF checks and a single-roundtrip response that re-renders the page.
+- **For anything needing shared state or a socket.** Some hosts run handlers as serverless functions: no shared state between requests, limited file system writes, possible timeouts, and no WebSockets.
+- **In `export` mode.** Only `GET` handlers with `force-static` work there.
+
+And one that cuts the other way: client-side fetching is still the right answer for client-only Web APIs and for data you poll frequently. Not everything has to go through the server.
+
+## Summary
+
+- Next.js is a backend for your frontend, not a replacement for your backend.
+- Route Handlers are for HTTP consumers that are not your own React tree: webhooks, other services, non-page content types.
+- Server Actions are for mutations, and the client dispatches them one at a time.
+- That queue is why actions make a poor data-fetching layer.
+- A Server Component should never call your own Route Handler.
+
+In part 12, we stay with Server Actions and look at the place most people meet them first: forms, and the hooks that make them feel instant.
+
+---
+
+Previous part: [Testing the App Router Without Guessing](/blog/nextjs-testing-app-router)
+
+Next part: [Forms With Server Actions and Optimistic UI](/blog/nextjs-forms-with-server-actions)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Backend for Frontend](https://nextjs.org/docs/app/guides/backend-for-frontend), the Next.js guide this article leans on
+- [Server Actions and Mutations](https://nextjs.org/docs/app/guides/server-actions) for the sequential dispatch behavior
+- [route.js](https://nextjs.org/docs/app/api-reference/file-conventions/route) in the API reference

@@ -1,0 +1,193 @@
+---
+title: 'Data Fetching in Next.js Without Hidden Waterfalls'
+description: 'Two awaits in a row can double the wait for your data. The patterns the Next.js docs give you to start requests early and share them safely.'
+publishedAt: '2026-10-27'
+tags: ['nextjs', 'nextjs-between-the-lines', 'fundamentals']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 2
+draft: false
+---
+
+Welcome to part 2 of 20 in Next.js Between the Lines. The goal of this series is to read the Next.js docs with a senior engineer's eye, one topic at a time, and focus on the trade-offs. Today's topic is data fetching, and the waterfalls that hide inside code that looks perfectly fine.
+
+In [part 1](/blog/nextjs-use-client-boundary), we looked at where code runs. This time the question is when data arrives.
+
+Server Components let you fetch data right where you need it. There is no API route in between and no loader function at the top of the page. That is a real improvement. It also makes it very easy to create request waterfalls without noticing, because async code reads from top to bottom, and each `await` quietly waits for the one before it.
+
+## The problem
+
+Here is a page that looks harmless:
+
+```tsx
+// app/artist/[username]/page.tsx
+export default async function Page({ params }: { params: Promise<{ username: string }> }) {
+  const { username } = await params;
+  const artist = await getArtist(username);
+  const albums = await getAlbums(username);
+
+  return <ArtistView artist={artist} albums={albums} />;
+}
+```
+
+`getAlbums` does not need anything from `getArtist`. Both only need `username`. But the second request does not even start until the first one finishes. If each one takes 300 milliseconds, the page waits 600 milliseconds for data it could have had in about 300.
+
+In one component, this is easy to see. In a real app, the same pattern is spread across helpers, layouts, and utility functions, and the only visible symptom is a slow page.
+
+## How it works
+
+### What already runs in parallel
+
+The good news first. The docs say that layouts and pages are rendered in parallel by default, so each route segment starts fetching as soon as possible. A layout that loads the current user and a page that loads a list of posts do not block each other.
+
+The waterfall happens inside a single component, or inside a chain of functions where each one awaits the next.
+
+### Start early, await late
+
+The fix is to start every independent request first, and then wait for all of them together:
+
+```tsx
+// app/artist/[username]/page.tsx
+export default async function Page({ params }: { params: Promise<{ username: string }> }) {
+  const { username } = await params;
+
+  // Both requests start here
+  const artistData = getArtist(username);
+  const albumsData = getAlbums(username);
+
+  const [artist, albums] = await Promise.all([artistData, albumsData]);
+
+  return <ArtistView artist={artist} albums={albums} />;
+}
+```
+
+A request begins when you call the function, not when you `await` it. `Promise.all` only decides where you wait.
+
+There is one trade-off to keep in mind. If one promise rejects, `Promise.all` rejects too. If the page can still work with partial data, `Promise.allSettled` lets you handle each result on its own.
+
+### Fetch where you need it, and know what is shared
+
+Identical `fetch` requests are memoized during a server render. So you can call the same `fetch` in several components instead of passing data down through many layers of props, and only one request is made.
+
+This does not apply to database clients or ORMs. For those, the docs recommend wrapping the function in React's `cache`:
+
+```ts
+// app/lib/user.ts
+import { cache } from 'react';
+import { db } from '@/lib/db';
+
+export const getUser = cache(async (id: string) => {
+  return db.user.findUnique({ where: { id } });
+});
+```
+
+Now every component that calls `getUser('1')` during the same request shares one result.
+
+Here is the detail that trips people up: memoization is not caching. The docs are clear that `React.cache` is scoped to the current request. The next request starts from zero. If you want to reuse a result across requests, that is a caching decision, and we will cover it in week two.
+
+### Preload before blocking work
+
+Sometimes a request cannot start at the top, because the component that needs the data renders after some other blocking work. The docs show a preload pattern for this case:
+
+```tsx
+// app/item/[id]/item.tsx
+async function getItem(id: string) {
+  const res = await fetch(`https://api.example.com/items/${id}`);
+  return res.json();
+}
+
+export const preload = (id: string) => {
+  void getItem(id);
+};
+
+export default async function Item({ id }: { id: string }) {
+  const item = await getItem(id);
+  return <div>{item.name}</div>;
+}
+```
+
+```tsx
+// app/item/[id]/page.tsx
+import Item, { preload } from './item';
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
+  preload(id); // starts the request now
+  const isAvailable = await checkIsAvailable(id);
+
+  return isAvailable ? <Item id={id} /> : null;
+}
+```
+
+The item request runs while `checkIsAvailable` runs. When `Item` renders, the identical `fetch` call reuses the request that `preload` already started.
+
+This only works if the data function deduplicates matching calls. Plain `fetch` does this automatically. An ORM call needs `React.cache`. With Cache Components enabled, you can use `'use cache'` on the function, or `'use cache: private'` if the function reads cookies or headers.
+
+### Stream the promise to the client
+
+You do not always have to `await` on the server. You can start a request in a Server Component, pass the pending promise to a Client Component as a prop, and read it there with React's `use` API. While the promise is pending, the nearest Suspense boundary shows its fallback. Because the request starts on the server, the client does not need to fetch the same data again after it mounts.
+
+## A common mistake
+
+A waterfall that is easy to miss is an `await` inside a loop:
+
+```ts
+// app/lib/orders.ts
+export async function getOrderDetails(ids: string[]) {
+  const orders = [];
+  for (const id of ids) {
+    orders.push(await getOrder(id)); // one request at a time
+  }
+  return orders;
+}
+```
+
+Ten orders means ten round trips, one after another. The code looks clean, it passes review, and it gets slower every time the list grows. The parallel version is shorter:
+
+```ts
+// app/lib/orders.ts
+export async function getOrderDetails(ids: string[]) {
+  return Promise.all(ids.map((id) => getOrder(id)));
+}
+```
+
+But if the list can be long, do not fire hundreds of requests at once either. Ask the API for a batch endpoint, or use a single database query. Parallel is better than sequential, but one request is better than both.
+
+To find waterfalls, look at timing, not only at code. In development, the `logging` option in `next.config` can log your `fetch` calls. A server trace makes it even clearer: requests that could overlap show up one after another.
+
+{/* TODO(experience): Have you found a slow page that turned out to be a request waterfall? Write 2 to 4 sentences: how you noticed it (a trace, a log, a slow page), what the waterfall looked like, and how much faster the page got after the fix. */}
+
+## When not to parallelize
+
+Parallel is not always the right answer.
+
+- **When a request really depends on another one.** The docs have an example where playlists need `artist.id` first. Here, sequential is correct. Wrap the dependent part in `<Suspense>` so the rest of the page can show while it loads.
+- **When the first request decides if the others should run at all.** If an access check can fail, fetching everything in parallel means doing expensive work for users who will never see the result. Sometimes it is fine to wait.
+- **When the target cannot handle the load.** Sending fifty requests at once to a rate-limited API is not an optimization.
+
+The goal is not to remove every `await`. It is to make every wait a decision.
+
+## Summary
+
+- Layouts and pages already fetch in parallel. Waterfalls live inside components and chains of helpers.
+- Start independent requests first, then `await` them together with `Promise.all`.
+- `fetch` is memoized per request automatically. Wrap ORM and database calls in `React.cache`.
+- Memoization lasts for one request. Reusing data across requests is a separate caching decision.
+- Use the preload pattern when the component that needs data renders after other blocking work.
+
+In part 3, we look at a question that decides how fast every route can be: what actually makes a Next.js route dynamic.
+
+---
+
+Previous part: [Why 'use client' Is a Boundary, Not a Label](/blog/nextjs-use-client-boundary)
+
+Next part: [What Actually Makes a Next.js Route Dynamic](/blog/what-makes-a-nextjs-route-dynamic)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Fetching Data](https://nextjs.org/docs/app/getting-started/fetching-data), the Next.js page this article is based on
+- [cache](https://react.dev/reference/react/cache) in the React reference
+- [use](https://react.dev/reference/react/use) in the React reference

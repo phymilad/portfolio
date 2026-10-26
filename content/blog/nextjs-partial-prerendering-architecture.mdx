@@ -1,0 +1,125 @@
+---
+title: 'Partial Prerendering Is an Architecture Decision'
+description: 'Next.js moved the static boundary from the route to the component. That choice buys a faster first paint and moves real complexity into your hosting platform.'
+publishedAt: '2026-11-03'
+tags: ['nextjs', 'nextjs-between-the-lines', 'rendering']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 7
+draft: false
+---
+
+Part 7 of 20 in Next.js Between the Lines, where I go through the Next.js docs one topic per weekday and focus on the decisions behind each feature. Today's topic is Partial Prerendering, and why it is better understood as an architecture decision than as a performance feature.
+
+[Part 6](/blog/nextjs-16-caching-mental-model) covered what `use cache` stores. Partial Prerendering is what that storage is for.
+
+Most frameworks draw the static and dynamic line at the route. A page is prerendered at build time or rendered per request. That model is easy to explain and easy to deploy: static files to a CDN, dynamic routes to a server. Next.js draws the line at the component instead. The docs have a page that argues for this directly, and it is unusually honest about what the choice costs.
+
+## The problem
+
+A route-level boundary forces a bad choice on a very common page shape. Take a product page: the layout, the navigation, the product name, the description and the images are the same for everyone. The cart count and the personalized recommendations are not.
+
+With a route-level boundary you have three options, and all of them are compromises:
+
+- Make the whole route dynamic. Now the static 90 percent of the page waits for the dynamic 10 percent.
+- Make the route static and fetch the personalized parts from the browser after load. Now you have a loading spinner, an extra round trip, and a client-side data layer to maintain.
+- Split the page into separate routes. Now your URL structure is shaped by your caching strategy instead of by your product.
+
+Partial Prerendering exists to remove that choice.
+
+## How it works
+
+### One response, two kinds of content
+
+At build time, Next.js renders the route's component tree and sorts what it finds. Static markup, predictable values, and anything marked `use cache` go into the static shell, along with the fallback UI of your Suspense boundaries. Everything that needs the request streams in later.
+
+The result is a single response that starts with the shell and fills in as the dynamic parts resolve. The shell can be served straight from a CDN without touching the origin, which is what makes a direct visit feel instant.
+
+```tsx
+// app/product/[id]/page.tsx
+import { Suspense } from 'react';
+
+export default function ProductPage(props: PageProps<'/product/[id]'>) {
+  return (
+    <div>
+      {/* Static: in the shell at build time */}
+      <SiteHeader />
+
+      {/* Cached: also in the shell */}
+      <ProductDetails params={props.params} />
+
+      {/* Runtime: streams in per request */}
+      <Suspense fallback={<CartSkeleton />}>
+        <CartSummary />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+### The shell is the unit of work
+
+Because the shell is what ships first, the practical skill is making it as complete as possible. The docs state the rule plainly: the deeper your async work sits in the tree, the more of the page can be prerendered.
+
+That is why awaiting `params`, `cookies()`, or a fetch at the top of a layout is so expensive. Everything below that point leaves the shell. Passing the promise down and awaiting it inside a boundary keeps the siblings in the shell.
+
+There is also a second kind of shell worth knowing by name. When a route's dynamic params are known at build time, the shell contains that concrete content. When they are not, Next.js produces an **App Shell**: the same shell with the param-specific parts left behind their fallbacks. That reusable version is what makes a route with unknown params still answer instantly, and Incremental Static Regeneration fills in the concrete versions after the first visit.
+
+### What the model costs
+
+This is the part most articles leave out. The docs put it in a section called The Trade-Off, and the sentence that matters is that a finer-grained rendering boundary transfers complexity from application code into the hosting platform.
+
+Concretely, a platform hosting this model needs:
+
+- **Streaming**, because static and dynamic content arrive in one response.
+- **Cache coordination** across instances, because any cached entry can be invalidated on demand.
+- **Cache consistency**, because revalidation regenerates both the HTML and the RSC payload. If those drift apart, a user sees one thing on a direct visit and another after a client navigation.
+- **Shell delivery at CDN latency**, which usually needs bespoke platform work to store the shell separately and resume the dynamic render correctly.
+
+The docs then split platform support into two ideas that are useful when you are choosing where to deploy. **Functional fidelity** means every feature works correctly, and it is binary: a platform's adapter either passes the adapter test suite or it does not. **Performance fidelity** means those features reach their best performance, such as the shell served at CDN latency instead of origin latency. That one is a spectrum, and it is where platforms differ from each other.
+
+So the honest summary is that Partial Prerendering gives application developers a better set of defaults and hands the hard part to whoever runs the servers. If that is also you, see part 17.
+
+## A common mistake
+
+Here is a failure mode that is almost impossible to catch locally. The shell is built once, at build time. Visitors and crawlers that run JavaScript receive that prebuilt shell. But bots that only read HTML are detected by user agent and handled differently: Next.js skips the shell and renders the whole page dynamically, so the metadata can land in the document head.
+
+That means the shell's code runs again, at request time, for those crawlers. If part of your shell depends on something that only exists while prerendering, such as build-time data or a file that is not present in the request-time environment, you get a page that loads perfectly for every human and fails for the crawler.
+
+The symptom is a page that works in every browser you try and is missing from search results. Nothing in your error tracking fires, because real users never hit the failing path.
+
+The fix is a rule rather than a code change: any data the shell relies on must also be reachable at request time. If you read something at module scope during the build, make sure the same read works in production without the build context around it.
+
+{/* TODO(experience): Have you worked on a page where splitting static from dynamic was the real problem? For example a mostly static page forced to render per request, or a shell that behaved differently for crawlers. Write 2 to 4 sentences: what the page was and what you changed. */}
+
+## When this model is not worth it
+
+- **When the whole page is personal.** An internal dashboard where every section depends on the session has almost no shell to build. Keep it simple and render it dynamically.
+- **When the content genuinely never changes.** A brochure site with a handful of pages is well served by plain static output, with none of the platform requirements above.
+- **When your platform cannot stream.** A static export cannot stream at all, and some serverless runtimes need streaming explicitly enabled. Without streaming, the response is buffered, and the main benefit of the model disappears while its complexity stays.
+- **When the team cannot operate it.** A shared cache, on-demand invalidation across instances, and consistent HTML and RSC payloads are real infrastructure. If nobody owns that, a route-level model you fully understand beats a component-level one you do not.
+
+## Summary
+
+- Partial Prerendering moves the static boundary from the route to the component, so one page can be part shell and part stream.
+- The shell holds static markup, predictable values, cached results, and your Suspense fallbacks.
+- Keeping async work deep in the tree is what makes the shell large.
+- An App Shell is the reusable shell for routes whose params are not known at build time.
+- The cost is infrastructure: streaming, cache coordination, cache consistency, and shell delivery.
+- A shell that depends on build-time-only inputs can fail for HTML-only crawlers while working for everyone else.
+
+In part 8, we change register and look at two routing features that are powerful and widely misunderstood: Parallel Routes and Intercepting Routes.
+
+---
+
+Previous part: [The Mental Model Behind use cache in Next.js 16](/blog/nextjs-16-caching-mental-model)
+
+Next part: [Parallel Routes, default.js, and Modals](/blog/nextjs-parallel-and-intercepting-routes)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Rendering Philosophy](https://nextjs.org/docs/app/guides/rendering-philosophy), the Next.js page this article is based on
+- [Caching](https://nextjs.org/docs/app/getting-started/caching) for how the shell is built
+- [Deploying to Platforms](https://nextjs.org/docs/app/guides/deploying-to-platforms) for the platform requirements

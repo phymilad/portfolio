@@ -1,0 +1,152 @@
+---
+title: 'Next.js Is Being Designed for Agents Too'
+description: 'A managed AGENTS.md block that opens with "This is NOT the Next.js you know", error pages written for agents, and a fix menu that encodes product decisions.'
+publishedAt: '2026-11-20'
+tags: ['nextjs', 'nextjs-between-the-lines', 'ai']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 20
+draft: false
+---
+
+Part 20 of 20 in Next.js Between the Lines, the series where I read the Next.js docs with a senior engineer's eye and look for the decisions behind each feature. The last topic is the one that changed how all the others are written: Next.js being shaped for coding agents as well as for people.
+
+[Part 19](/blog/nextjs-upgrades-and-lts) mentioned that the upgrade guide now leads with an agent-driven path. This part is why.
+
+## The problem
+
+The Next.js team put the question directly in their 16.3 announcement: what would Next.js look like if it were designed primarily for agent-driven development?
+
+They are asking because a growing share of Next.js code is written through agents, and those agents have a specific failure mode. The App Router, Cache Components, the proxy rename, async request APIs: a model trained a year ago will write code for a Next.js that no longer exists, confidently, with correct-looking syntax.
+
+That failure is not loud. It compiles.
+
+## How it works
+
+### The AGENTS.md block
+
+Next.js 16.2 started bundling the documentation into your project so agents could read it locally. In 16.3, `next dev` writes and maintains the pointer itself. The managed block it inserts is blunt enough to quote:
+
+> This is NOT the Next.js you know. This version has breaking changes, APIs, conventions, and file structure may all differ from your training data.
+
+It then tells the agent to read the relevant guide in `node_modules/next/dist/docs/` before writing any code, and to heed deprecation notices.
+
+A few practical notes. The block is only written when `next dev` detects a coding agent in the environment and the markers are not already there. Anything outside the markers is preserved. You can opt out with `agentRules: false` in `next.config.ts`. And the docs say to commit the block as it is, because removing it from a diff only re-creates the uncommitted change on the next `next dev`.
+
+On 16.1 or earlier, there is a codemod:
+
+```bash
+npx @next/codemod@canary agents-md
+```
+
+### Docs as markdown
+
+Append `.md` to any page on `nextjs.org/docs` to get plain markdown. Clients sending `Accept: text/markdown` get it too. The index is at `/docs/llms.txt`, and `/docs/llms-full.txt` bundles everything into one file, both following the `llms.txt` convention.
+
+This is useful for people as well. Every doc link in this series resolves to a readable markdown version by adding four characters.
+
+### Errors with a fix menu
+
+This is the part I find most interesting, because it is a documentation decision rather than a tooling one.
+
+With Cache Components enabled, an `await` on the server is a choice, and the error presents that choice as three labeled fixes:
+
+- **Stream** the data behind a `<Suspense>` boundary
+- **Cache** it with `"use cache"`
+- **Block** the route with `export const instant = false`
+
+The announcement is honest about what that means: these are product decisions with trade-offs, and picking the right one needs context, whether a person or an agent is choosing.
+
+The same labeled menu appears in the terminal during `next dev`, and `next build` emits it when an error stops a prerender, so an agent reading CI logs gets the same options with links to the matching section of the error page:
+
+```text
+Ways to fix this:
+  - [stream] Provide a placeholder with `<Suspense fallback={...}>` around the data access
+  - [cache] Cache the data access with `"use cache"` (does not apply to `connection()`)
+  - [block] Set `export const instant = false` to silence this error and allow a blocking route
+```
+
+Each error then has its own page under `nextjs.org/docs/messages`, and those pages are written for agents in a fixed shape: the canonical **Patterns**, the **Trade-offs** against the other fixes, and the **Gotchas** an agent is likely to miss on a first attempt. There is also a **Copy prompt** button in the overlay that packages the chosen fix into a prompt.
+
+If you have ever written a runbook, you will recognise what happened here. The team turned error messages into decision documents, and the thing that made that worth doing was agents.
+
+### Skills, for workflows rather than knowledge
+
+Next.js previously shipped knowledge Skills covering App Router conventions and caching APIs. Those are being retired, because the bundled docs now serve that purpose. The guidance is to run `npx skills update` to remove them.
+
+What remains are Skills for multi-step workflows that documentation alone cannot drive:
+
+- **`next-dev-loop`** gives an agent the full development feedback loop: the framework's view of routes, server logs and compilation issues through `/_next/mcp`, and the browser's view of the DOM, console, network and React tree through `agent-browser`.
+- **`next-cache-components-adoption`** turns Cache Components on and works through the app one feature at a time, checking in at the boundaries.
+- **`next-cache-components-optimizer`** takes the UI that should appear at click time, turns it into a failing `instant()` test, and works it to green. That is the test from [part 10](/blog/nextjs-testing-app-router).
+- **`next-partial-prefetching-adoption`**, added in the stable 16.3 release, works through the app until every link reuses a shared loading shell.
+
+The adoption Skill's design is worth noting. It offers an incremental mode that lands one mechanical pull request opting every route out of validation, so features ship in follow-ups, or a direct mode that adopts everything on one branch. That is a migration strategy encoded as a tool.
+
+### A smaller MCP server and a browser that sees React
+
+The DevTools MCP server dropped its knowledge base, upgrade helpers and Cache Components helpers, for the same reason the knowledge Skills were retired. In their place it gained two compilation tools, `get_compilation_issues` for the project and `compile_route` for one route, because agents were running `next build` just to check whether code compiles.
+
+On the browser side, the experimental `next-browser` merged into the general-purpose `agent-browser` CLI. Version 0.27 adds React DevTools introspection: list the component tree, inspect a component, profile re-renders, and see which Suspense boundaries are still pending.
+
+That last command is the one that connects this part to the rest of the series. An agent can now ask what is holding a render, which is exactly the question [part 9](/blog/nextjs-instant-navigation) was about.
+
+## A common mistake
+
+Look at the fix menu again, and specifically at the third option.
+
+```tsx
+// page.tsx
+export const instant = false;
+```
+
+Stream and Cache both require understanding the data: how fresh it has to be, who it belongs to, what the user should see while it loads. Block requires understanding nothing. It makes the error go away.
+
+An agent asked to get the build green will find that option. So will a developer at the end of a long day. Neither is doing anything wrong, exactly, and the result is a codebase where a quarter of the routes have opted out of a check that existed to protect the user experience, with no record of why.
+
+The docs anticipate this. The copy-prompt text tells the agent to only leave a comment when the reason is not obvious, giving a deliberate Block as its example. The `instant` reference says to place `false` as low in the tree as possible so the rest of the app keeps validating. And the AI workflow section says the agent needs your app-specific intent: what should appear immediately, what can stream, and what must stay fresh. When a caching decision is unclear, the advice is to keep the data fresh behind `<Suspense>` rather than guessing a lifetime.
+
+The practical change for a senior engineer is in code review. Two new things are worth grepping for:
+
+- `export const instant = false` without a comment explaining the decision
+- A `<Suspense>` boundary that wraps a whole page body, or one with `fallback={null}`, which satisfies validation while leaving the shell effectively empty
+
+The copy-prompt text calls out that second one too, and tells the agent to pull the boundary down closer to the actual dynamic read. It is the same point as part 9: passing validation is not the same as a good loading state.
+
+{/* TODO(experience): How much of your Next.js code is written with an agent now? Have you caught generated code that was written for an older version of the framework? Write 2 to 4 sentences about what you check for in review. */}
+
+## What this does not solve
+
+- **It does not give an agent your product's intent.** Stream, cache or block is a question about your users. Nothing in the tooling knows the answer.
+- **It does not make a green build correct.** Part 19's version of this, from the upgrade guide, applies here too.
+- **It does not remove the need to read.** The bundled docs mean an agent can read the right version. Whether the output matches what you meant is still a review question.
+- **It is not finished.** The announcement says so: they are not all the way there, just closer with every release.
+
+## Summary
+
+- `next dev` maintains a block in `AGENTS.md` pointing agents at version-matched docs, because training data describes an older Next.js.
+- Any docs page is available as markdown by appending `.md`, with `llms.txt` as the index.
+- Errors now present labeled Stream, Cache and Block fixes, in the overlay and in the terminal, with per-rule pages written for agents.
+- First-party Skills cover workflows rather than knowledge, and the knowledge Skills are retired.
+- The MCP server traded its knowledge base for compilation tools, and `agent-browser` can now inspect the React tree.
+- Block is the fix that needs no understanding, so it is the one to watch for in review.
+
+## That is the series
+
+Twenty parts, one per weekday, reading the Next.js 16 docs with an eye for the trade-offs rather than the syntax. If there is a thread running through all of it, it is that this framework keeps moving decisions from the framework to you, and then tries very hard to tell you what the options are: static or dynamic per component, cached or streamed per function, instant or blocking per segment.
+
+That is more control and more responsibility at the same time. The docs have become unusually good at explaining the trade-off. They are worth reading directly, and now you can read any of them as markdown.
+
+Thank you for following along.
+
+---
+
+Previous part: [Upgrading Next.js Without a Big Bang](/blog/nextjs-upgrades-and-lts)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Next.js 16.3: AI Improvements](https://nextjs.org/blog/next-16-3-ai-improvements), the post this article is based on
+- [AI agents](https://nextjs.org/docs/app/guides/ai-agents) in the Next.js guides
+- [blocking-prerender-dynamic](https://nextjs.org/docs/messages/blocking-prerender-dynamic) as an example of an error page written for agents

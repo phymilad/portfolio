@@ -1,0 +1,217 @@
+---
+title: 'Next.js Error Handling After 16.3: retry vs reset'
+description: 'Expected errors are data, unexpected errors are exceptions. How error.js, catchError, and the new retry function fit together in Next.js 16.3.'
+publishedAt: '2026-10-30'
+tags: ['nextjs', 'nextjs-between-the-lines', 'fundamentals']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 5
+draft: false
+---
+
+This is part 5 of 20 in Next.js Between the Lines, where I read the Next.js docs with a senior engineer's eye and write down what is easy to miss. Today's topic closes week one: error handling, and a small API change in 16.3 that makes recovery actually work.
+
+In [part 4](/blog/nextjs-streaming-and-suspense), we saw that an error after streaming starts is handled inside the HTML, because the status code is already sent. Today we look at the whole picture.
+
+Error handling is where a demo and a production app differ the most. The Next.js docs split errors into two groups and treat them in completely different ways. Mixing up the two groups is a common source of bugs.
+
+## The problem
+
+A few patterns show up in many codebases:
+
+- Validation errors are thrown instead of returned, so a typo in a form shows a crash screen.
+- Code that calls `redirect()` or `notFound()` sits inside a `try` block, and the redirect silently stops working.
+- The error page has a Try again button that renders the same broken result again.
+
+Each of these comes from treating every error the same way.
+
+## How it works
+
+### Expected errors are data
+
+Expected errors are part of normal operation: a form field is invalid, a request fails, a record does not exist. The docs are direct about this. In Server Functions, do not throw these errors. Model them as return values, and show them with `useActionState`:
+
+```ts
+// app/actions.ts
+'use server';
+
+export async function createPost(prevState: unknown, formData: FormData) {
+  const title = formData.get('title');
+  if (typeof title !== 'string' || title.length === 0) {
+    return { message: 'Title is required' };
+  }
+
+  const res = await fetch('https://api.example.com/posts', {
+    method: 'POST',
+    body: JSON.stringify({ title }),
+  });
+
+  if (!res.ok) {
+    return { message: 'Failed to create post' };
+  }
+
+  return { message: '' };
+}
+```
+
+The Client Component reads `state.message` from `useActionState` and renders it next to the form. No error boundary is involved, and the rest of the page keeps working.
+
+For a record that does not exist, call `notFound()` and add a `not-found.js` file for the 404 UI.
+
+### Unexpected errors go to the nearest boundary
+
+Unexpected errors are bugs. You throw them, and an error boundary catches them. In the App Router, an `error.js` file creates a boundary for a route segment, and errors bubble up to the nearest one.
+
+Two details matter in practice:
+
+- `error.js` wraps the page, `loading.js`, `not-found.js`, and nested layouts. It does not wrap the `layout.js` in its own segment. An error in that layout is caught by the `error.js` one level up. For the root layout, you need `global-error.js`.
+- `global-error.js` replaces the root layout, so it must render its own `<html>` and `<body>` tags. It does not get your global styles, and it cannot export `metadata`. Use React's `<title>` component there instead.
+
+### retry and reset
+
+This is the change in 16.3. Before 16.2, the error component only had `reset`. It clears the error and renders the boundary's children again, but it does not fetch anything again. So if a Server Component failed, `reset` often showed the same failure. A common workaround was to call `router.refresh()` together with `reset()`.
+
+Next.js 16.2 added `unstable_retry`, and in 16.3 it became stable as `retry`. It fetches the segment again and then renders it. The docs now say to use `retry` in most cases, and to keep `reset` for the rare case where you want to render again without fetching.
+
+```tsx
+// app/dashboard/error.tsx
+'use client';
+
+import { useEffect } from 'react';
+
+export default function Error({ error, retry }: { error: unknown; retry: () => void }) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  return (
+    <div>
+      <h2>Something went wrong.</h2>
+      <button onClick={() => retry()}>Try again</button>
+    </div>
+  );
+}
+```
+
+Note the type of `error`. It used to be typed as an `Error` with an optional `digest`. The docs now type it as `unknown`, because only errors from Server Components arrive as an `Error` instance. A value thrown in a Client Component is passed through as it is, and it may not be an `Error` at all. So narrow it before you read `message` or `digest`:
+
+```tsx
+// app/dashboard/error.tsx
+useEffect(() => {
+  if (error instanceof Error) {
+    console.error(error.message);
+  } else {
+    console.error('Non-Error value thrown:', error);
+  }
+}, [error]);
+```
+
+If you have an older `error.tsx` that types the prop as `Error`, it still compiles. It just promises something the runtime does not guarantee.
+
+### Boundaries for components, not only routes
+
+`error.js` works per route segment. For a single widget, like a chart or a list of recommendations, 16.3 also makes `catchError` stable. It turns a fallback function into an error boundary component that you can place anywhere:
+
+```tsx
+// app/ui/widget-boundary.tsx
+'use client';
+
+import { catchError, type ErrorInfo } from 'next/error';
+
+function WidgetFallback(props: { title: string }, { retry }: ErrorInfo) {
+  return (
+    <div>
+      <p>{props.title} could not load.</p>
+      <button onClick={() => retry()}>Try again</button>
+    </div>
+  );
+}
+
+export default catchError(WidgetFallback);
+```
+
+```tsx
+// app/dashboard/page.tsx
+import WidgetBoundary from '@/app/ui/widget-boundary';
+
+export default function Page() {
+  return (
+    <WidgetBoundary title="Revenue">
+      <RevenueChart />
+    </WidgetBoundary>
+  );
+}
+```
+
+Now one failing widget shows its own fallback, and the rest of the page keeps working. Unlike a hand-written React error boundary, `catchError` knows about Next.js. It does not catch the special errors that `redirect()` and `notFound()` throw, and it clears its error state when the user navigates to another route.
+
+### What error boundaries do not catch
+
+Error boundaries catch errors during rendering. They do not catch errors in event handlers, or in async code that runs after render. Catch those yourself and keep the error in state. There is one useful exception: an error thrown inside `startTransition` bubbles up to the nearest boundary.
+
+## A common mistake
+
+`redirect()` and `notFound()` work by throwing special errors. That means a `try` block around them catches the redirect:
+
+```tsx
+// app/checkout/page.tsx
+import { redirect } from 'next/navigation';
+
+export default async function Page() {
+  try {
+    const cart = await getCart();
+    if (cart.items.length === 0) redirect('/shop');
+    return <CartView cart={cart} />;
+  } catch (err) {
+    console.error(err); // the redirect error lands here
+    return <p>Could not load your cart.</p>;
+  }
+}
+```
+
+The user sees an error message instead of being sent to the shop, and your logs fill up with an error that is not really an error.
+
+There are two fixes. The first is to call `redirect()` and `notFound()` outside the `try` block. The second is to call `unstable_rethrow` as the first line of the `catch` block. It rethrows any error that belongs to Next.js and lets your code handle the rest:
+
+```tsx
+import { unstable_rethrow } from 'next/navigation';
+
+// Inside the catch block
+unstable_rethrow(err);
+console.error(err);
+```
+
+The `unstable_` prefix means the API can still change, so the first fix is the safer default.
+
+{/* TODO(experience): Have you had an error handling bug in production? For example a redirect swallowed by a try block, a Try again button that did not help, or an error page without styles. Write 2 to 4 sentences: what users saw, and what you changed. */}
+
+## When not to throw
+
+- **Do not throw for expected errors.** Return them as data. A thrown validation error turns a small mistake into a full error screen.
+- **Do not wrap everything in a boundary.** Each boundary needs a fallback that makes sense for that part of the page. A boundary around every component gives users a page full of small error messages.
+- **Do not show server error messages to users.** In production, errors from Server Components reach the client with a generic message and a `digest`. This is on purpose, so sensitive details do not leak.
+- **Do not rely on the error component for logging.** Its `useEffect` runs in the browser. For server errors, export `onRequestError` from `instrumentation.ts` and send them to your monitoring tool. The `digest` lets you match what the user saw with the server log.
+
+## Summary
+
+- Expected errors are return values. Unexpected errors are thrown and caught by boundaries.
+- `error.js` does not catch errors in the layout of its own segment. Use the parent boundary or `global-error.js`.
+- Since 16.3, use `retry` to recover. `reset` does not fetch again, so it cannot fix a failed Server Component.
+- `catchError` gives you component-level boundaries that understand redirects and navigation.
+- Keep `redirect()` and `notFound()` out of `try` blocks, or use `unstable_rethrow`.
+
+That closes week one, the foundations. Week two starts with the topic that confuses the most people in modern Next.js: caching, and the mental model behind `'use cache'` in Next.js 16.
+
+---
+
+Previous part: [Streaming in Next.js: Where to Put Suspense](/blog/nextjs-streaming-and-suspense)
+
+Next part: [The Mental Model Behind use cache in Next.js 16](/blog/nextjs-16-caching-mental-model)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Error Handling](https://nextjs.org/docs/app/getting-started/error-handling), the Next.js page this article is based on
+- [error.js](https://nextjs.org/docs/app/api-reference/file-conventions/error) in the API reference
+- [catchError](https://nextjs.org/docs/app/api-reference/functions/catchError) in the API reference

@@ -1,0 +1,189 @@
+---
+title: 'What Actually Makes a Next.js Route Dynamic'
+description: 'One cookies() call can change how a whole route renders. How Next.js decides between static and dynamic rendering, in both of its rendering models.'
+publishedAt: '2026-10-28'
+tags: ['nextjs', 'nextjs-between-the-lines', 'fundamentals']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 3
+draft: false
+---
+
+This is part 3 of Next.js Between the Lines, my 20-part series on reading the Next.js docs the way a senior engineer would: looking for the trade-offs, not just the APIs. Today's question sounds simple. What makes a route dynamic?
+
+In [part 2](/blog/nextjs-data-fetching-waterfalls), we looked at when data arrives. Today is about when the page itself is rendered: once at build time, or again on every request.
+
+Many teams know this situation. A page was fast. Nobody touched it. Then it became slow, because someone added a small feature to a shared layout, and that feature reads a cookie. The page did not change, but the way Next.js renders it did.
+
+## The problem
+
+You do not pick static or dynamic rendering with one switch. Next.js infers it from what your code does. That is convenient, but it also means you can change how a route renders without knowing it.
+
+To make it more interesting, Next.js 16 has two rendering models. The previous model is still the default. The new one, Cache Components, is opt-in with `cacheComponents: true` in your Next config. The triggers are similar in both, but the size of their effect is very different.
+
+## How it works
+
+### The previous model: one decision per route
+
+Without Cache Components, a route is prerendered at build time by default. It switches to rendering on every request when something in the route needs request data. The common triggers are:
+
+- Request-time APIs: `cookies()`, `headers()`, `connection()`, `draftMode()`, and the `searchParams` prop
+- Uncached data, like a `fetch` call with `cache: 'no-store'`
+- Route segment config, like `export const dynamic = 'force-dynamic'` or `export const revalidate = 0`
+
+The key word is route. One `cookies()` call anywhere in the route, including a shared layout, makes the whole route dynamic.
+
+The same segment config also has a guard that deserves more attention: `export const dynamic = 'error'`. It makes the build fail if anything in that route uses request-time APIs or uncached data. For pages that must stay static, like marketing pages or docs, it turns a silent performance regression into a failed build.
+
+### Cache Components: one decision per component
+
+With Cache Components, the default flips. Data fetching is dynamic by default, and you choose what to cache. At build time, Next.js prerenders a static shell from everything that can complete without a request:
+
+- Static markup and synchronous code
+- Predictable values, like module imports or a synchronous file read
+- Results of functions or components marked with `'use cache'`
+- The fallback UI of your `<Suspense>` boundaries
+
+Anything that needs the request must sit inside a `<Suspense>` boundary. That includes `cookies()`, `headers()`, `searchParams`, `params` values that were not generated at build time, and uncached data. If it does not, the dev overlay shows a blocking-route insight that names the route and suggests fixes.
+
+This is the shape the docs recommend:
+
+```tsx
+// app/blog/page.tsx
+import { Suspense } from 'react';
+import { cookies } from 'next/headers';
+import { cacheLife } from 'next/cache';
+
+export default function BlogPage() {
+  return (
+    <>
+      {/* Static: part of the shell */}
+      <h1>Our Blog</h1>
+
+      {/* Cached: also part of the shell */}
+      <BlogPosts />
+
+      {/* Runtime data: streams in on each request */}
+      <Suspense fallback={<p>Loading your preferences...</p>}>
+        <UserPreferences />
+      </Suspense>
+    </>
+  );
+}
+
+async function BlogPosts() {
+  'use cache';
+  cacheLife('hours');
+  const posts = await getPosts();
+  return <PostList posts={posts} />;
+}
+
+async function UserPreferences() {
+  const theme = (await cookies()).get('theme')?.value ?? 'light';
+  return <p>Your theme: {theme}</p>;
+}
+```
+
+Reading `cookies()` here does not make the whole route dynamic. Only the part inside the boundary waits for the request. That is the real shift. The question is no longer "is this route static?" but "how much of this route is in the shell?"
+
+### Triggers that surprise people
+
+Some triggers have nothing to do with the request. With Cache Components, values that change on every render need explicit handling:
+
+- `Math.random()`, `Date.now()`, and `crypto.randomUUID()` need `await connection()` inside a Suspense boundary for a fresh value per request, or `'use cache'` to share one value.
+- `performance.now()` is an exception. The docs treat it as telemetry, so Next.js does not guard it.
+- Reading a local file with `await readFile()` during render counts as uncached data. If the file is the same for every request, read it once at module scope instead.
+
+These rules feel strict at first. Their purpose is to make sure every route still produces a static shell, so a direct visit can be served instantly.
+
+### How to check what you got
+
+Do not guess. The route list that `next build` prints marks every route with a symbol, and the legend under it explains each one, for example `○` for static and `ƒ` for dynamic. With Cache Components, the dev overlay and the dev server console also point you to the route that cannot produce a shell.
+
+## A common mistake
+
+The most common one is reading request data in a shared layout for a small piece of UI:
+
+```tsx
+// app/layout.tsx
+import { cookies } from 'next/headers';
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const userName = (await cookies()).get('user_name')?.value;
+
+  return (
+    <html lang="en">
+      <body>
+        <Header userName={userName} />
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+It is only a name in the header. But in the previous model, this one line makes every route in the app dynamic, including the landing page and the blog. With Cache Components, the layout and everything below it can no longer be part of the shell.
+
+The fix depends on the model:
+
+- **In the previous model**, the decision is per route, so moving the call deeper in the tree does not help. Either read the cookie only in the routes that really need it, or move that small piece of UI to the client, for example a Client Component that loads the user after the page is shown.
+- **With Cache Components**, push the access down and wrap it in a boundary. The docs even show a way to do this without awaiting in the layout at all:
+
+```tsx
+// app/layout.tsx
+import { Suspense } from 'react';
+import { cookies } from 'next/headers';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = cookies(); // start the work, do not await
+
+  return (
+    <html lang="en">
+      <body>
+        <Header>
+          <Suspense fallback={<p>Loading user...</p>}>
+            <UserMenu cookiePromise={cookieStore} />
+          </Suspense>
+        </Header>
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+Now only `UserMenu` waits for the request. The header and every page below the layout can still be part of the shell.
+
+{/* TODO(experience): Have you seen a route become dynamic by accident? For example a shared layout that read cookies or headers. Write 2 to 4 sentences: how you noticed it (build output, a slower first byte, a higher server bill) and how you fixed it. */}
+
+## When dynamic is the right answer
+
+None of this means dynamic is bad. A dashboard that shows each user's own data should render per request. A page with stock levels or live prices should not come from a build that is hours old. If you force routes like these to be static with `force-static` or aggressive caching, you trade correctness for speed, and users notice wrong data faster than they notice slow data.
+
+It also helps to remember what Suspense does not do. The docs point out that a component that only does synchronous work completes during prerendering, even inside a boundary. Suspense decides where the page can wait. It does not decide whether it has to.
+
+The real goal is intent. A route should be dynamic because you decided it needs request data, not because a shared file happened to read a header.
+
+## Summary
+
+- Next.js infers static or dynamic rendering from what your code reads. There is no single switch.
+- In the previous model, one request-time API anywhere in the route makes the whole route dynamic.
+- `export const dynamic = 'error'` turns an accidental dynamic route into a build error.
+- With Cache Components, the decision moves to components. Request data must sit inside `<Suspense>` or be cached.
+- Values like `Date.now()` and `Math.random()` count too, so handle them on purpose.
+
+In part 4, we look at the other half of this story: streaming. How Suspense boundaries turn into chunks of HTML, and why a missing page can return a 200 status code.
+
+---
+
+Previous part: [Data Fetching in Next.js Without Hidden Waterfalls](/blog/nextjs-data-fetching-waterfalls)
+
+Next part: [Streaming in Next.js: Where to Put Suspense](/blog/nextjs-streaming-and-suspense)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Caching](https://nextjs.org/docs/app/getting-started/caching), which covers the Cache Components model
+- [Caching and Revalidating (Previous Model)](https://nextjs.org/docs/app/guides/caching-without-cache-components), for apps without Cache Components
+- [Rendering Philosophy](https://nextjs.org/docs/app/guides/rendering-philosophy), on static and dynamic as a spectrum

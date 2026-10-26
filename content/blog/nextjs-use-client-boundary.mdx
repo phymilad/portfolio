@@ -1,0 +1,194 @@
+---
+title: "Why 'use client' Is a Boundary, Not a Label"
+description: 'What really crosses the line between Server and Client Components in Next.js, and why so many bundle and prop errors start with a single import.'
+publishedAt: '2026-10-26'
+tags: ['nextjs', 'nextjs-between-the-lines', 'fundamentals']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 1
+draft: false
+---
+
+This is part 1 of 20 in Next.js Between the Lines, a series where I read the Next.js docs with a senior engineer's eye and focus on the decisions behind each feature, not just the syntax. Today's topic is the line between Server and Client Components.
+
+Most of us learned `'use client'` as a label. You put it on a component that needs state or a click handler, and the error goes away. That works, but it hides what the directive really does. The Next.js 16.3 docs now have a full guide on this topic, and one idea in it changes the mental model: the directive draws a boundary in the module graph. Once you see it as a boundary, a lot of confusing bugs start to make sense.
+
+## The problem
+
+When a page breaks because a component needs `useState`, the quickest fix is to add `'use client'` to the file that shows the error. Often that file sits high in the tree, like a layout or a page wrapper.
+
+The error goes away. But now every module that this file imports becomes client code. Your date library, your markdown parser, your formatting helpers, all of them ship to the browser. Nothing warns you, because nothing is broken. The page is just heavier than it needs to be.
+
+The opposite problem happens too. Someone passes a callback from a Server Component to a Client Component, or uses a component pattern that worked fine in a client-only app, and gets an error that seems unrelated to the real cause.
+
+Both problems have the same root. We do not think clearly about what can cross the boundary, and how.
+
+## How it works
+
+### Two rules decide what crosses
+
+The docs describe the boundary with two simple rules:
+
+- **Code crosses through imports.** Whatever a Client Component imports is pulled into the client bundle.
+- **Data crosses through props.** Props are serialized and sent to the browser, so they must be serializable.
+
+You only need `'use client'` at the entry of a client subtree. Every module imported from that entry is already part of the client module graph, so you do not need to repeat the directive in every file below it.
+
+### Client Components also run on the server
+
+The name is a little misleading. A Client Component renders on the server too. On a direct visit, it renders once on the server to produce HTML, and again in the browser during hydration. On a client-side navigation, it renders only in the browser.
+
+| Component type   | Runs on the server | Runs in the browser |
+| ---------------- | ------------------ | ------------------- |
+| Server Component | Yes                | No                  |
+| Client Component | Yes                | Yes                 |
+
+So "server-rendered" and "Server Component" are two different ideas. The first describes how the HTML was produced. The second describes where the code runs and whether it ships to the browser. This is why a Client Component that reads `window` during render can still fail on the server.
+
+### Server output can travel inside a Client Component
+
+A rendered React element is serializable data. That is why you can pass Server Components to a Client Component as `children` or as any other prop:
+
+```tsx
+// app/page.tsx
+import { Cart } from '@/app/ui/cart';
+import { Modal } from '@/app/ui/modal';
+
+// Page and Cart are Server Components. Modal is a Client Component.
+export default function Page() {
+  return (
+    <Modal title={<h2>Your cart</h2>}>
+      <Cart />
+    </Modal>
+  );
+}
+```
+
+`Modal` needs state to open and close, so it is a Client Component. `Cart` reads data, so it stays on the server. `Modal` never imports `Cart`. It only receives its rendered output and decides where to place it.
+
+The docs explain this with two roles. The **owner** is the component whose code contains the JSX for a child. The **parent** is the component that contains the child in the rendered tree. Here, `Page` owns `Cart`, and `Modal` is only its parent. Because the owner is a Server Component, `Cart` runs on the server.
+
+### Functions do not cross, Server Functions do
+
+Passing a plain function from a Server Component to a Client Component throws an error. An event handler created on the server has no way to travel to the browser. A Server Function marked with `'use server'` is different. It crosses the boundary as a reference, and calling it sends a request back to the server.
+
+```tsx
+// app/posts/page.tsx
+import { SaveButton } from '@/app/ui/save-button';
+import { savePost } from '@/app/actions';
+
+export default function Page() {
+  return (
+    <>
+      {/* Throws: a plain function cannot cross the boundary */}
+      <SaveButton onSave={() => console.log('saved')} />
+
+      {/* Works: a Server Function crosses as a reference */}
+      <SaveButton saveAction={savePost} />
+    </>
+  );
+}
+```
+
+There is a small but useful detail in the docs here. TypeScript cannot tell a Server Function from a plain function by its type. So the Next.js TypeScript plugin allows a function prop on a Client Component only when the prop is named `action` or ends with `Action`, and it flags the others. If you name your props this way, you get an early warning for free.
+
+### Keep the server side protected
+
+Server Component code never reaches the browser. But a shared module can still be imported into client code by mistake. If a data file reads `process.env.API_KEY` and ends up in a Client Component, the key does not leak, because Next.js replaces non-public environment variables with an empty string in the client bundle. The function just fails in a confusing way.
+
+Add `import 'server-only'` at the top of files like this. Now the wrong import fails at build time with a clear error. And since props are serialized and sent to the browser, be deliberate about what data you pass across the line.
+
+## A common mistake
+
+This one is easy to miss. Compound components, like `Menu.Item` or `Tabs.Panel`, are a common pattern in design systems:
+
+```tsx
+// app/ui/menu.tsx
+'use client';
+
+import { useState, type ReactNode } from 'react';
+
+function Menu({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button onClick={() => setOpen(!open)}>Menu</button>
+      {open && <ul>{children}</ul>}
+    </div>
+  );
+}
+
+function MenuItem({ children }: { children: ReactNode }) {
+  return <li>{children}</li>;
+}
+
+Menu.Item = MenuItem;
+
+export default Menu;
+```
+
+This works when another Client Component uses it. But when a Server Component imports `Menu`, it does not receive the real function. It receives a client reference. Static properties like `Menu.Item` do not exist on that reference, so `Menu.Item` is `undefined`, and React throws "Element type is invalid."
+
+The error message says nothing about the boundary, which is why this bug can take a while to find. The fix is small. Export each piece as a named export instead of a static property:
+
+```tsx
+// app/ui/menu.tsx
+'use client';
+
+// Same Menu and MenuItem components as above, without Menu.Item
+export { Menu, MenuItem };
+```
+
+```tsx
+// app/page.tsx
+import { Menu, MenuItem } from '@/app/ui/menu';
+
+export default function Page() {
+  return (
+    <Menu>
+      <MenuItem>Profile</MenuItem>
+      <MenuItem>Settings</MenuItem>
+    </Menu>
+  );
+}
+```
+
+{/* TODO(experience): Have you hit a boundary bug in a real project? For example a bundle that grew because 'use client' sat too high in the tree, or a component library that broke inside a Server Component. Write 2 to 4 sentences: what you saw, how you found the cause, and what you changed. */}
+
+## When you do not need a Client Component
+
+The docs make a point that is easy to forget. A lot of interactivity does not need a Client Component at all, because the browser already provides it:
+
+- A `<details>` element opens and closes on its own.
+- A `<form>` can submit to a Server Function through its `action` prop.
+- A `<video controls>` element plays and pauses.
+
+Reach for a Client Component when the behavior needs browser state that changes over time, like a controlled input, a live filter, or a drag handle.
+
+A few more rules of thumb from the same pages:
+
+- **Put the boundary as low as possible.** If a layout is mostly static but has one search box, only the search box needs `'use client'`.
+- **Render providers deep in the tree.** A context provider must be a Client Component, but it can wrap only `children` instead of the whole document. This helps Next.js optimize the static parts.
+- **Wrap third-party components instead of changing them.** If a library component uses state but has no directive, create a small file with `'use client'` that imports and re-exports it.
+
+## Summary
+
+- `'use client'` marks the entry to a client subtree. Everything it imports becomes client code.
+- Code crosses through imports. Data crosses through props, and props must be serializable.
+- Client Components render on the server too. "Server-rendered" is not the same as "Server Component".
+- Pass server output through `children` or other props instead of importing server code into client files.
+- Use named exports, not static properties, for components that are used across the boundary.
+
+In part 2, we move from where code runs to when data arrives: data fetching in Server Components, and the request waterfalls that hide in ordinary-looking code.
+
+---
+
+Next part: [Data Fetching in Next.js Without Hidden Waterfalls](/blog/nextjs-data-fetching-waterfalls)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [The Server and Client Boundary](https://nextjs.org/docs/app/guides/server-and-client-boundary), the Next.js guide this article is based on
+- [Server and Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components) in the Next.js docs
+- [use client](https://react.dev/reference/rsc/use-client) in the React reference

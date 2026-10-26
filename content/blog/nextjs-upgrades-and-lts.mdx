@@ -1,0 +1,154 @@
+---
+title: 'Upgrading Next.js Without a Big Bang'
+description: 'The version 16 codemod does not run every migration, and a green build does not mean the migration is done. What the upgrade guide asks you to check by hand.'
+publishedAt: '2026-11-19'
+tags: ['nextjs', 'nextjs-between-the-lines', 'production']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 19
+draft: false
+---
+
+Part 19 of 20 in Next.js Between the Lines, the series where I read the Next.js docs with a senior engineer's eye and look for what is easy to miss. Today's topic is upgrading, which in a framework that moves this fast is a recurring piece of work rather than a one-off project.
+
+[Part 18](/blog/nextjs-multi-zones-at-scale) was about splitting an application. This one is about moving it forward.
+
+## The problem
+
+Major version upgrades fail in a specific way. Someone runs the codemod, the build goes green, the pull request gets approved, and three weeks later a bug report arrives that turns out to be a behavior change nobody read about.
+
+The Next.js 16 upgrade guide is unusually direct about this. Its own migration checklist ends with a line worth printing out: a green build alone does not close runtime findings.
+
+## How it works
+
+### What is supported
+
+The support policy is short. Next.js 16.x is Active LTS. 15.x is Maintenance LTS. 14 and earlier are unsupported. Canary builds are published daily and are not recommended for production traffic.
+
+That gives you a window rather than a deadline. You do not have to be on the newest minor, but sitting on 14 means you are on an unsupported version, and the gap to catch up grows with every release.
+
+### The two paths
+
+The guide now leads with an agent-driven upgrade:
+
+```bash
+npx next@canary upgrade --agent=latest
+```
+
+That prepares the migration guides and the codemod command for a coding agent, then asks it to apply the changes and verify the app. We come back to why in part 20.
+
+The manual path is four steps, in order: point `AGENTS.md` at version-matched docs, run the upgrade codemod, or install packages by hand, then work through the breaking changes.
+
+```bash
+npx @next/codemod@canary upgrade latest
+```
+
+### What the codemod does, and what it leaves
+
+The `upgrade` codemod handles the mechanical parts:
+
+- Moves `next.config.js` to the new `turbopack` configuration
+- Migrates `next lint` to the ESLint CLI
+- Renames the deprecated `middleware` convention to `proxy`
+- Removes the `unstable_` prefix from stabilized APIs
+- Removes the `experimental_ppr` route segment config
+
+The guide then says plainly that the upgrade codemod does not run every migration codemod. If your app still uses synchronous `params`, `searchParams`, `cookies()`, `headers()` or `draftMode()` from the version 15 compatibility period, that needs its own run:
+
+```bash
+npx @next/codemod@canary next-async-request-api .
+```
+
+Version 15 made those APIs async with temporary synchronous compatibility. Version 16 removes the synchronous access entirely. If your team took the compatibility path at the time, this is the bill.
+
+For the type side of the same change, `npx next typegen` generates `PageProps`, `LayoutProps` and `RouteContext` helpers:
+
+```tsx
+// app/blog/[slug]/page.tsx
+export default async function Page(props: PageProps<'/blog/[slug]'>) {
+  const { slug } = await props.params;
+  return <h1>{slug}</h1>;
+}
+```
+
+### Requirements and defaults that changed
+
+| Requirement | Next.js 16                                         |
+| ----------- | -------------------------------------------------- |
+| Node.js     | 20.9.0 or later. Node 18 is no longer supported    |
+| TypeScript  | 5.1.0 or later                                     |
+| Browsers    | Chrome 111+, Edge 111+, Firefox 111+, Safari 16.4+ |
+
+Turbopack is now the default for both `next dev` and `next build`. If your project has a custom `webpack` configuration, `next build` **fails** rather than silently ignoring it. You can build with Turbopack anyway, migrate the config, or keep Webpack with the `--webpack` flag. The guide notes a trap here: if you see this failure without having written a webpack config, a plugin is probably adding one.
+
+A few quieter changes that reach real applications:
+
+- `revalidateTag` now requires a second argument naming a `cacheLife` profile. The single-argument form is deprecated and produces a TypeScript error.
+- Every parallel route slot now requires an explicit `default.js`. Builds fail without them, which is a change from the runtime 404 behavior in [part 8](/blog/nextjs-parallel-and-intercepting-routes).
+- `images.minimumCacheTTL` moved from 60 seconds to 4 hours, `images.qualities` now defaults to `[75]` only, `16` was removed from `imageSizes`, local IP optimization is blocked by default, and redirects are capped at 3.
+- `serverRuntimeConfig` and `publicRuntimeConfig` are removed. Use environment variables, with `connection()` before reading them if you need the value at runtime rather than at build time.
+- AMP support and the `next lint` command are gone.
+- `next dev` and `next build` now use separate output directories and can run concurrently, and `next dev` outputs to `.next/dev`.
+
+That last group is the kind of thing a codemod cannot fix, because nothing is broken. Your images are just being served at a different quality than before.
+
+## A common mistake
+
+Here is the one the guide pre-empts, in its own words, and it is the most important sentence in the document for a senior engineer:
+
+> React Compiler and Cache Components are not enabled merely to complete the upgrade.
+
+Two flags were removed in version 16: `experimental.dynamicIO` and `experimental.useCache`. The obvious move when a build complains about a removed flag is to replace it with the current one:
+
+```js
+// next.config.js
+// Before
+module.exports = { experimental: { useCache: true } };
+
+// Tempting, and wrong if you were not already adopting this
+module.exports = { cacheComponents: true };
+```
+
+The guide is explicit that enabling `cacheComponents` is not a rename-only change. It can surface build errors for uncached data outside of `<Suspense>` and requires adopting the Cache Components model, which is most of weeks two and three of this series.
+
+If you were not actively adopting it, **remove the flags instead**. Then adopt Cache Components as its own piece of work, with its own pull request and its own testing, rather than smuggling a rendering model change into a version bump.
+
+The same applies to Partial Prerendering. If you are using `experimental.ppr` today, the guide says to stay on your current Next.js 15 canary, because PPR in 16 works differently than it did in the 15 canaries. There is a separate migration guide for that move.
+
+And one more trap in the same spirit: do not let the codemod blindly rename edge middleware to proxy. The `edge` runtime is not supported in `proxy`, whose runtime is `nodejs` and cannot be configured. If you need the edge runtime, the guide says to keep using `middleware` for now. The migration checklist lists this as its own item.
+
+{/* TODO(experience): How does your team handle framework upgrades? Have you been caught by a changed default rather than a breaking change? Write 2 to 4 sentences about what you do differently now. */}
+
+## What to do instead of one big upgrade
+
+- **Separate the version bump from the model adoption.** Get to 16 with your current rendering model first. Adopt Cache Components, Partial Prefetching or the React Compiler afterwards, each on its own.
+- **Read the changed defaults, not just the breaking changes.** Image quality, cache TTL and scroll behavior changed without breaking anything.
+- **Work the checklist.** The guide ends with about a dozen items covering the bundler, images, cache APIs, removed configuration, async request APIs, metadata image functions, sitemaps and parallel route defaults. It exists because the build will not tell you.
+- **Do not skip a major.** 15 to 16 is a documented path with codemods. 14 to 16 is two of those at once, on an unsupported starting point.
+- **Keep the agent docs pointer current.** On 16.2 and later, `next dev` keeps the `AGENTS.md` block pointing at the docs bundled with the installed version, which is how you stop a coding agent from writing version 13 code into a version 16 app.
+
+## Summary
+
+- 16.x is Active LTS, 15.x is Maintenance LTS, 14 and earlier are unsupported.
+- The upgrade codemod handles config, linting, the proxy rename and `unstable_` prefixes, not everything.
+- Synchronous request APIs need their own codemod, and `next typegen` generates the props helpers.
+- Node 20.9 and TypeScript 5.1 are the new minimums, and Turbopack is the default bundler.
+- Replacing a removed cache flag with `cacheComponents` is a rendering model change, not a rename.
+- Do not rename edge middleware to proxy, because proxy has no edge runtime.
+- A green build does not close a migration.
+
+In part 20, the last one, we look at something that changed how all of this is documented: Next.js being shaped for coding agents as well as for people.
+
+---
+
+Previous part: [Multi-Zones and the Cost of Splitting an App](/blog/nextjs-multi-zones-at-scale)
+
+Next part: [Next.js Is Being Designed for Agents Too](/blog/nextjs-and-ai-agents)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [How to upgrade to version 16](https://nextjs.org/docs/app/guides/upgrading/version-16), the guide this article is based on
+- [Support Policy](https://nextjs.org/support-policy) for the LTS phases
+- [Migrating to Cache Components](https://nextjs.org/docs/app/guides/migrating-to-cache-components) for that adoption as its own project

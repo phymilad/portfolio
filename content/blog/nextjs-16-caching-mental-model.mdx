@@ -1,0 +1,167 @@
+---
+title: 'The Mental Model Behind use cache in Next.js 16'
+description: 'Next.js 16 made caching explicit. What use cache actually stores, where it lives, how long it survives, and why revalidateTag and updateTag are not interchangeable.'
+publishedAt: '2026-11-02'
+tags: ['nextjs', 'nextjs-between-the-lines', 'caching']
+series:
+  id: 'nextjs-between-the-lines'
+  order: 6
+draft: false
+---
+
+Part 6 of 20 in Next.js Between the Lines, the series where I read the Next.js docs with a senior engineer's eye and look for the trade-offs. Week two starts with the topic that confuses the most people in modern Next.js: caching.
+
+Week one was about foundations. [Part 3](/blog/what-makes-a-nextjs-route-dynamic) already touched the two rendering models. Now we go into the caching side of the newer one.
+
+If you learned Next.js caching around version 14, you learned four overlapping layers that were on by default, and you probably learned them by being surprised. Next.js 16 takes the opposite approach. With Cache Components enabled, data fetching is dynamic by default and you choose what to cache. That is a smaller API and a much clearer mental model, but only once you know what a cache entry actually is.
+
+## The problem
+
+Caching bugs are rarely about the cache being slow. They are about surprise. A value is fresher than you expected, or more stale than you expected, or it is correct on your machine and wrong in production.
+
+Almost all of those surprises come from three questions nobody asked out loud:
+
+- What exactly is the key for this cache entry?
+- Where is the entry stored, and how long does that store live?
+- When this data changes, who invalidates it and how fast does the user see it?
+
+The newer caching API answers all three, but it answers them in different places in the docs.
+
+## How it works
+
+### Two levels, one directive
+
+The `use cache` directive caches the return value of an async function or component. You can put it in two places:
+
+```tsx
+// app/lib/data.ts
+import { cacheLife, cacheTag } from 'next/cache';
+
+export async function getProducts() {
+  'use cache';
+  cacheLife('hours');
+  cacheTag('products');
+  return db.query('SELECT * FROM products');
+}
+```
+
+That is data-level caching, useful when several components need the same data or when you want the data cached independently of the UI. The same directive at the top of a component or page body caches the rendered output instead. Put it at the top of a file and every exported function in that file is cached.
+
+### The cache key is wider than you think
+
+This is the detail that explains most unexpected cache hits. The key is built from the arguments **and from any values captured from the parent scope**. A cached function that closes over a variable gets a different entry when that variable changes, even though nothing in its argument list changed.
+
+This cuts both ways. It is why you can safely pass a user's session id into a cached function and get a per-user entry. It is also why a cached function that captures something large or unstable produces far more entries than you intended.
+
+### cacheLife is three numbers, not one
+
+`cacheLife` takes a profile name or an object, and each profile is three separate values:
+
+| Profile   | stale | revalidate | expire |
+| --------- | ----- | ---------- | ------ |
+| `default` | 5m    | 15m        | never  |
+| `seconds` | 30s   | 1s         | 60s    |
+| `minutes` | 5m    | 1m         | 1h     |
+| `hours`   | 5m    | 1h         | 1d     |
+| `days`    | 5m    | 1d         | 1w     |
+| `weeks`   | 5m    | 1w         | 30d    |
+| `max`     | 5m    | 30d        | 1y     |
+
+`stale` is how long the browser treats its copy as fresh. `revalidate` is how often the server refreshes it. `expire` is the point where it can no longer be served at all. The docs recommend pairing every cache directive with a `cacheLife`, because without one the implicit `default` profile applies and you have made the decision by accident.
+
+One profile behaves differently from the rest. A cache counts as short-lived when it uses the `seconds` profile, `revalidate: 0`, or an `expire` under five minutes. Short-lived caches are left out of prerenders and become dynamic holes instead. So `cacheLife('seconds')` does not give you a slightly fresher static shell. It takes that content out of the shell.
+
+### Where the entry actually lives
+
+A cached result is serialized into an RSC payload, and that payload can end up in three different places:
+
+- **Prerendered HTML**, written to disk when self-hosting or to your platform's storage behind a CDN. This is the static shell.
+- **A server store.** By default this is a per-instance, in-memory store, which is ephemeral on serverless. `use cache: remote` moves it to a durable cache handler shared across instances, at the cost of a network round trip that only pays off with a high hit rate.
+- **The browser**, inside the payload sent for a client navigation or a prefetch. Results from `use cache: private` live only here.
+
+All of these stores are scoped to a single deployment. The cache key includes the build id, so a new deploy starts from an empty cache, even for durable `remote` entries.
+
+### revalidateTag and updateTag are not the same tool
+
+Both invalidate by tag. They behave differently in a way that users notice:
+
+|          | `updateTag`                        | `revalidateTag`                   |
+| -------- | ---------------------------------- | --------------------------------- |
+| Where    | Server Actions only                | Server Actions and Route Handlers |
+| Behavior | Expires the entry immediately      | Stale while revalidating          |
+| Use case | The user must see their own change | A background refresh is fine      |
+
+`revalidateTag` serves the stale value right away and refreshes in the background. Its second argument sets how long stale content may be served while the fresh value is generated, and `'max'` gives the longest window. `updateTag` expires the entry immediately, which is what you want for read-your-own-writes.
+
+`revalidatePath` invalidates everything cached for a route path. The docs prefer tags, because a path invalidates more than you usually mean to.
+
+## A common mistake
+
+Here is the one that generates support tickets. A user submits a form, the action saves the row and calls `revalidateTag`, then redirects to the list:
+
+```tsx
+// app/lib/actions.ts
+'use server';
+
+import { revalidateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+export async function createPost(formData: FormData) {
+  const post = await db.post.create({ data: parse(formData) });
+  revalidateTag('posts', 'max'); // stale while revalidate
+  redirect(`/posts/${post.id}`);
+}
+```
+
+The write succeeded. The redirect worked. And the user lands on a list that does not contain the thing they just created, because `revalidateTag` deliberately serves the stale copy while the fresh one builds. They hit refresh, see it appear, and conclude the save was flaky.
+
+For a mutation the same user is about to look at, use `updateTag`:
+
+```tsx
+// app/lib/actions.ts
+'use server';
+
+import { updateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+export async function createPost(formData: FormData) {
+  const post = await db.post.create({ data: parse(formData) });
+  updateTag('posts'); // expires immediately
+  redirect(`/posts/${post.id}`);
+}
+```
+
+The rule of thumb: `updateTag` when the person who caused the change is about to see the result, `revalidateTag` when someone else is.
+
+{/* TODO(experience): Have you shipped a caching bug that users noticed? For example a stale list after a save, a cache that silently did nothing in serverless, or an invalidation that was far too broad. Write 2 to 4 sentences: what the symptom was, and what the real cause turned out to be. */}
+
+## When not to cache
+
+- **Runtime data.** Anything from `cookies()`, `headers()`, or `searchParams` belongs behind a Suspense boundary, or in `use cache: private` when it has a real lifetime.
+- **Data where a short lifetime is the point.** If you reach for `cacheLife('seconds')`, check first that you really want that content out of the static shell. Often the honest answer is to stream it uncached instead.
+- **Content that changes on an event, not on a clock.** For CMS content, the docs suggest a long `cacheLife` such as `max` plus a `cacheTag`, with a webhook calling `revalidateTag` when an editor publishes. Time-based revalidation of content that has not changed is wasted work.
+- **In-memory caching you are counting on.** In serverless, entries may not survive between requests. If a cache has to be shared or durable, say so with `use cache: remote` instead of hoping.
+
+## Summary
+
+- With Cache Components, nothing is cached until you say so with `use cache`.
+- The cache key includes arguments and anything captured from the surrounding scope.
+- `cacheLife` sets three values. Short-lived profiles drop content out of the static shell.
+- Cached payloads live in prerendered HTML, a server store, or the browser, and all of them reset on deploy.
+- Use `updateTag` for read-your-own-writes and `revalidateTag` for background refreshes.
+
+In part 7, we look at what all this caching is in service of: Partial Prerendering, and why the Next.js team moved the static boundary from the route to the component.
+
+---
+
+Previous part: [Next.js Error Handling After 16.3: retry vs reset](/blog/nextjs-error-handling-retry-vs-reset)
+
+Next part: [Partial Prerendering Is an Architecture Decision](/blog/nextjs-partial-prerendering-architecture)
+
+All parts of the series: [Next.js Between the Lines](/blog/tags/nextjs-between-the-lines)
+
+## Further reading
+
+- [Caching](https://nextjs.org/docs/app/getting-started/caching), the Next.js page this article is based on
+- [Revalidating](https://nextjs.org/docs/app/getting-started/revalidating) in the Next.js docs
+- [use cache](https://nextjs.org/docs/app/api-reference/directives/use-cache) in the API reference
