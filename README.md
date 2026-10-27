@@ -1,6 +1,6 @@
 # phymilad.vercel.app
 
-Personal site of Milad Mohammadi — portfolio, project write-ups, and a blog.
+Personal site of Milad Mohammadi: portfolio, project write-ups and a blog.
 
 Built with Next.js 15 (App Router), React 19, TypeScript and Tailwind CSS v4.
 Statically generated; there is no database and no CMS.
@@ -25,7 +25,7 @@ npm run dev          # http://localhost:3000
 ## Layout
 
 ```
-content/blog/*.mdx      posts — the only place content lives
+content/blog/*.mdx      posts (the only place content lives)
 src/app/                routes, plus robots.ts, sitemap.ts, rss.xml, OG images
 src/components/         ui/ primitives, mdx/ element map, feature components
 src/content/            site copy and project data as typed modules
@@ -36,9 +36,9 @@ docs/                   audit, roadmap, decision record
 
 ## Writing a post
 
-1. Copy `content/blog/example-post.mdx` to `content/blog/your-slug.mdx`.
-   The filename becomes the URL: `/blog/your-slug`.
-2. Edit the frontmatter.
+1. Create `content/blog/your-slug.mdx`. The filename becomes the URL:
+   `/blog/your-slug`.
+2. Add the frontmatter below.
 3. Set `draft: false` when it is ready to publish.
 4. `npm run dev` to preview, `npm run build` to check it passes.
 
@@ -49,7 +49,7 @@ description: One sentence. Feeds the meta description, OG card and RSS.
 publishedAt: '2026-09-08'
 updatedAt: '2026-09-12' # optional
 tags: ['nextjs', 'css'] # optional
-draft: true # optional — dev only, never in prod
+draft: true # optional, dev only, never in prod
 ---
 ```
 
@@ -78,14 +78,14 @@ is sent to the browser. Images go in `public/images/blog/` and render through
 
 ## Deploying
 
-Hosted on Vercel. Next.js needs no configuration there — no `vercel.json`.
+Hosted on Vercel. Next.js needs no configuration there, so there is no `vercel.json`.
 
 First deploy:
 
 1. Push to `github.com/phymilad/portfolio`.
 2. Import the repo at [vercel.com/new](https://vercel.com/new). Framework, build
    command and output directory are all detected.
-3. Add `phymilad.vercel.app` under Settings → Domains and follow the DNS instructions.
+3. Add `phymilad.vercel.app` under Settings > Domains and follow the DNS instructions.
    Point the apex at Vercel and let `www` redirect to it, so only one hostname
    is canonical.
 
@@ -101,7 +101,7 @@ Once live: submit `https://phymilad.vercel.app/sitemap.xml` in
 
 ## Notes
 
-- Styling is Tailwind v4. There is no `tailwind.config.ts` — v4 would not read
+- Styling is Tailwind v4. There is no `tailwind.config.ts`, because v4 would not read
   one without an `@config` directive. Tokens live in `@theme` in
   `src/app/globals.css`.
 - Colour tokens are declared on `:root`/`.dark` and mapped through

@@ -74,7 +74,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
   return (
     <Container width="wide" className="lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-12">
-      <article className="max-w-[68ch] min-w-0">
+      <article className="max-w-[88ch] min-w-0">
         <JsonLd schema={blogPostingSchema(post)} />
         <JsonLd
           schema={breadcrumbSchema([

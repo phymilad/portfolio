@@ -32,23 +32,25 @@ export default function About() {
           {aboutPage.title}
         </p>
         <h1 className="font-display text-title">{site.name}</h1>
-        <p className="text-fg-muted max-w-[60ch] pt-6 text-lg leading-relaxed">{aboutPage.lead}</p>
+        <p className="text-fg-muted pt-6 text-lg leading-relaxed md:text-xl">
+          {aboutPage.lead}
+        </p>
       </section>
 
       <div className="grid grid-cols-1 gap-6 pt-16 lg:grid-cols-2">
         <Card>
           <h2 className="font-display text-heading pb-2">{home.whatIDoTitle}</h2>
-          <p className="text-fg-muted leading-relaxed">{home.whatIDo}</p>
+          <p className="text-fg-muted leading-relaxed md:text-lg">{home.whatIDo}</p>
         </Card>
 
         <Card>
           <h2 className="font-display text-heading pb-2">{home.howIWorkTitle}</h2>
-          <p className="text-fg-muted leading-relaxed">{home.howIWork}</p>
+          <p className="text-fg-muted leading-relaxed md:text-lg">{home.howIWork}</p>
         </Card>
 
         <Card className="lg:col-span-2">
           <h2 className="font-display text-heading pb-2">{home.experienceTitle}</h2>
-          <ul className="text-fg-muted list-disc space-y-2 ps-5 leading-relaxed">
+          <ul className="text-fg-muted list-disc space-y-2 ps-5 leading-relaxed md:text-lg">
             {home.experience.map((point) => (
               <li key={point}>{point}</li>
             ))}
@@ -58,7 +60,7 @@ export default function About() {
 
       <section className="border-line mt-16 border-t pt-10">
         <h2 className="font-display text-heading pb-2">{aboutPage.contactTitle}</h2>
-        <p className="text-fg-muted pb-5 leading-relaxed">{aboutPage.contactBody}</p>
+        <p className="text-fg-muted pb-5 leading-relaxed md:text-lg">{aboutPage.contactBody}</p>
         <p className="flex flex-wrap gap-3">
           {site.social.map((href) => (
             <a

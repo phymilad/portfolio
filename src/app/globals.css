@@ -15,7 +15,7 @@
    respond to the cascade. @theme inline below maps them to Tailwind utilities
    so `bg-surface` follows the active theme.
 
-   Near-monochrome with a single warm accent — see docs/decisions.md §4.
+   Near-monochrome with a single warm accent. See docs/decisions.md §4.
 --------------------------------------------------------------------------- */
 
 :root {
@@ -34,6 +34,15 @@
   --accent-hover: #8a3f08;
   --accent-fg: #ffffff;
   --accent-subtle: #f8ede2;
+
+  /* Section and card headings step up on desktop, where 1.3rem read small. */
+  --type-heading: 1.3rem;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --type-heading: 1.6rem;
+  }
 }
 
 .dark {
@@ -86,7 +95,7 @@
   --text-title--line-height: 1.15;
   --text-title--letter-spacing: -0.02em;
 
-  --text-heading: 1.3rem;
+  --text-heading: var(--type-heading);
   --text-heading--line-height: 1.3;
   --text-heading--letter-spacing: -0.01em;
 
@@ -112,7 +121,7 @@
     color: var(--fg);
   }
 
-  /* The site had no focus ring at any point — affordances were mouse-only. */
+  /* The site never had a focus ring, so everything only worked with a mouse. */
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;

@@ -57,7 +57,7 @@ export default async function ArchivePage({ params }: { params: Promise<{ year: 
 
         <p className="text-fg-subtle pb-2 font-mono text-xs tracking-widest uppercase">Archive</p>
         <h1 className="font-display text-title pb-2">{year}</h1>
-        <p className="text-fg-muted pb-10">
+        <p className="text-fg-muted pb-10 md:text-lg">
           {posts.length} {posts.length === 1 ? 'post' : 'posts'} ·{' '}
           <Link
             href="/blog"

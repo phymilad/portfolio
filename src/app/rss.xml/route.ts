@@ -32,7 +32,7 @@ ${(post.tags ?? []).map((tag) => `      <category>${escapeXml(tag)}</category>`)
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>${escapeXml(`${site.name} — ${blog.title}`)}</title>
+    <title>${escapeXml(`${site.name} | ${blog.title}`)}</title>
     <link>${site.url}/blog</link>
     <description>${escapeXml(blog.metaDescription)}</description>
     <language>en</language>

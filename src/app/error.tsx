@@ -19,7 +19,7 @@ export default function Error({
   return (
     <Container className="py-16 text-center">
       <h1 className="font-display text-title pb-3">{errorPage.title}</h1>
-      <p className="text-fg-muted pb-6">{errorPage.body}</p>
+      <p className="text-fg-muted pb-6 md:text-lg">{errorPage.body}</p>
       <div className="flex items-center justify-center gap-3">
         <button
           onClick={reset}

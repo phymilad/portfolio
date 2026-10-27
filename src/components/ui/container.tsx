@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
  * the header and footer line up with.
  */
 const widths = {
-  prose: 'max-w-[68ch]',
+  prose: 'max-w-[88ch]',
   default: 'max-w-7xl',
   wide: 'max-w-7xl',
 } as const;

@@ -12,7 +12,7 @@ export function slugify(text: string): string {
 /**
  * Headings are read from the raw markdown rather than the compiled tree, so the
  * TOC can render before/independently of MDX compilation. Fenced code blocks are
- * stripped first — a `# comment` inside a shell snippet is not a heading.
+ * stripped first, since a `# comment` inside a shell snippet is not a heading.
  */
 export function getToc(body: string): TocEntry[] {
   const withoutCode = body.replace(/^```[\s\S]*?^```/gm, '');

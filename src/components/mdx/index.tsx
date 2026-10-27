@@ -31,10 +31,10 @@ const heading = (Tag: 'h2' | 'h3', className: string) =>
 
 export const mdxComponents = {
   h2: heading('h2', 'font-display text-heading mt-12 mb-3'),
-  h3: heading('h3', 'font-display text-lg mt-8 mb-2'),
+  h3: heading('h3', 'font-display text-lg md:text-xl mt-8 mb-2'),
 
   p: ({ children }: { children?: ReactNode }) => (
-    <p className="text-fg-muted my-5 leading-[1.75]">{children}</p>
+    <p className="text-fg-muted my-5 leading-[1.75] md:text-lg">{children}</p>
   ),
 
   a: ({ href = '', children }: { href?: string; children?: ReactNode }) => {
@@ -59,14 +59,18 @@ export const mdxComponents = {
   },
 
   ul: ({ children }: { children?: ReactNode }) => (
-    <ul className="text-fg-muted my-5 list-disc space-y-2 ps-6 leading-[1.75]">{children}</ul>
+    <ul className="text-fg-muted my-5 list-disc space-y-2 ps-6 leading-[1.75] md:text-lg">
+      {children}
+    </ul>
   ),
   ol: ({ children }: { children?: ReactNode }) => (
-    <ol className="text-fg-muted my-5 list-decimal space-y-2 ps-6 leading-[1.75]">{children}</ol>
+    <ol className="text-fg-muted my-5 list-decimal space-y-2 ps-6 leading-[1.75] md:text-lg">
+      {children}
+    </ol>
   ),
 
   blockquote: ({ children }: { children?: ReactNode }) => (
-    <blockquote className="border-accent text-fg-muted my-6 border-s-2 ps-5 italic">
+    <blockquote className="border-accent text-fg-muted my-6 border-s-2 ps-5 italic md:text-lg">
       {children}
     </blockquote>
   ),
@@ -74,13 +78,13 @@ export const mdxComponents = {
   hr: () => <hr className="border-line my-10" />,
 
   // NOTE: no `code` override here. Shiki's <pre> still contains a <code>, so a
-  // component override would style block code too — and because <code> is
+  // component override would style block code too. And since <code> is
   // inline, it paints one box per line. Inline code is styled in globals.css
   // via :not(pre) > code, which block code cannot match.
 
   table: ({ children }: { children?: ReactNode }) => (
     <div className="my-6 overflow-x-auto">
-      <table className="w-full border-collapse text-sm">{children}</table>
+      <table className="w-full border-collapse text-sm md:text-base">{children}</table>
     </div>
   ),
   th: ({ children }: { children?: ReactNode }) => (

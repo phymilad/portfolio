@@ -16,7 +16,9 @@ export const ProjectRow = ({ project }: { project: Project }) => (
         <h3 className="font-display text-heading group-hover:text-accent transition-colors">
           {project.title}
         </h3>
-        <p className="text-fg-muted pt-2 text-sm leading-relaxed">{project.shortDescription}</p>
+        <p className="text-fg-muted pt-2 text-sm leading-relaxed md:text-base">
+          {project.shortDescription}
+        </p>
       </div>
 
       <p className="flex flex-wrap gap-2 sm:max-w-[15rem] sm:justify-end">

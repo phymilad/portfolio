@@ -33,7 +33,9 @@ export default function Home() {
 
           <h1 className="font-display text-display">{site.name}</h1>
 
-          <p className="text-fg-muted max-w-[52ch] pt-6 text-lg leading-relaxed">{home.tagline}</p>
+          <p className="text-fg-muted max-w-[52ch] pt-6 text-lg leading-relaxed md:text-xl">
+            {home.tagline}
+          </p>
 
           <p className="text-fg-muted max-w-[52ch] pt-4 leading-relaxed">{aboutPage.lead}</p>
 
@@ -58,7 +60,7 @@ export default function Home() {
         />
       </section>
 
-      {/* Selected work — compact rows; /projects carries the full cards. */}
+      {/* Selected work as compact rows. /projects has the full cards. */}
       <section className="pb-20">
         <SectionHeading title={home.selectedWork} href="/projects" cta={home.allProjects} />
         <ul className="divide-line divide-y">
@@ -87,7 +89,7 @@ export default function Home() {
                   <h3 className="font-display text-heading group-hover:text-accent transition-colors">
                     {post.title}
                   </h3>
-                  <p className="text-fg-muted max-w-[70ch] pt-2 text-sm leading-relaxed">
+                  <p className="text-fg-muted max-w-[70ch] pt-2 text-sm leading-relaxed md:text-base">
                     {post.description}
                   </p>
                 </Link>

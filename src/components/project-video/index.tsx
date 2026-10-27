@@ -16,7 +16,7 @@ export const ProjectVideo = ({ project }: { project: Project }) => {
 
       <h1 className="font-display text-title max-w-[24ch]">{project.title}</h1>
 
-      <p className="text-fg-muted max-w-[68ch] pt-5 text-lg leading-relaxed">
+      <p className="text-fg-muted pt-5 text-lg leading-relaxed md:text-xl">
         {project.shortDescription}
       </p>
 
@@ -50,9 +50,9 @@ export const ProjectVideo = ({ project }: { project: Project }) => {
         Watch on YouTube
       </a>
 
-      <div className="border-line mt-14 max-w-[68ch] space-y-5 border-t pt-10">
+      <div className="border-line mt-14 space-y-5 border-t pt-10">
         {project.description.map((line, index) => (
-          <p key={index} className="text-fg-muted leading-[1.75]">
+          <p key={index} className="text-fg-muted leading-[1.75] md:text-lg">
             {line}
           </p>
         ))}

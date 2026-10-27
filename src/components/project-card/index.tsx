@@ -33,7 +33,7 @@ export const ProjectCard = ({
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl sm:w-3/4">
               <Image
                 src={desktop}
-                alt={`${project.title} — desktop interface`}
+                alt={`${project.title}, desktop view`}
                 fill
                 className="object-contain"
                 sizes="(min-width: 1024px) 700px, (min-width: 640px) 70vw, 100vw"
@@ -46,7 +46,7 @@ export const ProjectCard = ({
             <div className="relative aspect-[9/16] w-1/2 overflow-hidden rounded-xl sm:w-1/4">
               <Image
                 src={mobile}
-                alt={`${project.title} — mobile interface`}
+                alt={`${project.title}, mobile view`}
                 fill
                 className="object-contain"
                 sizes="(min-width: 1024px) 235px, (min-width: 640px) 25vw, 50vw"
@@ -56,7 +56,9 @@ export const ProjectCard = ({
         </div>
 
         <div className="py-4">
-          <p className="text-fg-muted text-sm leading-relaxed">{project.shortDescription}</p>
+          <p className="text-fg-muted text-sm leading-relaxed md:text-base">
+            {project.shortDescription}
+          </p>
         </div>
 
         <div className="border-line border-t"></div>

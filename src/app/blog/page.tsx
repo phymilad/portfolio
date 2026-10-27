@@ -34,7 +34,7 @@ export default function BlogIndex() {
         />
 
         <h1 className="font-display text-title pb-2">{blog.title}</h1>
-        <p className="text-fg-muted pb-6 leading-relaxed">{blog.metaDescription}</p>
+        <p className="text-fg-muted pb-6 leading-relaxed md:text-lg">{blog.metaDescription}</p>
 
         <p className="flex flex-wrap items-center gap-2 pb-10">
           <a

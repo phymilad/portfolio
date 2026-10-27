@@ -22,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
     ...posts.map((post) => ({
       url: abs(`/blog/${post.slug}`),
-      // The post's own date, not the build date — otherwise every post looks
+      // Use the post's own date, not the build date. Otherwise every post looks
       // freshly modified on every deploy and lastmod stops meaning anything.
       lastModified: new Date(`${post.updatedAt ?? post.publishedAt}T00:00:00Z`),
       changeFrequency: 'yearly' as const,

@@ -9,15 +9,15 @@
 export const site = {
   name: 'Milad Mohammadi',
   role: 'Software Engineer',
-  brand: 'Milad Mohammadi — Software Engineer',
+  brand: 'Milad Mohammadi | Software Engineer',
   url: 'https://phymilad.vercel.app',
   description:
     'Software engineer with 5+ years building fast, scalable web applications with React, Next.js, TypeScript and NestJS. Projects, writing, and how I work.',
   locale: 'en_US',
   /**
-   * Profiles used for schema.org sameAs. Only verified URLs belong here —
-   * a wrong sameAs actively harms entity resolution. Add GitHub etc. once
-   * confirmed.
+   * Profiles used for schema.org sameAs. Only verified URLs belong here,
+   * because a wrong sameAs hurts entity resolution. Add other profiles once
+   * they are confirmed.
    */
   social: ['https://www.linkedin.com/in/phymilad/', 'https://github.com/phymilad'],
 } as const;
@@ -37,7 +37,7 @@ export const navLinks = [
 
 export const home = {
   tagline:
-    'I build fast, scalable web applications with React, Next.js, TypeScript and NestJS — and write about what I learn doing it.',
+    'I build fast, scalable web applications with React, Next.js, TypeScript and NestJS, and I write about what I learn along the way.',
   selectedWork: 'Selected work',
   allProjects: 'All projects',
   recentWriting: 'Recent writing',
@@ -46,23 +46,23 @@ export const home = {
 
   aboutTitle: 'About me',
   intro:
-    'I am a Software Engineer with over 5 years of experience building fast, scalable, and maintainable web applications. I love turning complex ideas into clean, efficient, and impactful digital products.',
+    'I am a software engineer with more than 5 years of experience building web applications that are fast, scale well and stay easy to maintain. I like taking a complicated idea and turning it into a product that is simple to use.',
 
   whatIDoTitle: 'What I Do',
   whatIDo:
-    'I specialize in React.js, Next.js, TypeScript, and NestJS, crafting full-stack solutions that balance great user experience with solid architecture. My focus is always on building systems that scale, perform, and stand the test of time.',
+    'I work mostly with React, Next.js, TypeScript and NestJS, on both the frontend and the backend. I try to give users a good experience without cutting corners on architecture, and I build things so they keep working as the traffic and the feature list grow.',
 
   experienceTitle: 'Experience Highlights',
   experience: [
-    'Build the front-end for Mdotcar, an automotive platform handling over 30,000+ successful services.',
-    'Contribute to Rsoon, an investing consultant platform focused on smart financial growth.',
-    'Develop an enterprise-scale DMS at Danesh-Hamara, built for large organizations.',
-    'Deep hands-on experience with React.js/Next.js, TailwindCSS, responsive web design and clean Git workflows.',
+    'Build the frontend for Mdotcar, an automotive platform that has handled more than 30,000 successful services.',
+    'Contribute to Rsoon, an investment consulting platform for individuals and businesses.',
+    'Develop a document management system (DMS) for large organizations at Danesh-Hamara.',
+    'Daily work with React, Next.js, Tailwind CSS, responsive layouts and a clean Git history.',
   ],
 
   howIWorkTitle: 'How I Work',
   howIWork:
-    'I care about clean architecture, collaboration, and continuous improvement. I enjoy building products that not only work beautifully but also deliver measurable business value. Whether I\u2019m working with a startup or a large organization, I aim to create systems that feel effortless yet powerful.',
+    'I care about clean architecture, working closely with the team, and making the product a bit better with every release. I want what I build to be pleasant to use and to show results the business can measure. That goes for a small startup as much as for a large organization.',
 } as const;
 
 export const portrait = {
@@ -77,7 +77,7 @@ export const portrait = {
 export const aboutPage = {
   title: 'About',
   metaDescription:
-    'Milad Mohammadi — software engineer with 5+ years building production web applications with React, Next.js, TypeScript and NestJS.',
+    'Milad Mohammadi is a software engineer with 5+ years of experience building production web applications with React, Next.js, TypeScript and NestJS.',
   lead: 'I am a software engineer based in Tehran, working mostly on the web. Five years of building things that other people have to maintain has made me care about architecture, clarity and the boring parts that keep a product alive.',
   contactTitle: 'Get in touch',
   contactBody: 'The fastest way to reach me is LinkedIn. My code is on GitHub.',
@@ -86,9 +86,9 @@ export const aboutPage = {
 export const projectsPage = {
   title: 'Projects',
   metaDescription:
-    'Production web applications I have built or contributed to — Mdotcar, Rsoon and Keydoc — with a walkthrough of each.',
+    'Production web applications I have built or contributed to, including Mdotcar, Rsoon and Keydoc, each with a video walkthrough.',
   intro:
-    'A selection of production work — platforms I have built or contributed to, with a short walkthrough of each.',
+    'Some of the production platforms I have built or worked on, each with a short video walkthrough.',
 } as const;
 
 export const notFoundPage = {

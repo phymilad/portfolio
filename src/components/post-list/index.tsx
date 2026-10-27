@@ -26,7 +26,7 @@ export const PostList = ({ posts }: { posts: Post[] }) => (
             {post.title}
           </h2>
 
-          <p className="text-fg-muted pt-2 leading-relaxed">{post.description}</p>
+          <p className="text-fg-muted pt-2 leading-relaxed md:text-lg">{post.description}</p>
 
           {post.tags && post.tags.length > 0 && (
             <p className="flex flex-wrap gap-2 pt-3">

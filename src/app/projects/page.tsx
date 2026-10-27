@@ -30,7 +30,7 @@ export default function Projects() {
 
         <div>
           <h1 className="font-display text-title pb-2">{projectsPage.title}</h1>
-          <p className="text-fg-muted leading-relaxed">{projectsPage.intro}</p>
+          <p className="text-fg-muted leading-relaxed md:text-lg">{projectsPage.intro}</p>
         </div>
 
         {projects.map((p, index) => (

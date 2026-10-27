@@ -24,7 +24,7 @@ export async function generateMetadata({
   const count = postsForTag(tag).length;
   if (count === 0) return {};
 
-  const title = `Posts tagged “${tag}”`;
+  const title = `Posts tagged "${tag}"`;
   const description = `${count} ${count === 1 ? 'post' : 'posts'} about ${tag}.`;
 
   return {
@@ -53,7 +53,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
 
         <p className="text-fg-subtle pb-2 font-mono text-xs tracking-widest uppercase">Tag</p>
         <h1 className="font-display text-title pb-2">{tag}</h1>
-        <p className="text-fg-muted pb-10">
+        <p className="text-fg-muted pb-10 md:text-lg">
           {posts.length} {posts.length === 1 ? 'post' : 'posts'} ·{' '}
           <Link
             href="/blog"
