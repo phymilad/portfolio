@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Container } from '@/components/ui/container';
-import Link from 'next/link';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { PageIntro } from '@/components/ui/page-intro';
 import { notFound } from 'next/navigation';
 import { getAllPosts } from '@/lib/blog';
 import { PostList } from '@/components/post-list';
@@ -45,30 +46,23 @@ export default async function ArchivePage({ params }: { params: Promise<{ year: 
   if (posts.length === 0) notFound();
 
   return (
-    <Container width="default">
-      <section>
-        <JsonLd
-          schema={breadcrumbSchema([
-            { name: 'Home', path: '/' },
-            { name: blog.title, path: '/blog' },
-            { name: year, path: `/blog/archive/${year}` },
-          ])}
-        />
+    <Container>
+      <JsonLd
+        schema={breadcrumbSchema([
+          { name: 'Home', path: '/' },
+          { name: blog.title, path: '/blog' },
+          { name: year, path: `/blog/archive/${year}` },
+        ])}
+      />
 
-        <p className="text-fg-subtle pb-2 font-mono text-xs tracking-widest uppercase">Archive</p>
-        <h1 className="font-display text-title pb-2">{year}</h1>
-        <p className="text-fg-muted pb-10 md:text-lg">
-          {posts.length} {posts.length === 1 ? 'post' : 'posts'} ·{' '}
-          <Link
-            href="/blog"
-            className="text-accent hover:text-accent-hover underline underline-offset-2"
-          >
-            all posts
-          </Link>
-        </p>
+      <Breadcrumb parent={blog.title} href="/blog" current={`Archive: ${year}`} />
+      <PageIntro eyebrow="Archive" title={year}>
+        {posts.length} {posts.length === 1 ? 'post' : 'posts'} published in {year}
+      </PageIntro>
 
+      <div className="border-line border-t">
         <PostList posts={posts} />
-      </section>
+      </div>
     </Container>
   );
 }

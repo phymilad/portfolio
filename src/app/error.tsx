@@ -1,7 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { Container } from '@/components/ui/container';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
 import { errorPage } from '@/content/copy';
 
@@ -17,22 +18,15 @@ export default function Error({
   }, [error]);
 
   return (
-    <Container className="py-16 text-center">
-      <h1 className="font-display text-title pb-3">{errorPage.title}</h1>
-      <p className="text-fg-muted pb-6 md:text-lg">{errorPage.body}</p>
-      <div className="flex items-center justify-center gap-3">
-        <button
-          onClick={reset}
-          className="border-line hover:bg-surface-sunken hover:border-line-strong cursor-pointer rounded-md border px-4 py-2 transition"
-        >
-          {errorPage.retry}
-        </button>
-        <Link
-          href="/"
-          className="border-line hover:bg-surface-sunken hover:border-line-strong rounded-md border px-4 py-2 transition"
-        >
+    <Container className="flex flex-col items-center gap-6 py-16 text-center md:py-24">
+      <Badge tone="warning">Error</Badge>
+      <h1 className="text-display-lg font-semibold">{errorPage.title}</h1>
+      <p className="text-fg-muted text-lg">{errorPage.body}</p>
+      <div className="flex flex-wrap justify-center gap-3 pt-2">
+        <Button onClick={reset}>{errorPage.retry}</Button>
+        <Button href="/" variant="secondary">
           {errorPage.cta}
-        </Link>
+        </Button>
       </div>
     </Container>
   );

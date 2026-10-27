@@ -1,105 +1,171 @@
 @import 'tailwindcss';
 
-/* v4 auto-detects sources from the project root. docs/ quotes class names from
-   the audit findings, which would otherwise generate real CSS for classes the
-   app does not use. */
+/* v4 auto-detects sources from the project root. docs/ and design/ quote class
+   names, which would otherwise generate real CSS for classes the app does not
+   use. */
 @source not '../../docs';
+@source not '../../design';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
    Colour tokens.
 
+   Mirrors the Figma variables built by design/figma-plugin: every semantic
+   token there carries one of these custom properties as its code syntax.
+   Change both together.
+
    Defined as plain custom properties on :root / .dark rather than inside
    @theme, because @theme values are resolved once at build time and cannot
    respond to the cascade. @theme inline below maps them to Tailwind utilities
    so `bg-surface` follows the active theme.
 
-   Near-monochrome with a single warm accent. See docs/decisions.md §4.
+   Cool neutrals with a single cobalt accent.
 --------------------------------------------------------------------------- */
 
 :root {
-  --surface: #fdfcfa;
+  --surface: #ffffff;
   --surface-raised: #ffffff;
-  --surface-sunken: #f4f2ee;
+  --surface-sunken: #f5f6f8;
+  --surface-hover: #eef0f3;
+  --surface-inverse: #121418;
 
-  --border: #e4e0d9;
-  --border-strong: #d2ccc2;
+  --border: #e2e5ea;
+  --border-strong: #cdd2da;
+  --border-accent: #2f4bdb;
+  --focus-ring: #3e5ff0;
 
-  --fg: #1c1917;
-  --fg-muted: #57534e;
-  --fg-subtle: #79716b;
+  --fg: #121418;
+  --fg-muted: #4b5260;
+  --fg-subtle: #6b7380;
+  --fg-inverse: #f5f6f8;
 
-  --accent: #a8500b;
-  --accent-hover: #8a3f08;
+  --accent: #2f4bdb;
+  --accent-hover: #2539b3;
+  --accent-subtle: #eef2ff;
   --accent-fg: #ffffff;
-  --accent-subtle: #f8ede2;
+  --accent-text: #2f4bdb;
+  --accent-text-strong: #2539b3;
 
-  /* Section and card headings step up on desktop, where 1.3rem read small. */
-  --type-heading: 1.3rem;
-}
+  --success: #0e7f3f;
+  --success-subtle: #ddf7e8;
+  --warning: #a86a04;
+  --warning-subtle: #fdf1d6;
+  --danger: #c6303a;
+  --danger-subtle: #fde4e4;
 
-@media (min-width: 48rem) {
-  :root {
-    --type-heading: 1.6rem;
-  }
+  --shadow-color: 228 25% 4%;
 }
 
 .dark {
-  --surface: #0f0e0d;
-  --surface-raised: #1a1817;
-  --surface-sunken: #080807;
+  --surface: #0b0c0f;
+  --surface-raised: #121418;
+  --surface-sunken: #191c22;
+  --surface-hover: #22262d;
+  --surface-inverse: #f5f6f8;
 
-  --border: #2e2a27;
-  --border-strong: #423c37;
+  --border: #22262d;
+  --border-strong: #343943;
+  --border-accent: #6684fa;
+  --focus-ring: #6684fa;
 
-  --fg: #f5f3f0;
-  --fg-muted: #b5aca4;
-  --fg-subtle: #8a817a;
+  --fg: #f5f6f8;
+  --fg-muted: #cdd2da;
+  --fg-subtle: #9aa2af;
+  --fg-inverse: #121418;
 
-  --accent: #f0a868;
-  --accent-hover: #f6c193;
-  --accent-fg: #1c1917;
-  --accent-subtle: #26201a;
+  --accent: #6684fa;
+  --accent-hover: #91a9ff;
+  --accent-subtle: #121a42;
+  --accent-fg: #0b0c0f;
+  --accent-text: #91a9ff;
+  --accent-text-strong: #bccbff;
+
+  --success: #3ccb7f;
+  --success-subtle: #0b3a20;
+  --warning: #f5b83d;
+  --warning-subtle: #4a3104;
+  --danger: #f2777b;
+  --danger-subtle: #4f1517;
+
+  --shadow-color: 0 0% 0%;
 }
 
 @theme inline {
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-surface-sunken: var(--surface-sunken);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-inverse: var(--surface-inverse);
 
-  --color-border-DEFAULT: var(--border);
   --color-line: var(--border);
   --color-line-strong: var(--border-strong);
+  --color-line-accent: var(--border-accent);
 
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
   --color-fg-subtle: var(--fg-subtle);
+  --color-fg-inverse: var(--fg-inverse);
 
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
-  --color-accent-fg: var(--accent-fg);
   --color-accent-subtle: var(--accent-subtle);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-text: var(--accent-text);
+  --color-accent-text-strong: var(--accent-text-strong);
+
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-warning: var(--warning);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-danger: var(--danger);
+  --color-danger-subtle: var(--danger-subtle);
 
   --font-sans: var(--font-sans-face), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-display-face), Georgia, 'Times New Roman', serif;
   --font-mono: var(--font-mono-face), ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Type scale. The display size is the one the old site had no equivalent of. */
-  /* Fluid: a fixed display size overflowed at 390px. */
-  --text-display: clamp(2.25rem, 9vw, 3.25rem);
-  --text-display--line-height: 1.04;
-  --text-display--letter-spacing: -0.028em;
+  /* Shadows: Shadow/* effect styles in Figma. Borders separate; these are only
+     for hover and things that float. */
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.05);
+  --shadow-sm:
+    0 1px 3px hsl(var(--shadow-color) / 0.08), 0 1px 2px -1px hsl(var(--shadow-color) / 0.06);
+  --shadow-md:
+    0 4px 12px -2px hsl(var(--shadow-color) / 0.08), 0 2px 4px -2px hsl(var(--shadow-color) / 0.05);
+  --shadow-lg:
+    0 16px 32px -8px hsl(var(--shadow-color) / 0.14), 0 4px 8px -4px hsl(var(--shadow-color) / 0.06);
+}
 
-  --text-title: clamp(1.6rem, 5vw, 2rem);
-  --text-title--line-height: 1.15;
-  --text-title--letter-spacing: -0.02em;
+@theme {
+  /* Type scale: the Display/Heading/Body text styles in Figma. Display and H1
+     are fluid so they fit at 390px. */
+  --text-display-xl: clamp(2.75rem, 7vw, 4rem);
+  --text-display-xl--line-height: 1.0625;
+  --text-display-xl--letter-spacing: -0.03em;
 
-  --text-heading: var(--type-heading);
-  --text-heading--line-height: 1.3;
-  --text-heading--letter-spacing: -0.01em;
+  --text-display-lg: clamp(2.25rem, 6vw, 3rem);
+  --text-display-lg--line-height: 1.125;
+  --text-display-lg--letter-spacing: -0.025em;
 
-  --radius-card: 0.875rem;
+  --text-h1: clamp(2rem, 5vw, 2.5rem);
+  --text-h1--line-height: 1.2;
+  --text-h1--letter-spacing: -0.02em;
+
+  --text-h2: clamp(1.5rem, 3.5vw, 1.875rem);
+  --text-h2--line-height: 1.27;
+  --text-h2--letter-spacing: -0.015em;
+
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.36;
+  --text-h3--letter-spacing: -0.01em;
+
+  --text-h4: 1.125rem;
+  --text-h4--line-height: 1.44;
+  --text-h4--letter-spacing: -0.005em;
+
+  /* Body sizes keep Tailwind's names with roomier line heights for reading. */
+  --text-lg--line-height: 1.667;
+  --text-base--line-height: 1.625;
+  --text-sm--line-height: 1.571;
 
   --animate-fade-in-up: fade-in-up 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
@@ -107,12 +173,22 @@
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: none;
   }
+}
+
+/* The Eyebrow text style: mono, medium, uppercase, tracked. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 @layer base {
@@ -121,11 +197,20 @@
     color: var(--fg);
   }
 
-  /* The site never had a focus ring, so everything only worked with a mouse. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  /* The Focus/Ring effect style. The site never had a focus ring before the
+     redesign, so everything only worked with a mouse. */
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 4px;
   }
 
   ::selection {
@@ -143,22 +228,26 @@
   border-radius: 0.25rem;
   background-color: var(--surface-sunken);
   border: 1px solid var(--border);
+  color: var(--fg);
 }
 
 /* ---------------------------------------------------------------------------
    Shiki. Highlighting happens at build time with two themes baked into the
    markup as CSS variables; this swaps between them. No highlighter JS ships.
+   The block sits on the sunken surface rather than the theme's own background
+   so it matches the Code block component.
 --------------------------------------------------------------------------- */
 
 .shiki {
-  background-color: var(--shiki-light-bg) !important;
+  background-color: var(--surface-sunken) !important;
   color: var(--shiki-light);
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   padding: 1rem 1.15rem;
-  margin: 1.5rem 0;
+  margin: 1.75rem 0;
   overflow-x: auto;
-  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
   line-height: 1.7;
 }
 
@@ -167,7 +256,6 @@
 }
 
 .dark .shiki {
-  background-color: var(--shiki-dark-bg) !important;
   color: var(--shiki-dark);
 }
 

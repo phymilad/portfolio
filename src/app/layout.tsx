@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
 import { fontVariables } from '@/utils/constants';
-import { footer, site } from '@/content/copy';
+import { site } from '@/content/copy';
 import { JsonLd } from '@/components/json-ld';
 import { personSchema, webSiteSchema } from '@/utils/schema';
-import { Container } from '@/components/ui/container';
 import { ThemeProvider } from 'next-themes';
 
 export const metadata: Metadata = {
@@ -47,26 +47,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
 
           {/* Width is chosen per page via <Container>, not fixed here. */}
-          <main className="w-full flex-1 px-6 py-10 sm:px-8">{children}</main>
+          <main className="w-full flex-1 px-5 pt-12 sm:px-8 md:pt-20">{children}</main>
 
-          <footer className="border-line mt-24 border-t px-6 sm:px-8">
-            <Container className="text-fg-subtle flex flex-col items-center justify-between gap-3 py-8 font-mono text-xs sm:flex-row">
-              <span>{footer.text}</span>
-              <span className="flex items-center gap-4">
-                <a href="/rss.xml" className="hover:text-accent transition-colors">
-                  RSS
-                </a>
-                <a
-                  href={site.social[0]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-accent transition-colors"
-                >
-                  LinkedIn
-                </a>
-              </span>
-            </Container>
-          </footer>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

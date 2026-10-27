@@ -142,6 +142,12 @@ byte-identical".
 
 ## 4. Redesign direction — my call: **editorial base, technical accents**
 
+> **Superseded (October 2026):** you chose a "precise engineering" direction instead:
+> Geist and Geist Mono, cool neutrals, one cobalt accent. The content-first reasoning
+> below still holds, and the mono-for-data rule carried over. The tokens, components
+> and page templates now live in a Figma design system built by
+> `design/figma-plugin`, mirrored in `src/app/globals.css`.
+
 You left this to me, so here is the concrete proposal rather than a menu.
 
 ### The reasoning

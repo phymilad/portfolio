@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Container } from '@/components/ui/container';
-import Link from 'next/link';
+import { PageIntro } from '@/components/ui/page-intro';
+import { Tag } from '@/components/ui/tag';
 import { blog } from '@/content/copy';
 import { getAllPosts, getAllTags } from '@/lib/blog';
 import { PostList } from '@/components/post-list';
@@ -24,51 +25,41 @@ export default function BlogIndex() {
   const years = [...new Set(posts.map((post) => post.publishedAt.slice(0, 4)))].sort().reverse();
 
   return (
-    <Container width="default">
-      <section>
-        <JsonLd
-          schema={breadcrumbSchema([
-            { name: 'Home', path: '/' },
-            { name: blog.title, path: '/blog' },
-          ])}
-        />
+    <Container>
+      <JsonLd
+        schema={breadcrumbSchema([
+          { name: 'Home', path: '/' },
+          { name: blog.title, path: '/blog' },
+        ])}
+      />
 
-        <h1 className="font-display text-title pb-2">{blog.title}</h1>
-        <p className="text-fg-muted pb-6 leading-relaxed md:text-lg">{blog.metaDescription}</p>
+      <PageIntro eyebrow="Writing" title={blog.title}>
+        {blog.metaDescription}
+      </PageIntro>
 
-        <p className="flex flex-wrap items-center gap-2 pb-10">
-          <a
-            href="/rss.xml"
-            className="border-line text-accent hover:border-accent rounded-full border px-2.5 py-1 font-mono text-xs transition-colors"
-          >
-            RSS
-          </a>
-          {tags.map(({ tag, count }) => (
-            <Link
-              key={tag}
-              href={`/blog/tags/${tag}`}
-              className="bg-surface-sunken text-fg-muted border-line hover:text-accent hover:border-accent rounded-full border px-2.5 py-1 font-mono text-xs transition-colors"
-            >
-              {tag} <span className="text-fg-subtle">{count}</span>
-            </Link>
-          ))}
-          {years.map((year) => (
-            <Link
-              key={year}
-              href={`/blog/archive/${year}`}
-              className="border-line text-fg-muted hover:text-accent hover:border-accent rounded-full border px-2.5 py-1 font-mono text-xs transition-colors"
-            >
-              {year}
-            </Link>
-          ))}
-        </p>
+      <nav aria-label="Filter posts" className="flex flex-wrap items-center gap-2 pb-10">
+        <Tag variant="accent" href="/rss.xml">
+          RSS
+        </Tag>
+        {tags.map(({ tag, count }) => (
+          <Tag key={tag} href={`/blog/tags/${tag}`} count={count}>
+            {tag}
+          </Tag>
+        ))}
+        {years.map((year) => (
+          <Tag key={year} variant="outline" href={`/blog/archive/${year}`}>
+            {year}
+          </Tag>
+        ))}
+      </nav>
 
-        {posts.length === 0 ? (
-          <p className="text-fg-muted">{blog.empty}</p>
-        ) : (
+      {posts.length === 0 ? (
+        <p className="text-fg-muted">{blog.empty}</p>
+      ) : (
+        <div className="border-line border-t">
           <PostList posts={posts} />
-        )}
-      </section>
+        </div>
+      )}
     </Container>
   );
 }

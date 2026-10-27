@@ -1,18 +1,22 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { compileMDX } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
 import rehypeShiki from '@shikijs/rehype';
 
-import { getAllPosts, getPost, getRelatedPosts } from '@/lib/blog';
+import { getAllPosts, getPost, getRelatedPosts, getSeriesContext } from '@/lib/blog';
 import { getToc } from '@/lib/toc';
 import { mdxComponents } from '@/components/mdx';
 import { formatDate, formatReadingTime } from '@/utils/format';
 import { JsonLd } from '@/components/json-ld';
 import { blogPostingSchema, breadcrumbSchema } from '@/utils/schema';
-import { blog } from '@/content/copy';
+import { blog, series } from '@/content/copy';
 import { Container } from '@/components/ui/container';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { Badge } from '@/components/ui/badge';
+import { Tag, TagList } from '@/components/ui/tag';
+import { Pager } from '@/components/ui/pager';
+import { ChevronLink } from '@/components/ui/chevron-link';
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -53,6 +57,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
   const toc = getToc(post.body);
   const related = getRelatedPosts(post);
+  const seriesContext = getSeriesContext(post);
 
   const { content } = await compileMDX({
     source: post.body,
@@ -72,9 +77,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     },
   });
 
+  const seriesName = seriesContext && series[seriesContext.id];
+
   return (
-    <Container width="wide" className="lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-12">
-      <article className="max-w-[88ch] min-w-0">
+    <Container className="lg:grid lg:grid-cols-[minmax(0,720px)_15rem] lg:justify-between lg:gap-16">
+      <article className="min-w-0">
         <JsonLd schema={blogPostingSchema(post)} />
         <JsonLd
           schema={breadcrumbSchema([
@@ -84,18 +91,24 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           ])}
         />
 
-        <p className="text-fg-subtle pb-3 font-mono text-xs">
-          <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
-          <span aria-hidden="true"> · </span>
-          {formatReadingTime(post.readingMinutes)}
-          {post.draft && (
-            <span className="border-accent text-accent ms-2 rounded-full border px-2 py-0.5">
-              draft
-            </span>
+        <Breadcrumb parent={blog.title} href="/blog" current={seriesName ?? post.title} />
+
+        <p className="text-fg-subtle flex flex-wrap items-center gap-3 pb-5 font-mono text-xs">
+          {seriesContext && seriesName && (
+            <Badge href={`/blog/tags/${seriesContext.id}`}>
+              Part {seriesContext.order} of {seriesContext.total}
+            </Badge>
           )}
+          <span>
+            <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+            <span aria-hidden="true"> · </span>
+            {formatReadingTime(post.readingMinutes)}
+          </span>
+          {post.draft && <Badge tone="warning">draft</Badge>}
         </p>
 
-        <h1 className="font-display text-title">{post.title}</h1>
+        <h1 className="text-h1">{post.title}</h1>
+        <p className="text-fg-muted pt-4 text-lg">{post.description}</p>
 
         {post.updatedAt && (
           <p className="text-fg-subtle pt-3 font-mono text-xs">
@@ -103,34 +116,45 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           </p>
         )}
 
-        <div className="prose-body pt-4">{content}</div>
+        <div className="prose-body border-line mt-8 border-t pt-3">{content}</div>
 
         {post.tags && post.tags.length > 0 && (
-          <p className="mt-12 flex flex-wrap gap-2">
+          <TagList className="mt-12">
             {post.tags.map((tag) => (
-              <Link
-                key={tag}
-                href={`/blog/tags/${tag}`}
-                className="bg-surface-sunken text-fg-muted border-line hover:text-accent hover:border-accent rounded-full border px-2.5 py-1 font-mono text-xs transition-colors"
-              >
+              <Tag key={tag} variant="outline" href={`/blog/tags/${tag}`}>
                 {tag}
-              </Link>
+              </Tag>
             ))}
-          </p>
+          </TagList>
+        )}
+
+        {seriesContext && seriesName && (
+          <div className="border-line mt-12 border-t pt-8">
+            <Pager
+              label={seriesName}
+              prev={
+                seriesContext.prev && {
+                  href: `/blog/${seriesContext.prev.slug}`,
+                  title: seriesContext.prev.title,
+                }
+              }
+              next={
+                seriesContext.next && {
+                  href: `/blog/${seriesContext.next.slug}`,
+                  title: seriesContext.next.title,
+                }
+              }
+            />
+          </div>
         )}
 
         {related.length > 0 && (
-          <section className="border-line mt-16 border-t pt-8">
-            <h2 className="font-display text-heading pb-4">{blog.related}</h2>
-            <ul className="space-y-3">
+          <section className="border-line mt-12 border-t pt-8">
+            <h2 className="eyebrow text-fg-subtle pb-4">{blog.related}</h2>
+            <ul className="flex flex-col gap-3">
               {related.map((item) => (
                 <li key={item.slug}>
-                  <Link
-                    href={`/blog/${item.slug}`}
-                    className="text-accent hover:text-accent-hover underline underline-offset-2"
-                  >
-                    {item.title}
-                  </Link>
+                  <ChevronLink href={`/blog/${item.slug}`}>{item.title}</ChevronLink>
                 </li>
               ))}
             </ul>
@@ -141,15 +165,16 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       {toc.length > 1 && (
         <aside className="hidden lg:block">
           <nav aria-label={blog.toc} className="sticky top-24">
-            <p className="text-fg-subtle pb-3 font-mono text-xs tracking-widest uppercase">
-              {blog.toc}
-            </p>
-            <ul className="border-line space-y-2 border-s text-sm">
+            <p className="eyebrow text-fg-subtle pb-3">{blog.toc}</p>
+            <ul className="text-sm">
               {toc.map((entry) => (
-                <li key={entry.id} className={entry.depth === 3 ? 'ps-7' : 'ps-4'}>
+                <li key={entry.id}>
+                  {/* The TOC item component: a left rule with depth indent. */}
                   <a
                     href={`#${entry.id}`}
-                    className="text-fg-muted hover:text-accent transition-colors"
+                    className={`border-line text-fg-muted hover:border-line-strong hover:text-fg block border-s py-1 transition-colors ${
+                      entry.depth === 3 ? 'ps-8' : 'ps-4'
+                    }`}
                   >
                     {entry.text}
                   </a>

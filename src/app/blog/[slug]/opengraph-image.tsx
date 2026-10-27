@@ -27,12 +27,12 @@ export default async function PostOpengraphImage({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        background: '#0f0e0d',
-        color: '#f5f3f0',
+        background: '#0b0c0f',
+        color: '#f5f6f8',
         padding: '72px',
       }}
     >
-      <div style={{ display: 'flex', fontSize: 24, color: '#f0a868', letterSpacing: '0.12em' }}>
+      <div style={{ display: 'flex', fontSize: 24, color: '#91a9ff', letterSpacing: '0.12em' }}>
         {post ? formatDate(post.publishedAt).toUpperCase() : ''}
         {post ? `  ·  ${formatReadingTime(post.readingMinutes).toUpperCase()}` : ''}
       </div>
@@ -50,7 +50,7 @@ export default async function PostOpengraphImage({
       </div>
 
       <div
-        style={{ display: 'flex', justifyContent: 'space-between', fontSize: 26, color: '#b5aca4' }}
+        style={{ display: 'flex', justifyContent: 'space-between', fontSize: 26, color: '#9aa2af' }}
       >
         <span>{site.name}</span>
         <span>{site.url.replace('https://', '')}</span>

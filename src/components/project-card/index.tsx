@@ -1,12 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Project } from '@/content/projects';
-import { Card } from '@/components/ui/card';
+import { Icon } from '@/components/ui/icon';
 
 /**
- * Server component. This was previously a div with an onClick that called
- * router.push, which meant crawlers could not follow it to the project pages
- * and keyboard users could not reach it at all. A real anchor fixes both.
+ * The Project card component. Server component and a real anchor: this was
+ * once a div with an onClick that called router.push, which meant crawlers
+ * could not follow it and keyboard users could not reach it at all.
  */
 export const ProjectCard = ({
   project,
@@ -16,66 +16,63 @@ export const ProjectCard = ({
   project: Project;
   priority?: boolean;
 }) => {
-  const { desktop, mobile } = project.image;
+  const shown = project.skills.slice(0, 4);
+  const rest = project.skills.length - shown.length;
 
   return (
-    <Link
-      href={`/projects/${project.id}`}
-      className="rounded-card focus-visible:outline-accent block focus-visible:outline-2 focus-visible:outline-offset-2"
-    >
-      <Card interactive className="overflow-hidden">
-        <div className="pb-4">
-          <h3 className="font-display text-heading">{project.title}</h3>
-        </div>
-
-        <div className="flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
-          {desktop && (
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl sm:w-3/4">
+    <Link href={`/projects/${project.id}`} className="group block rounded-xl">
+      <article className="border-line bg-surface-raised group-hover:border-line-strong motion-safe:animate-fade-in-up flex h-full flex-col overflow-hidden rounded-xl border transition-[border-color,box-shadow] duration-300 group-hover:shadow-md">
+        <div className="bg-surface-sunken px-6 pt-6">
+          {project.image.desktop && (
+            <div className="border-line bg-surface relative aspect-[16/10] overflow-hidden rounded-t-lg border border-b-0">
               <Image
-                src={desktop}
+                src={project.image.desktop}
                 alt={`${project.title}, desktop view`}
                 fill
-                className="object-contain"
-                sizes="(min-width: 1024px) 700px, (min-width: 640px) 70vw, 100vw"
+                className="object-cover object-top"
+                sizes="(min-width: 1024px) 510px, (min-width: 640px) 45vw, 100vw"
                 priority={priority}
               />
             </div>
           )}
-
-          {mobile && (
-            <div className="relative aspect-[9/16] w-1/2 overflow-hidden rounded-xl sm:w-1/4">
-              <Image
-                src={mobile}
-                alt={`${project.title}, mobile view`}
-                fill
-                className="object-contain"
-                sizes="(min-width: 1024px) 235px, (min-width: 640px) 25vw, 50vw"
-              />
-            </div>
-          )}
         </div>
 
-        <div className="py-4">
-          <p className="text-fg-muted text-sm leading-relaxed md:text-base">
-            {project.shortDescription}
-          </p>
-        </div>
-
-        <div className="border-line border-t"></div>
-
-        <div className="pt-4">
-          <div className="flex flex-wrap gap-2">
-            {project.skills.map((skill) => (
+        <div className="flex flex-1 flex-col gap-3 p-6">
+          <h2 className="text-h3 group-hover:text-accent-text transition-colors">
+            {project.title}
+          </h2>
+          <p className="text-fg-muted text-sm">{project.shortDescription}</p>
+          <p className="flex flex-wrap gap-1.5 pt-1">
+            {shown.map((skill) => (
               <span
                 key={skill}
-                className="bg-surface-sunken text-fg-muted border-line rounded-full border px-2.5 py-1 font-mono text-xs"
+                className="border-line bg-surface-sunken text-fg-muted rounded-md border px-2.5 py-1 font-mono text-xs"
               >
                 {skill}
               </span>
             ))}
-          </div>
+            {rest > 0 && (
+              <span className="border-line text-fg-subtle rounded-md border px-2.5 py-1 font-mono text-xs">
+                +{rest}
+              </span>
+            )}
+          </p>
         </div>
-      </Card>
+
+        <div className="border-line flex items-center justify-between border-t px-6 py-4">
+          <span className="group-hover:text-accent-text inline-flex items-center gap-1.5 text-sm font-medium transition-colors">
+            View project
+            <Icon
+              name="chevron-right"
+              className="transition-transform motion-safe:group-hover:translate-x-0.5"
+            />
+          </span>
+          <span className="text-fg-subtle inline-flex items-center gap-1.5 font-mono text-xs">
+            <Icon name="play" size={14} />
+            Video walkthrough
+          </span>
+        </div>
+      </article>
     </Link>
   );
 };

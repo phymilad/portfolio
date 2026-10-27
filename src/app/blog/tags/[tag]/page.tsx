@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import { Container } from '@/components/ui/container';
-import Link from 'next/link';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { PageIntro } from '@/components/ui/page-intro';
 import { notFound } from 'next/navigation';
 import { getAllPosts, getAllTags } from '@/lib/blog';
 import { PostList } from '@/components/post-list';
 import { JsonLd } from '@/components/json-ld';
 import { breadcrumbSchema } from '@/utils/schema';
-import { blog } from '@/content/copy';
+import { blog, series } from '@/content/copy';
 
 export function generateStaticParams() {
   return getAllTags().map(({ tag }) => ({ tag }));
@@ -41,30 +42,23 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
   if (posts.length === 0) notFound();
 
   return (
-    <Container width="default">
-      <section>
-        <JsonLd
-          schema={breadcrumbSchema([
-            { name: 'Home', path: '/' },
-            { name: blog.title, path: '/blog' },
-            { name: tag, path: `/blog/tags/${tag}` },
-          ])}
-        />
+    <Container>
+      <JsonLd
+        schema={breadcrumbSchema([
+          { name: 'Home', path: '/' },
+          { name: blog.title, path: '/blog' },
+          { name: tag, path: `/blog/tags/${tag}` },
+        ])}
+      />
 
-        <p className="text-fg-subtle pb-2 font-mono text-xs tracking-widest uppercase">Tag</p>
-        <h1 className="font-display text-title pb-2">{tag}</h1>
-        <p className="text-fg-muted pb-10 md:text-lg">
-          {posts.length} {posts.length === 1 ? 'post' : 'posts'} ·{' '}
-          <Link
-            href="/blog"
-            className="text-accent hover:text-accent-hover underline underline-offset-2"
-          >
-            all posts
-          </Link>
-        </p>
+      <Breadcrumb parent={blog.title} href="/blog" current={`Tag: ${tag}`} />
+      <PageIntro eyebrow="Tag" title={series[tag] ?? tag}>
+        {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+      </PageIntro>
 
+      <div className="border-line border-t">
         <PostList posts={posts} />
-      </section>
+      </div>
     </Container>
   );
 }

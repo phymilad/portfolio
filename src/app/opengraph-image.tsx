@@ -14,14 +14,14 @@ export default function OpengraphImage() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        background: '#0b0f0b',
-        color: '#f8fafc',
+        background: '#0b0c0f',
+        color: '#f5f6f8',
         padding: '80px',
       }}
     >
       <div style={{ fontSize: 68, fontWeight: 700, letterSpacing: '-0.02em' }}>{site.name}</div>
-      <div style={{ fontSize: 40, color: '#94a3b8', marginTop: 12 }}>{site.role}</div>
-      <div style={{ fontSize: 26, color: '#64748b', marginTop: 40 }}>
+      <div style={{ fontSize: 40, color: '#91a9ff', marginTop: 12 }}>{site.role}</div>
+      <div style={{ fontSize: 26, color: '#9aa2af', marginTop: 40 }}>
         {site.url.replace('https://', '')}
       </div>
     </div>,

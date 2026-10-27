@@ -1,0 +1,12 @@
+{
+  "name": "Portfolio Design System Builder",
+  "id": "milad-portfolio-design-system",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["https://phymilad.vercel.app"],
+    "reasoning": "Loads the portrait and project screenshots from the live site into the page templates."
+  }
+}

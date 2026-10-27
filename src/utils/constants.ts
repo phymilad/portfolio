@@ -1,26 +1,19 @@
-import { Inter, Fraunces, IBM_Plex_Mono } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 
 /**
- * Three roles, three faces:
- *   sans    body copy and UI
- *   display headings, the editorial half of the identity
- *   mono    code, tags, dates and metadata, the technical accent
- * See docs/decisions.md §4.
+ * Two faces, two roles:
+ *   sans  everything you read: headings, body and UI
+ *   mono  everything a machine would print: code, dates, tags and metadata
+ * See design/figma-plugin (Typography page) for the type scale.
  */
 
-export const inter = Inter({
+export const geist = Geist({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-sans-face',
 });
 
-export const fraunces = Fraunces({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-display-face',
-});
-
-export const plexMono = IBM_Plex_Mono({
+export const geistMono = Geist_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
   display: 'swap',
@@ -29,4 +22,4 @@ export const plexMono = IBM_Plex_Mono({
   preload: false,
 });
 
-export const fontVariables = `${inter.variable} ${fraunces.variable} ${plexMono.variable}`;
+export const fontVariables = `${geist.variable} ${geistMono.variable}`;

@@ -3,7 +3,7 @@ import { ImageResponse } from 'next/og';
 export const size = { width: 32, height: 32 };
 export const contentType = 'image/png';
 
-/** Generated so the mark stays in sync with the accent token. */
+/** Generated favicon: an initial on the inverse surface colour. */
 export default function Icon() {
   return new ImageResponse(
     <div
@@ -13,8 +13,8 @@ export default function Icon() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#0f0e0d',
-        color: '#f0a868',
+        background: '#121418',
+        color: '#f5f6f8',
         fontSize: 22,
         fontWeight: 700,
         borderRadius: 6,

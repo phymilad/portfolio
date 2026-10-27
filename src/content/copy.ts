@@ -12,7 +12,7 @@ export const site = {
   brand: 'Milad Mohammadi | Software Engineer',
   url: 'https://phymilad.vercel.app',
   description:
-    'Software engineer with 5+ years building fast, scalable web applications with React, Next.js, TypeScript and NestJS. Projects, writing, and how I work.',
+    'Software engineer building fast, maintainable web applications from frontend to backend, with AI as part of the workflow. Projects, writing, and how I work.',
   locale: 'en_US',
   /**
    * Profiles used for schema.org sameAs. Only verified URLs belong here,
@@ -37,32 +37,25 @@ export const navLinks = [
 
 export const home = {
   tagline:
-    'I build fast, scalable web applications with React, Next.js, TypeScript and NestJS, and I write about what I learn along the way.',
+    'I turn complex ideas into fast, maintainable web applications, from frontend to backend, and bring AI into the work where it genuinely helps. I write about what I learn along the way.',
   selectedWork: 'Selected work',
   allProjects: 'All projects',
   recentWriting: 'Recent writing',
   allPosts: 'All posts',
-  moreAbout: 'More about me',
-
-  aboutTitle: 'About me',
-  intro:
-    'I am a software engineer with more than 5 years of experience building web applications that are fast, scale well and stay easy to maintain. I like taking a complicated idea and turning it into a product that is simple to use.',
-
-  whatIDoTitle: 'What I Do',
-  whatIDo:
-    'I work mostly with React, Next.js, TypeScript and NestJS, on both the frontend and the backend. I try to give users a good experience without cutting corners on architecture, and I build things so they keep working as the traffic and the feature list grow.',
-
-  experienceTitle: 'Experience Highlights',
-  experience: [
-    'Build the frontend for Mdotcar, an automotive platform that has handled more than 30,000 successful services.',
-    'Contribute to Rsoon, an investment consulting platform for individuals and businesses.',
-    'Develop a document management system (DMS) for large organizations at Danesh-Hamara.',
-    'Daily work with React, Next.js, Tailwind CSS, responsive layouts and a clean Git history.',
+  // Ordered by importance; the About page has the full list.
+  stack: [
+    'TypeScript',
+    'React',
+    'Next.js',
+    'Node.js',
+    'NestJS',
+    'PostgreSQL',
+    'MongoDB',
+    'Redis',
+    'Docker',
+    'AI agents',
+    'AI-assisted development',
   ],
-
-  howIWorkTitle: 'How I Work',
-  howIWork:
-    'I care about clean architecture, working closely with the team, and making the product a bit better with every release. I want what I build to be pleasant to use and to show results the business can measure. That goes for a small startup as much as for a large organization.',
 } as const;
 
 export const portrait = {
@@ -77,10 +70,63 @@ export const portrait = {
 export const aboutPage = {
   title: 'About',
   metaDescription:
-    'Milad Mohammadi is a software engineer with 5+ years of experience building production web applications with React, Next.js, TypeScript and NestJS.',
-  lead: 'I am a software engineer based in Tehran, working mostly on the web. Five years of building things that other people have to maintain has made me care about architecture, clarity and the boring parts that keep a product alive.',
+    'Milad Mohammadi is a software engineer in the Netherlands building full-stack web applications with React, Next.js, Node.js and NestJS, and working with AI every day.',
+  // No year counts or other figures that go stale: everything here should
+  // still be true next year without an edit.
+  lead: [
+    'I am a software engineer based in the Netherlands, working across the stack: interfaces in React and Next.js, APIs in Node.js and NestJS, and the databases behind them. I like taking a complicated idea and turning it into a product that is simple to use.',
+    'AI is part of how I work every day. I use coding assistants to move faster on the parts that are well understood, and I build agents and tool-calling workflows where they take real work off people’s hands.',
+    'Building things that other people have to maintain has made me care about architecture, clarity and the boring parts that keep a product alive.',
+  ],
+  location: 'The Netherlands',
+  focus: 'Full-stack web applications and AI workflows',
+
+  whatIDoTitle: 'What I do',
+  whatIDo:
+    'I build web applications end to end: React and Next.js on the frontend, Node.js and NestJS on the backend, and PostgreSQL, MongoDB and Redis underneath. I try to give users a good experience without cutting corners on architecture, and I build things so they keep working as the traffic and the feature list grow.',
+
+  howIWorkTitle: 'How I work',
+  principles: [
+    [
+      'Architecture that lasts',
+      'Code is read and changed far more often than it is written, so I structure it for the next person who has to touch it.',
+    ],
+    [
+      'Close to the team',
+      'I work closely with design, product and the rest of engineering. Most problems are cheaper to solve in a conversation than in a pull request.',
+    ],
+    [
+      'Better with every release',
+      'Small, steady improvements over big rewrites. Every release should leave the product a little better, in ways the business can measure.',
+    ],
+    [
+      'AI with judgement',
+      'I let AI speed up the work that is well understood and keep human judgement on what is not: architecture, review and anything users depend on.',
+    ],
+  ],
+
+  workTitle: 'Work',
+  workIntro:
+    'Production platforms I have built or worked on. Each one has a short video walkthrough.',
+
+  stackTitle: 'Stack',
+  // Confirmed by Milad, October 2026.
+  stack: [
+    [
+      'Frontend',
+      ['React', 'Next.js', 'TypeScript', 'Redux Toolkit', 'Tailwind CSS', 'Material-UI', 'Leaflet'],
+    ],
+    ['Backend', ['Node.js', 'NestJS', 'REST APIs', 'WebSockets']],
+    ['Data', ['PostgreSQL', 'MongoDB', 'Redis', 'Prisma', 'TypeORM']],
+    ['AI', ['AI agents & tool use', 'AI-assisted development']],
+    ['Quality', ['Jest', 'Vitest', 'Playwright', 'Storybook']],
+    ['Delivery', ['Docker', 'GitHub Actions', 'Git']],
+    ['Workflow', ['Jira', 'Confluence', 'Figma', 'Agile']],
+  ],
+
   contactTitle: 'Get in touch',
-  contactBody: 'The fastest way to reach me is LinkedIn. My code is on GitHub.',
+  contactBody:
+    'The fastest way to reach me is LinkedIn. You can also find some of my projects on GitHub.',
 } as const;
 
 export const projectsPage = {
@@ -108,11 +154,19 @@ export const blog = {
   title: 'Blog',
   empty: 'No posts yet.',
   metaDescription:
-    'Notes on software engineering, React and Next.js, architecture, and the things I learn building for the web.',
+    'Writing on building software: frontend, backend, architecture, and working with AI.',
   toc: 'On this page',
   related: 'Related posts',
 } as const;
 
 export const footer = {
   text: '\u00a9 Milad Mohammadi',
+  blurb:
+    'Software engineer building web applications from frontend to backend, with AI in the workflow, and writing about what I learn along the way.',
+  built: 'Built with Next.js \u00b7 Deployed on Vercel',
 } as const;
+
+/** Display names for the `series.id` values used in post frontmatter. */
+export const series: Record<string, string> = {
+  'nextjs-between-the-lines': 'Next.js Between the Lines',
+};

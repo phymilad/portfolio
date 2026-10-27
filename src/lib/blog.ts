@@ -108,6 +108,23 @@ export function getAllTags(): { tag: string; count: number }[] {
     .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
 
+/** The post's place in its series, for the "Part 2 of 20" badge and the pager. */
+export function getSeriesContext(post: Post) {
+  const series = post.series;
+  if (!series) return undefined;
+  const parts = getAllPosts()
+    .filter((candidate) => candidate.series?.id === series.id)
+    .sort((a, b) => a.series!.order - b.series!.order);
+  const index = parts.findIndex((part) => part.slug === post.slug);
+  return {
+    id: series.id,
+    order: series.order,
+    total: parts.length,
+    prev: parts[index - 1],
+    next: parts[index + 1],
+  };
+}
+
 /** Related by shared tags, then recency. */
 export function getRelatedPosts(post: Post, limit = 3): Post[] {
   const tags = new Set(post.tags ?? []);
